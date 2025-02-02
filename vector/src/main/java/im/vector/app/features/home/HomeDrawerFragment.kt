@@ -110,6 +110,8 @@ class HomeDrawerFragment :
                             tag = ACCOUNTS_FRAGMENT_TAG
                     )
                 }
+
+                sharedActionViewModel.post(HomeActivitySharedAction.AccountLoaded)
             }
         }
         // Profile

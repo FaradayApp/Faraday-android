@@ -3065,4 +3065,5 @@
     <string name="application_password_no_uppercase">Пароль должен содержать хотя бы одну заглавную букву</string>
     <string name="application_password_no_lowercase">Пароль должен содержать хотя бы одну строчную букву</string>
     <string name="application_password_no_symbol">Пароль должен содержать хотя бы один символ из списка: !, @, #, $, %, ^, &amp;, *, (, )</string>
+    <string name="action_hide">скрыть</string>
 </resources>

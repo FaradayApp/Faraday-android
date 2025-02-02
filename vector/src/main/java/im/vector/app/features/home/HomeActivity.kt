@@ -103,6 +103,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import org.matrix.android.sdk.api.session.permalinks.PermalinkService
+import org.matrix.android.sdk.api.session.sync.InitialSyncStep
 import org.matrix.android.sdk.api.session.sync.InitialSyncStrategy
 import org.matrix.android.sdk.api.session.sync.SyncRequestState
 import org.matrix.android.sdk.api.session.sync.initialSyncStrategy
@@ -155,6 +156,7 @@ class HomeActivity :
     @Inject lateinit var lightweightSettingsStorage: LightweightSettingsStorage
 
     private var isNewAppLayoutEnabled: Boolean = false // delete once old app layout is removed
+    private var isAllLoaded: Boolean = false
 
     private val createSpaceResultLauncher = registerStartForActivityResult { activityResult ->
         if (activityResult.resultCode == Activity.RESULT_OK) {
@@ -242,6 +244,10 @@ class HomeActivity :
                 .stream()
                 .onEach { sharedAction ->
                     when (sharedAction) {
+                        is HomeActivitySharedAction.AccountLoaded -> {
+                            isAllLoaded = true
+                            views.waitingView.root.isVisible = false
+                        }
                         is HomeActivitySharedAction.OpenDrawer -> views.drawerLayout.openDrawer(GravityCompat.START)
                         is HomeActivitySharedAction.CloseDrawer -> views.drawerLayout.closeDrawer(GravityCompat.START)
                         is HomeActivitySharedAction.OpenSpacePreview -> startActivity(SpacePreviewActivity.newIntent(this, sharedAction.spaceId))
@@ -288,6 +294,9 @@ class HomeActivity :
                 is HomeActivityViewEvents.AskUserForPushDistributor -> askUserToSelectPushDistributor()
             }
         }
+        renderState(HomeActivityViewState(
+                SyncRequestState.InitialSyncProgressing(initialSyncStep = InitialSyncStep.ServerComputing)
+        ))
         homeActivityViewModel.onEach { renderState(it) }
 
         shortcutsHandler.observeRoomsAndBuildShortcuts(lifecycleScope)
@@ -456,6 +465,7 @@ class HomeActivity :
                 views.waitingView.root.isVisible = true
             }
             else -> {
+                if (!isAllLoaded) return
                 // Idle or Incremental sync status
                 views.waitingView.root.isVisible = false
             }

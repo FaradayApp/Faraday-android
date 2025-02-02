@@ -16,8 +16,11 @@
 
 package im.vector.app.features.login
 
+import android.content.DialogInterface.BUTTON_NEGATIVE
+import android.content.DialogInterface.BUTTON_NEUTRAL
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
 import androidx.preference.Preference
 import com.airbnb.mvrx.activityViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -46,6 +49,7 @@ class LoginConnectionSettingsFragment : ConnectionSettingsBaseFragment() {
             pref.onPreferenceClickListener = Preference.OnPreferenceClickListener {
                 when (connectionTypePreference?.type ?: return@OnPreferenceClickListener true) {
                     ConnectionType.MATRIX -> {
+                        cancelTorInit()
                         when (switchUseProxyPreference?.isChecked ?: return@OnPreferenceClickListener true) {
                             true -> {
                                 if (proxyFieldsAreValid()) {
@@ -60,6 +64,14 @@ class LoginConnectionSettingsFragment : ConnectionSettingsBaseFragment() {
                     }
 
                     ConnectionType.ONION -> {
+                        torCancelled = false
+                        torHidden = false
+
+                        torLoggingDialog?.run {
+                            getButton(BUTTON_NEUTRAL)?.isVisible = true
+                            getButton(BUTTON_NEGATIVE)?.isVisible = true
+                        }
+
                         when (torService.isProxyRunning) {
                             true -> getStarted(ConnectionType.ONION)
                             false -> {
@@ -78,14 +90,33 @@ class LoginConnectionSettingsFragment : ConnectionSettingsBaseFragment() {
         }
     }
 
+    private var torHidden = false
+
     private fun initDialog() {
+
         torLoggingDialog = MaterialAlertDialogBuilder(requireContext())
                 .setCancelable(false)
+                .setNeutralButton(getString(R.string.action_hide)) { dialog, _ ->
+                    torHidden = true
+                    dialog.dismiss()
+                }
+                .setNegativeButton(getString(R.string.action_cancel)) { _, _ ->
+                    cancelTorInit()
+                }
                 .create()
+    }
+
+    private var torCancelled = false
+    private fun cancelTorInit() {
+        torService.switchTorPrefState(false)
+        disableProxy()
+        torCancelled = true
     }
 
     override fun observeTorEvents() {
         torEventListener.torEventLiveData.observeEvent(this) { torEvent ->
+            if (torCancelled) return@observeEvent
+
             when (torEvent) {
                 is TorEvent.ConnectionEstablished -> {
                     torLoggingDialog?.dismiss()
@@ -94,13 +125,17 @@ class LoginConnectionSettingsFragment : ConnectionSettingsBaseFragment() {
 
                 is TorEvent.ConnectionFailed -> {
                     torLoggingDialog?.setMessage(getString(R.string.tor_connection_failed))
-                    if (torLoggingDialog?.isShowing == false) torLoggingDialog?.show()
+                    if (!torHidden && torLoggingDialog?.isShowing == false) torLoggingDialog?.show()
+                    torLoggingDialog?.run {
+                        getButton(BUTTON_NEUTRAL)?.isVisible = false
+                        getButton(BUTTON_NEGATIVE)?.isVisible = false
+                    }
                     torLoggingDialog?.setCancelable(true)
                 }
 
                 is TorEvent.TorLogEvent -> {
                     torLoggingDialog?.setMessage(torEvent.message)
-                    if (torLoggingDialog?.isShowing == false) {
+                    if (!torHidden && torLoggingDialog?.isShowing == false) {
                         torLoggingDialog?.show()
                     }
                 }

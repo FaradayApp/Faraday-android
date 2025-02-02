@@ -202,9 +202,9 @@ internal class RealmCryptoStore @Inject constructor(
             }
         }
 
-        if (olmAccount == null) {
+//        if (olmAccount == null) {
             getOrCreateOlmAccount()
-        }
+//        }
     }
 
     override fun close() {

@@ -22,6 +22,7 @@ import im.vector.app.core.platform.VectorSharedAction
  * Supported navigation actions for [HomeActivity].
  */
 sealed class HomeActivitySharedAction : VectorSharedAction {
+    object AccountLoaded : HomeActivitySharedAction()
     object OpenDrawer : HomeActivitySharedAction()
     object CloseDrawer : HomeActivitySharedAction()
     object OnCloseSpace : HomeActivitySharedAction()
