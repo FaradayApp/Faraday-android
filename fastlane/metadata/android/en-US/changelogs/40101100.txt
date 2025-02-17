@@ -1,0 +1,5 @@
+- Fixed a problem with decrypting messages and syncing them when switching accounts
+- Optimized loading of the curtain when switching accounts
+Improved TOR connection
+- Fixed bugs of the user's path during the tor connection
+- Added uploading of chats from an existing account
