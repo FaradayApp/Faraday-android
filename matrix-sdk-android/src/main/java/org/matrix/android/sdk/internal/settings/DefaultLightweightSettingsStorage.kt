@@ -19,6 +19,8 @@ package org.matrix.android.sdk.internal.settings
 import android.content.Context
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 import org.matrix.android.sdk.api.MatrixConfiguration
 import org.matrix.android.sdk.api.settings.LightweightSettingsStorage
 import org.matrix.android.sdk.api.util.ConnectionType
@@ -36,8 +38,16 @@ class DefaultLightweightSettingsStorage @Inject constructor(
         context: Context,
         private val matrixConfiguration: MatrixConfiguration
 ) : LightweightSettingsStorage {
+    private val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
 
     private val sdkDefaultPrefs = PreferenceManager.getDefaultSharedPreferences(context.applicationContext)
+    private val sdkEncryptedPrefs = EncryptedSharedPreferences.create(
+            ENCRYPTED_PREFS_FILENAME,
+            masterKeyAlias,
+            context,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
 
     override fun setThreadMessagesEnabled(enabled: Boolean) {
         sdkDefaultPrefs.edit {
@@ -123,11 +133,11 @@ class DefaultLightweightSettingsStorage @Inject constructor(
     }
 
     override fun getProxyPassword(): String {
-        return sdkDefaultPrefs.getString(MATRIX_SDK_SETTINGS_CONNECTION_PROXY_PASSWORD, matrixConfiguration.connectionProxyPasswordDefault).orEmpty()
+        return sdkEncryptedPrefs.getString(MATRIX_SDK_SETTINGS_CONNECTION_PROXY_PASSWORD, matrixConfiguration.connectionProxyPasswordDefault).orEmpty()
     }
 
     override fun setProxyPassword(proxyPassword: String) {
-        sdkDefaultPrefs.edit {
+        sdkEncryptedPrefs.edit {
             putString(MATRIX_SDK_SETTINGS_CONNECTION_PROXY_PASSWORD, proxyPassword)
         }
     }
@@ -139,7 +149,6 @@ class DefaultLightweightSettingsStorage @Inject constructor(
         return sdkDefaultPrefs.getBoolean(MATRIX_SDK_APPLICATION_PASSWORD_SET, matrixConfiguration.applicationPasswordEnabledDefault)
     }
 
-
     override fun setApplicationPasswordEnabled(enabled: Boolean) {
         sdkDefaultPrefs.edit {
             putBoolean(MATRIX_SDK_APPLICATION_PASSWORD_SET, enabled)
@@ -147,17 +156,17 @@ class DefaultLightweightSettingsStorage @Inject constructor(
     }
 
     override fun setApplicationPassword(applicationPassword: String?) {
-        sdkDefaultPrefs.edit {
+        sdkEncryptedPrefs.edit {
             putString(MATRIX_SDK_APPLICATION_PASSWORD, applicationPassword)
         }
     }
 
     override fun getApplicationPassword(): String? {
-        return sdkDefaultPrefs.getString(MATRIX_SDK_APPLICATION_PASSWORD, null)
+        return sdkEncryptedPrefs.getString(MATRIX_SDK_APPLICATION_PASSWORD, null)
     }
 
     override fun setNukePassword(nukePassword: String) {
-        sdkDefaultPrefs.edit {
+        sdkEncryptedPrefs.edit {
             putString(MATRIX_SDK_NUKE_PASSWORD, nukePassword)
         }
     }
@@ -213,6 +222,8 @@ class DefaultLightweightSettingsStorage @Inject constructor(
     }
 
     companion object {
+        const val ENCRYPTED_PREFS_FILENAME = "matrix_sdk_global_prefs"
+
         const val MATRIX_SDK_SETTINGS_THREAD_MESSAGES_ENABLED = "MATRIX_SDK_SETTINGS_THREAD_MESSAGES_ENABLED"
         private const val MATRIX_SDK_SETTINGS_FOREGROUND_PRESENCE_STATUS = "MATRIX_SDK_SETTINGS_FOREGROUND_PRESENCE_STATUS"
         const val MATRIX_SDK_SETTINGS_CONNECTION_TYPE = "MATRIX_SDK_SETTINGS_CONNECTION_TYPE"
