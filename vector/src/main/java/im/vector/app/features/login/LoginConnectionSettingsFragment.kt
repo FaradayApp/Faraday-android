@@ -18,6 +18,7 @@ package im.vector.app.features.login
 
 import android.content.DialogInterface.BUTTON_NEGATIVE
 import android.content.DialogInterface.BUTTON_NEUTRAL
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
@@ -30,6 +31,7 @@ import im.vector.app.core.extensions.observeEvent
 import im.vector.app.core.settings.connectionmethods.onion.TorEvent
 import im.vector.app.features.settings.connectionmethod.ConnectionSettingsBaseFragment
 import org.matrix.android.sdk.api.util.ConnectionType
+import timber.log.Timber
 
 @AndroidEntryPoint
 class LoginConnectionSettingsFragment : ConnectionSettingsBaseFragment() {
@@ -72,13 +74,22 @@ class LoginConnectionSettingsFragment : ConnectionSettingsBaseFragment() {
                             getButton(BUTTON_NEGATIVE)?.isVisible = true
                         }
 
-                        when (torService.isProxyRunning) {
-                            true -> getStarted(ConnectionType.ONION)
-                            false -> {
-                                torService.switchTorPrefState(true)
-                                observeTorEvents()
+                        val (hasNewBridge, newBridge) = getNewBridgeOrNull()
+
+                        if (hasNewBridge) {
+                            lightweightSettingsStorage.setTorBridge(newBridge)
+                            getStarted(ConnectionType.ONION, true)
+                        } else {
+                            when (torService.isProxyRunning) {
+                                true -> getStarted(ConnectionType.ONION, false)
+                                false -> {
+                                    // TODO: maybe unreachable code
+                                    torService.switchTorPrefState(true)
+                                    observeTorEvents()
+                                }
                             }
                         }
+
                     }
 
                     ConnectionType.I2P -> {
@@ -88,6 +99,14 @@ class LoginConnectionSettingsFragment : ConnectionSettingsBaseFragment() {
                 true
             }
         }
+    }
+
+    private fun getNewBridgeOrNull(): Pair<Boolean, String?> {
+        val newBridge = torBridgePreference?.editTextView?.text.toString().takeIf { it.isNotBlank() }
+        val oldBridge = lightweightSettingsStorage.getTorBridge().takeIf { !it.isNullOrBlank() }
+        Timber.d("New bridge: $newBridge\nOld bridge: $oldBridge\nHas new bridge: ${oldBridge != newBridge}")
+
+        return (newBridge != oldBridge) to newBridge
     }
 
     private var torHidden = false
@@ -143,11 +162,32 @@ class LoginConnectionSettingsFragment : ConnectionSettingsBaseFragment() {
         }
     }
 
-    private fun getStarted(connectionType: ConnectionType) {
+    private fun getStarted(connectionType: ConnectionType, needRestart: Boolean = false) {
         if (connectionType != ConnectionType.ONION && torService.isProxyRunning) {
             torService.switchTorPrefState(false)
         }
         lightweightSettingsStorage.setConnectionType(connectionType)
-        loginViewModel.handle(LoginAction.OnGetStarted(resetLoginConfig = false))
+        loginViewModel.handle(LoginAction.OnGetStarted(resetLoginConfig = false, neededRestartBeforeContinue = needRestart))
     }
+
+    // TODO: move it to parent class
+    // TODO: add warning about restart
+    private fun restartApp(connectionType: ConnectionType) {
+        Timber.d("restart app")
+        if (connectionType != ConnectionType.ONION && torService.isProxyRunning) {
+            torService.switchTorPrefState(false)
+        }
+        lightweightSettingsStorage.setConnectionType(connectionType)
+        Timber.d("switch connection type: ${lightweightSettingsStorage.getConnectionType()}")
+
+        startActivity(
+                Intent.makeRestartActivityTask(
+                        requireContext().packageManager.getLaunchIntentForPackage(
+                                requireContext().packageName
+                        )!!.component
+                )!!
+        )
+        Runtime.getRuntime().exit(0)
+    }
+
 }

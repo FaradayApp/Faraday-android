@@ -27,6 +27,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.lifecycleScope
 import com.airbnb.mvrx.viewModel
 import com.airbnb.mvrx.withState
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -39,6 +40,8 @@ import im.vector.app.core.extensions.validateBackPressed
 import im.vector.app.core.platform.VectorBaseActivity
 import im.vector.app.core.utils.openUrlInChromeCustomTab
 import im.vector.app.databinding.ActivityLoginBinding
+import im.vector.app.features.MainActivity.Companion.restartApp
+import im.vector.app.features.MainActivityArgs
 import im.vector.app.features.analytics.plan.MobileScreen
 import im.vector.app.features.home.HomeActivity
 import im.vector.app.features.login.terms.LoginTermsFragment
@@ -46,11 +49,13 @@ import im.vector.app.features.login.terms.LoginTermsFragmentArgument
 import im.vector.app.features.onboarding.AuthenticationDescription
 import im.vector.app.features.pin.UnlockedActivity
 import im.vector.lib.core.utils.compat.getParcelableExtraCompat
+import kotlinx.coroutines.launch
 import org.matrix.android.sdk.api.auth.SSOAction
 import org.matrix.android.sdk.api.auth.registration.FlowResult
 import org.matrix.android.sdk.api.auth.registration.Stage
 import org.matrix.android.sdk.api.auth.toLocalizedLoginTerms
 import org.matrix.android.sdk.api.extensions.tryOrNull
+import timber.log.Timber
 
 /**
  * The LoginActivity manages the fragment navigation and also display the loading View.
@@ -101,6 +106,12 @@ open class LoginActivity : VectorBaseActivity<ActivityLoginBinding>(), UnlockedA
         val loginConfig = intent.getParcelableExtraCompat<LoginConfig?>(EXTRA_CONFIG)
         if (isFirstCreation()) {
             loginViewModel.handle(LoginAction.InitWith(loginConfig))
+        }
+
+        lifecycleScope.launch {
+            if(loginViewModel.awaitState().skipConnectionSettings) {
+                Timber.d("needed skip action")
+            }
         }
     }
 
@@ -214,6 +225,8 @@ open class LoginActivity : VectorBaseActivity<ActivityLoginBinding>(), UnlockedA
             is LoginViewEvents.Loading ->
                 // This is handled by the Fragments
                 Unit
+
+            LoginViewEvents.RestartApp -> restartApp(this, MainActivityArgs())
         }
     }
 

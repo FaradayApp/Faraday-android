@@ -3042,6 +3042,7 @@
     <string name="settings_i2p_network">Сеть I2P (скоро будет)</string>
     <string name="settings_use_proxy_server">Использовать прокси-сервер</string>
     <string name="settings_connection_method_password_hint">Пароль</string>
+    <string name="settings_connection_method_bridge_hint">Свой мост</string>
     <string name="settings_connection_method_user_name_hint">Имя пользователя</string>
     <string name="settings_connection_method_user_proxy_type">Тип прокси</string>
     <string name="settings_connection_method_authentication">Аутентификация</string>

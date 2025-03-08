@@ -92,6 +92,10 @@ open class ConnectionSettingsBaseFragment : ScPreferenceFragment(), MavericksVie
         findPreference<VectorSwitchPreference>(VectorPreferences.SETTINGS_USE_PROXY_SERVER_KEY)
     }
 
+    protected val torBridgePreference by lazy {
+        findPreference<TextInputPreference>(VectorPreferences.SETTINGS_TOR_BRIDGE_KEY)
+    }
+
     @CallSuper
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(preferenceXmlRes)
@@ -115,12 +119,19 @@ open class ConnectionSettingsBaseFragment : ScPreferenceFragment(), MavericksVie
             pref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
                 newValue as ConnectionType
                 when (newValue) {
-                    ConnectionType.MATRIX -> {}
+                    ConnectionType.MATRIX -> {
+                        switchUseProxyPreference?.isVisible = true
+                    }
                     ConnectionType.ONION, ConnectionType.I2P -> {
                         switchUseProxyPreference?.isChecked = false
                         toggleProxyFieldsVisibility(isVisible = false)
+                        torBridgePreference?.isVisible = true
                     }
                 }
+                if (newValue != ConnectionType.ONION)
+                    torBridgePreference?.isVisible = false
+                if (newValue != ConnectionType.MATRIX)
+                    switchUseProxyPreference?.isVisible = false
                 true
             }
         }
@@ -139,6 +150,10 @@ open class ConnectionSettingsBaseFragment : ScPreferenceFragment(), MavericksVie
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             })
+        }
+        torBridgePreference?.let { pref ->
+            lightweightSettingsStorage.getTorBridge()?.let { pref.text = it }
+            pref.isVisible = connectionTypePreference?.type == ConnectionType.ONION
         }
         proxyHostPreference?.let { pref ->
             proxySetupViews.add(pref)
@@ -162,6 +177,7 @@ open class ConnectionSettingsBaseFragment : ScPreferenceFragment(), MavericksVie
         }
         switchUseProxyPreference?.let { pref ->
             pref.isIconFrameHidden = true
+            pref.isVisible = connectionTypePreference?.type == ConnectionType.MATRIX
             pref.isChecked =
                     lightweightSettingsStorage.getProxyType() != ProxyType.NO_PROXY && lightweightSettingsStorage.getConnectionType() == ConnectionType.MATRIX
             toggleProxyFieldsVisibility(pref.isChecked)
@@ -176,6 +192,7 @@ open class ConnectionSettingsBaseFragment : ScPreferenceFragment(), MavericksVie
                 true
             }
         }
+
     }
 
     protected open fun observeTorEvents() {}

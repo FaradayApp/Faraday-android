@@ -21,10 +21,12 @@ import androidx.core.app.NotificationCompat
 import io.matthewnelson.topl_service.TorServiceController
 import io.matthewnelson.topl_service.lifecycle.BackgroundManager
 import io.matthewnelson.topl_service.notification.ServiceNotification
+import org.matrix.android.sdk.api.settings.LightweightSettingsStorage
 import javax.inject.Inject
 
 class TorSetup @Inject constructor(
-        private val torEventBroadcaster: TorEventBroadcaster
+        private val torEventBroadcaster: TorEventBroadcaster,
+        private val lightweightSettingsStorage: LightweightSettingsStorage
 ) {
     fun generateTorServiceControllerBuilder(application: Application): TorServiceController.Builder {
         return TorServiceController.Builder(
@@ -32,7 +34,10 @@ class TorSetup @Inject constructor(
                 generateTorServiceNotificationBuilder(),
                 generateBackgroundManagerPolicy(),
                 1,
-                TorSettings(context = application),
+                TorSettings(
+                        context = application,
+                        lightweightSettingsStorage.getTorBridge().takeIf { !it.isNullOrBlank() }
+                ),
                 "geoip",
                 "geoip6"
         )

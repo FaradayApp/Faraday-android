@@ -44,4 +44,6 @@ interface LightweightSettingsStorage {
     fun getNukePassword(): String?
     fun getLastSessionHash(): String?
     fun setLastSessionHash(hash: String?)
+    fun setTorBridge(bridge: String?)
+    fun getTorBridge(): String?
 }

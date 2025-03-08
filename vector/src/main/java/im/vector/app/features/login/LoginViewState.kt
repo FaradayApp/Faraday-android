@@ -56,7 +56,10 @@ data class LoginViewState(
         // Supported types for the login. We cannot use a sealed class for LoginType because it is not serializable
         @PersistState
         val loginModeSupportedTypes: List<String> = emptyList(),
-        val knownCustomHomeServersUrls: List<String> = emptyList()
+        val knownCustomHomeServersUrls: List<String> = emptyList(),
+
+        @PersistState
+        val skipConnectionSettings: Boolean = false
 ) : MavericksState {
 
     fun isLoading(): Boolean {

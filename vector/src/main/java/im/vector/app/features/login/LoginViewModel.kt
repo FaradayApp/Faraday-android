@@ -140,6 +140,13 @@ class LoginViewModel @AssistedInject constructor(
     }
 
     private fun handleOnGetStarted(action: LoginAction.OnGetStarted) {
+        if (action.neededRestartBeforeContinue) {
+            setState {
+                copy(skipConnectionSettings = true)
+            }
+            _viewEvents.post(LoginViewEvents.RestartApp)
+        }
+
         if (action.resetLoginConfig) {
             loginConfig = null
         }

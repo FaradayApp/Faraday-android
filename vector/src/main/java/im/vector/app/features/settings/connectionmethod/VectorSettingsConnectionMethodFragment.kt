@@ -117,9 +117,18 @@ class VectorSettingsConnectionMethodFragment : ConnectionSettingsBaseFragment() 
                     }
 
                     ConnectionType.ONION -> {
-                        when (torService.isProxyRunning) {
-                            true -> Toast.makeText(context, getString(R.string.tor_connection_is_already_established), Toast.LENGTH_SHORT).show()
-                            false -> restartApp(ConnectionType.ONION)
+                        val newBridge = torBridgePreference?.editTextView?.text.toString().takeIf { !it.isNullOrBlank() }
+                        val oldBridge = lightweightSettingsStorage.getTorBridge().takeIf { !it.isNullOrBlank() }
+                        val hasNewBridge = newBridge != oldBridge
+
+                        if(torService.isProxyRunning && hasNewBridge) {
+                            Toast.makeText(context, getString(R.string.tor_connection_is_already_established), Toast.LENGTH_SHORT).show()
+                            restartApp(ConnectionType.ONION)
+                        } else {
+                            if (hasNewBridge) {
+                                lightweightSettingsStorage.setTorBridge(newBridge)
+                            }
+                            restartApp(ConnectionType.ONION)
                         }
                     }
 
@@ -172,10 +181,6 @@ class VectorSettingsConnectionMethodFragment : ConnectionSettingsBaseFragment() 
         lightweightSettingsStorage.setConnectionType(connectionType)
         Timber.d("switch connection type: ${lightweightSettingsStorage.getConnectionType()}")
         displayLoadingView()
-//        val activity = requireActivity()
-//        val intent = HomeActivity.newIntent(activity, firstStartMainActivity = true)
-//        startActivity(intent)
-//        activity.finish()
 
         startActivity(
                 Intent.makeRestartActivityTask(
@@ -185,7 +190,6 @@ class VectorSettingsConnectionMethodFragment : ConnectionSettingsBaseFragment() 
                 )!!
         )
         Runtime.getRuntime().exit(0)
-
     }
 
     private fun displayLoadingView() {

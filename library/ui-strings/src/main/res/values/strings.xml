@@ -3580,6 +3580,7 @@
     <string name="settings_onion_routing_protocol">Onion routing protocol</string>
     <string name="settings_i2p_network">I2P network (coming soon)</string>
     <string name="settings_use_proxy_server">Use proxy server</string>
+    <string name="settings_connection_method_bridge_hint">Your bridge</string>
     <string name="settings_connection_method_password_hint">Password</string>
     <string name="settings_connection_method_user_name_hint">User name</string>
     <string name="settings_connection_method_user_proxy_type">Proxy type</string>

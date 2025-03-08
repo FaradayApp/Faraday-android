@@ -24,11 +24,13 @@ import io.matthewnelson.topl_service_base.ApplicationDefaultTorSettings
  * bridges below get blocked in a certain country. Other than that current settings work just fine.
  */
 
-class TorSettings(private val context: Context) : ApplicationDefaultTorSettings() {
+class TorSettings(
+        private val context: Context,
+        bridge: String?
+) : ApplicationDefaultTorSettings() {
     override val connectionPadding = ConnectionPadding.OFF
 
-    override val customTorrc: String = "Bridge obfs4 88.198.45.215:444 E356D47DBB5D8655BD312C49B2EC61F20FFA1D8D cert=q9ZrxFpo8LkS4N6fWjmfSYQ0VHab9xFKOsJfoZ2rB0LtY58IsjIv/qrexKM6pqccpyRCXA iat-mode=0\n" +
-            "Bridge obfs4 88.87.54.244:8080 2B2F89D522FB81758453A5DF9D30B330A706647B cert=jYWrkq03zXjbiqoyIUPZMpgXt2fNCA87sIyP0yvebHAqcF5I/ixawQE9ymlA0ZZvvqdnPQ iat-mode=0\n" +
+    override val customTorrc: String = (bridge?.let { if(it.endsWith("\n")) it else it + "\n" } ?: DEFAULT_BRIDGE) +
             "UseBridges 1\n" +
             "ClientTransportPlugin obfs4 exec ${context.applicationInfo.nativeLibraryDir}/libobfs4proxy.so"
 
@@ -83,4 +85,9 @@ class TorSettings(private val context: Context) : ApplicationDefaultTorSettings(
     )
     override val useSocks5: Boolean = DEFAULT__USE_SOCKS5
     override val virtualAddressNetwork: String = "10.192.0.2/10"
+
+    companion object {
+        const val DEFAULT_BRIDGE = "Bridge obfs4 88.198.45.215:444 E356D47DBB5D8655BD312C49B2EC61F20FFA1D8D cert=q9ZrxFpo8LkS4N6fWjmfSYQ0VHab9xFKOsJfoZ2rB0LtY58IsjIv/qrexKM6pqccpyRCXA iat-mode=0\n" +
+                "Bridge obfs4 88.87.54.244:8080 2B2F89D522FB81758453A5DF9D30B330A706647B cert=jYWrkq03zXjbiqoyIUPZMpgXt2fNCA87sIyP0yvebHAqcF5I/ixawQE9ymlA0ZZvvqdnPQ iat-mode=0\n"
+    }
 }

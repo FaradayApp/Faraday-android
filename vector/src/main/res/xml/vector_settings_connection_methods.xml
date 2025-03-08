@@ -44,6 +44,14 @@
 
     </im.vector.app.core.preference.VectorPreferenceCategory>
 
+<!--    <im.vector.app.core.preference.VectorPreferenceCategory android:key="SETTINGS_TOR_BRIDGES_SETUP">-->
+    <im.vector.app.core.preference.TextInputPreference
+        android:key="SETTINGS_TOR_BRIDGE_KEY"
+        app:hint="@string/settings_connection_method_bridge_hint" />
+<!--    </im.vector.app.core.preference.VectorPreferenceCategory>-->
+
+
+
     <im.vector.app.core.preference.ButtonPreference android:key="SETTINGS_CONNECTION_SAVE_KEY" />
 
 </androidx.preference.PreferenceScreen>

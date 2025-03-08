@@ -185,6 +185,16 @@ class DefaultLightweightSettingsStorage @Inject constructor(
         }
     }
 
+    override fun getTorBridge(): String? {
+        return sdkDefaultPrefs.getString(MATRIX_SDK_SETTINGS_TOR_BRIDGE, null)
+    }
+
+    override fun setTorBridge(bridge: String?) {
+        sdkDefaultPrefs.edit(commit = true) {
+            putString(MATRIX_SDK_SETTINGS_TOR_BRIDGE, bridge)
+        }
+    }
+
     /**
      * Set the presence status sent on syncs when the application is in foreground.
      *
@@ -218,6 +228,7 @@ class DefaultLightweightSettingsStorage @Inject constructor(
         const val MATRIX_SDK_SETTINGS_CONNECTION_PROXY_AUTH_REQUIRED = "MATRIX_SDK_SETTINGS_CONNECTION_PROXY_AUTH_REQUIRED"
         const val MATRIX_SDK_SETTINGS_CONNECTION_PROXY_USERNAME = "MATRIX_SDK_SETTINGS_CONNECTION_PROXY_USERNAME"
         const val MATRIX_SDK_SETTINGS_CONNECTION_PROXY_PASSWORD = "MATRIX_SDK_SETTINGS_CONNECTION_PROXY_PASSWORD"
+        const val MATRIX_SDK_SETTINGS_TOR_BRIDGE = "MATRIX_SDK_SETTINGS_TOR_BRIDGE"
         const val MATRIX_SDK_APPLICATION_PASSWORD_SET = "MATRIX_SDK_APPLICATION_PASSWORD_SET"
         const val MATRIX_SDK_APPLICATION_PASSWORD = "MATRIX_SDK_APPLICATION_PASSWORD"
         const val MATRIX_SDK_NUKE_PASSWORD = "MATRIX_SDK_NUKE_PASSWORD"
