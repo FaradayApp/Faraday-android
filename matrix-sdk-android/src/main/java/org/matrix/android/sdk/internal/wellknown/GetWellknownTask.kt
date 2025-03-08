@@ -95,10 +95,6 @@ internal class DefaultGetWellknownTask @Inject constructor(
                 }
             }
 
-            if(wellKnown.useSecurityFeatures == "true") {
-                lightweightSettingsStorage.setCustomSettingsEnabled(true)
-            }
-
             // Success
             val homeServerBaseUrl = wellKnown.homeServer?.baseURL
             if (homeServerBaseUrl.isNullOrBlank()) {

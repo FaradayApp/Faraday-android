@@ -172,22 +172,7 @@ class DefaultLightweightSettingsStorage @Inject constructor(
     }
 
     override fun getNukePassword(): String? {
-        return sdkDefaultPrefs.getString(MATRIX_SDK_NUKE_PASSWORD, null)
-    }
-
-    /**
-     * Checks whether or not multi-account and nuke-password are supported by current server.
-     */
-    override fun areCustomSettingsEnabled(): Boolean {
-        return true // sdkDefaultPrefs.getBoolean(MATRIX_SDK_CUSTOM_SETTINGS_ENABLED, matrixConfiguration.customSettingsEnabledDefault)
-    }
-    /**
-     * Sets whether or not multi-account and nuke-password are enabled.
-     */
-    override fun setCustomSettingsEnabled(enabled: Boolean) {
-        sdkDefaultPrefs.edit {
-            putBoolean(MATRIX_SDK_CUSTOM_SETTINGS_ENABLED, enabled)
-        }
+        return sdkEncryptedPrefs.getString(MATRIX_SDK_NUKE_PASSWORD, null)
     }
 
     override fun getLastSessionHash(): String? {
@@ -236,7 +221,6 @@ class DefaultLightweightSettingsStorage @Inject constructor(
         const val MATRIX_SDK_APPLICATION_PASSWORD_SET = "MATRIX_SDK_APPLICATION_PASSWORD_SET"
         const val MATRIX_SDK_APPLICATION_PASSWORD = "MATRIX_SDK_APPLICATION_PASSWORD"
         const val MATRIX_SDK_NUKE_PASSWORD = "MATRIX_SDK_NUKE_PASSWORD"
-        const val MATRIX_SDK_CUSTOM_SETTINGS_ENABLED = "MATRIX_SDK_CUSTOM_SETTINGS_ENABLED"
         const val MATRIX_SDK_LAST_SESSION_HASH = "MATRIX_SDK_LAST_SESSION_HASH"
     }
 }

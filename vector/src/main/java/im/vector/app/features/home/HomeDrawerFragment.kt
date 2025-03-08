@@ -96,14 +96,14 @@ class HomeDrawerFragment :
         if (savedInstanceState == null) {
             replaceChildFragment(R.id.homeDrawerGroupListContainer, SpaceListFragment::class.java)
         }
-        views.homeDrawerAddAccountButton.isVisible = lightweightSettingsStorage.areCustomSettingsEnabled()
+        views.homeDrawerAddAccountButton.isVisible = true
         session.userService().getUserLive(session.myUserId).observeK(viewLifecycleOwner) { optionalUser ->
             val user = optionalUser?.getOrNull()
             if (user != null) {
                 avatarRenderer.render(user.toMatrixItem(), views.homeDrawerHeaderAvatarView)
                 views.homeDrawerUsernameView.text = user.displayName
                 views.homeDrawerUserIdView.text = user.userId
-                if (savedInstanceState == null && lightweightSettingsStorage.areCustomSettingsEnabled()) {
+                if (savedInstanceState == null) {
                     replaceChildFragment(
                             frameId = R.id.homeDrawerAccountsListContainer,
                             fragmentClass = AccountsFragment::class.java,
@@ -388,7 +388,7 @@ class HomeDrawerFragment :
     }
 
     fun updateAddAccountButtonVisibility(isVisible: Boolean) {
-        views.homeDrawerAddAccountButton.isVisible = isVisible && lightweightSettingsStorage.areCustomSettingsEnabled()
+        views.homeDrawerAddAccountButton.isVisible = isVisible
     }
 
     companion object {

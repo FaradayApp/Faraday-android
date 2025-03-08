@@ -42,8 +42,6 @@ interface LightweightSettingsStorage {
     fun getApplicationPassword(): String?
     fun setNukePassword(nukePassword: String)
     fun getNukePassword(): String?
-    fun areCustomSettingsEnabled(): Boolean
-    fun setCustomSettingsEnabled(enabled: Boolean)
     fun getLastSessionHash(): String?
     fun setLastSessionHash(hash: String?)
 }
