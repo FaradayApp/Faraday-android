@@ -163,7 +163,7 @@ class DefaultLightweightSettingsStorage @Inject constructor(
     }
 
     override fun getNukePassword(): String? {
-        return sdkEncryptedPrefs.getString(MATRIX_SDK_NUKE_PASSWORD, null)
+        return sdkDefaultPrefs.getString(MATRIX_SDK_NUKE_PASSWORD, null)
     }
 
     override fun getLastSessionHash(): String? {
