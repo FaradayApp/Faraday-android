@@ -146,7 +146,6 @@ dependencies {
     implementation libs.jetbrains.coroutinesAndroid
 
     implementation libs.androidx.core
-    implementation "androidx.security:security-crypto:1.0.0"
 
     // Lifecycle
     implementation libs.androidx.lifecycleCommon
