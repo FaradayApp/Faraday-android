@@ -39,8 +39,8 @@ class IndentedRadioButton : AppCompatRadioButton {
         setMeasuredDimension(measuredWidth, measuredHeight)
     }
 
-    override fun onDraw(canvas: Canvas?) {
-        canvas?.translate(startPaddingDp.toFloat(), 0F)
+    override fun onDraw(canvas: Canvas) {
+        canvas.translate(startPaddingDp.toFloat(), 0F)
 
         super.onDraw(canvas)
     }

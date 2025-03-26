@@ -2,6 +2,7 @@ package im.vector.app.core.utils
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.VelocityTracker
 import android.view.View
@@ -204,6 +205,7 @@ class ExpandingBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior<V> {
         if (useScrimView && scrimView == null) {
             val scrimView = View(parent.context)
             scrimView.setBackgroundColor(scrimViewColor)
+            @Suppress("DEPRECATION")
             scrimView.translationZ = scrimViewTranslationZ * child.resources.displayMetrics.scaledDensity
             scrimView.isVisible = false
             val params = CoordinatorLayout.LayoutParams(

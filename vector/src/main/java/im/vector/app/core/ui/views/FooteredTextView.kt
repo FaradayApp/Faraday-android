@@ -23,7 +23,7 @@ class FooteredTextView @JvmOverloads constructor(
         setMeasuredDimension(updatedMeasures.first, updatedMeasures.second)
     }
 
-    override fun onDraw(canvas: Canvas?) {
+    override fun onDraw(canvas: Canvas) {
         updateFooterOnPreDraw(canvas)
 
         super.onDraw(canvas)

@@ -20,6 +20,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+//import androidx.compose.foundation.layout.fillMaxSize
+//import androidx.compose.foundation.lazy.LazyColumn
+//import androidx.compose.ui.Modifier
 import androidx.core.view.isVisible
 import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
@@ -53,7 +56,13 @@ class AccountsFragment :
 
     private val viewModel: AccountsViewModel by fragmentViewModel()
     override fun getBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentAccountsListBinding {
-        return FragmentAccountsListBinding.inflate(inflater, container, false)
+        return FragmentAccountsListBinding.inflate(inflater, container, false)//.apply {
+//            groupListView.setContent {
+//                LazyColumn(Modifier.fillMaxSize()) {
+//
+//                }
+//            }
+//        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

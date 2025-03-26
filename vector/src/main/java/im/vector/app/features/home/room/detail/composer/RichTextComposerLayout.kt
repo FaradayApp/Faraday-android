@@ -110,6 +110,7 @@ internal class RichTextComposerLayout @JvmOverloads constructor(
             val lineColor = context.theme.obtainStyledAttributes(typedData.data, intArrayOf(R.attr.vctr_content_quaternary))
                     .getColor(0, 0)
             strokeColor = ColorStateList.valueOf(lineColor)
+            @Suppress("DEPRECATION")
             strokeWidth = 1 * resources.displayMetrics.scaledDensity
             fillColor = ColorStateList.valueOf(Color.TRANSPARENT)
             val cornerSize = resources.getDimensionPixelSize(R.dimen.rich_text_composer_corner_radius_single_line)

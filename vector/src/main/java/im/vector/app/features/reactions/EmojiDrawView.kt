@@ -16,6 +16,7 @@
 
 package im.vector.app.features.reactions
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -26,6 +27,7 @@ import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.View
 import kotlin.math.abs
+import androidx.core.graphics.withSave
 
 /**
  * We want to use a custom view for rendering an emoji.
@@ -43,16 +45,17 @@ class EmojiDrawView @JvmOverloads constructor(
 
     var emoji: String? = null
 
-    override fun onDraw(canvas: Canvas?) {
+    @SuppressLint("UnclosedTrace")
+    override fun onDraw(canvas: Canvas) {
         Trace.beginSection("EmojiDrawView.onDraw")
         super.onDraw(canvas)
-        canvas?.save()
-        val space = abs((width - emojiSize) / 2f)
-        if (mLayout != null) {
-            canvas?.translate(space, space)
-            mLayout!!.draw(canvas)
+        canvas.withSave {
+            val space = abs((width - emojiSize) / 2f)
+            if (mLayout != null) {
+                this.translate(space, space)
+                mLayout!!.draw(this)
+            }
         }
-        canvas?.restore()
         Trace.endSection()
     }
 
