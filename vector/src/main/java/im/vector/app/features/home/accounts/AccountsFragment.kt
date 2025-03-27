@@ -105,8 +105,8 @@ class AccountsFragment :
             if (state.accountItems != null) {
                 views.stateView.state = StateView.State.Content
                 views.groupListView.isVisible = state.accountItems.isNotEmpty()
-                (parentFragment as? HomeDrawerFragment)
-                        ?.updateAddAccountButtonVisibility(isVisible = state.accountItems.size < 4)
+//                (parentFragment as? HomeDrawerFragment)
+//                        ?.updateAddAccountButtonVisibility(isVisible = state.accountItems.size < 4)
             } else {
                 views.stateView.state = StateView.State.Loading
                 return@onEach
@@ -162,8 +162,8 @@ class AccountsFragment :
         if (state.accountItems != null) {
             views.stateView.state = StateView.State.Content
             views.groupListView.isVisible = state.accountItems.isNotEmpty()
-            (parentFragment as? HomeDrawerFragment)
-                    ?.updateAddAccountButtonVisibility(isVisible = state.accountItems.size < 4)
+//            (parentFragment as? HomeDrawerFragment)
+//                    ?.updateAddAccountButtonVisibility(isVisible = state.accountItems.size < 4)
         } else {
             views.stateView.state = StateView.State.Loading
             return@withState
