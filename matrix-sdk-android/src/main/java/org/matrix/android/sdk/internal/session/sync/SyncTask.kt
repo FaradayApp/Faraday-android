@@ -124,7 +124,7 @@ internal class DefaultSyncTask @Inject constructor(
 
         val requestParams = HashMap<String, String>()
         var timeout = 0L
-        val token = if (isMainAccount) syncTokenStore.getLastToken(userId) else null
+        val token = syncTokenStore.getLastToken(userId)
         if (token != null) {
             requestParams["since"] = token
             timeout = params.timeout
@@ -145,7 +145,7 @@ internal class DefaultSyncTask @Inject constructor(
                     params = hashMapOf(
                             "timeout" to (6000L).toString(),
                             "set_presence" to SyncPresence.Online.value
-                    ),
+                    ).apply { token?.let { set("since", it) } },
                     readTimeOut = readTimeOut
             ).also { syncResponseHandler.handleResponse(userId, it, null, afterPause = true, null) }
         }
