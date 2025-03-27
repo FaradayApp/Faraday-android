@@ -47,7 +47,7 @@ internal interface GetWellknownTask : Task<GetWellknownTask.Params, WellknownRes
              */
             val domain: String,
             val homeServerConnectionConfig: HomeServerConnectionConfig,
-            val timeout: Long = 1_000 // 1s
+            val timeout: Long = 5_000 // 1s
     )
 }
 
