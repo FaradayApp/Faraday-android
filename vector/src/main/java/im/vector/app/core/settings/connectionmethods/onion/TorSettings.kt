@@ -87,7 +87,7 @@ class TorSettings(
     override val virtualAddressNetwork: String = "10.192.0.2/10"
 
     companion object {
-        const val DEFAULT_BRIDGE = "Bridge obfs4 88.198.45.215:444 E356D47DBB5D8655BD312C49B2EC61F20FFA1D8D cert=q9ZrxFpo8LkS4N6fWjmfSYQ0VHab9xFKOsJfoZ2rB0LtY58IsjIv/qrexKM6pqccpyRCXA iat-mode=0\n" +
-                "Bridge obfs4 88.87.54.244:8080 2B2F89D522FB81758453A5DF9D30B330A706647B cert=jYWrkq03zXjbiqoyIUPZMpgXt2fNCA87sIyP0yvebHAqcF5I/ixawQE9ymlA0ZZvvqdnPQ iat-mode=0\n"
+        const val DEFAULT_BRIDGE = "Bridge obfs4 148.113.143.234:25867 68F624D67A535B2A3142D3998AB154CF5BC84D9F cert=CMBfjJFDqv+m2mi6awIf4lMoEGqMzWD3+B1RVPZVA3q46dLOJScDBoemEa7VZAZhWgE4Mg iat-mode=0\n" +
+                "Bridge obfs4 46.226.105.186:29142 DB7E624A8576BA57498CFF094A0898E87E92BC26 cert=Xm0+CRB5l5KO26ZHFHEX/1v2+I0mJIfzYj6tvN+iwCZtPdyrjIX2NJgzZrwIBj2sExjTBA iat-mode=0\n"
     }
 }

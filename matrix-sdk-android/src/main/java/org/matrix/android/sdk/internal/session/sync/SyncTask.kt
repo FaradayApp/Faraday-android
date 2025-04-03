@@ -64,6 +64,19 @@ internal interface SyncTask : Task<SyncTask.Params, SyncResponse> {
     )
 }
 
+internal fun SyncResponse.getUnreadCount(): Int {
+    var unreadCount = 0
+    rooms?.let {
+        it.join.values.forEach { room ->
+            room.unreadNotifications?.notificationCount?.let { unreadCount += it }
+        }
+        it.leave.values.forEach { room ->
+            room.unreadNotifications?.notificationCount?.let { unreadCount += it }
+        }
+    }
+    return unreadCount
+}
+
 internal class DefaultSyncTask @Inject constructor(
         private val syncAPI: MultiServerSyncApi,
         private val authenticationService: AuthenticationService, // TODO: add user to params and make sequential task execution for each account
@@ -95,17 +108,9 @@ internal class DefaultSyncTask @Inject constructor(
             var mainAccount: LocalAccount? = null
             accounts.forEach { account ->
                 if (account.userId != userId) {
-                    val response = doSync(account.userId, MultiServerCredentials(account.token, account.homeServerUrl), params)
+                    val response = doSync(account.userId, MultiServerCredentials(account.token, account.homeServerUrl), params, accountUnreadCount = account.unreadCount)
                     Timber.d("sync response multiserver: $response")
-                    var unreadCount = 0
-                    response.rooms?.let {
-                        it.join.values.forEach { room ->
-                            room.unreadNotifications?.notificationCount?.let { unreadCount += it }
-                        }
-                        it.leave.values.forEach { room ->
-                            room.unreadNotifications?.notificationCount?.let { unreadCount += it }
-                        }
-                    }
+                    val unreadCount = response.getUnreadCount()
 
                     if (account.unreadCount != unreadCount) {
                         Timber.d("updating unread count")
@@ -119,7 +124,13 @@ internal class DefaultSyncTask @Inject constructor(
         }
     }
 
-    private suspend fun doSync(userId: String, credentials: MultiServerCredentials, params: SyncTask.Params, isMainAccount: Boolean = false): SyncResponse {
+    private suspend fun doSync(
+            userId: String,
+            credentials: MultiServerCredentials,
+            params: SyncTask.Params,
+            isMainAccount: Boolean = false,
+            accountUnreadCount: Int? = null
+    ): SyncResponse {
         Timber.tag(loggerTag.value).i("Sync task started on Thread: ${Thread.currentThread().name}")
 
         val requestParams = HashMap<String, String>()
@@ -147,7 +158,11 @@ internal class DefaultSyncTask @Inject constructor(
                             "set_presence" to SyncPresence.Online.value
                     ).apply { token?.let { set("since", it) } },
                     readTimeOut = readTimeOut
-            ).also { syncResponseHandler.handleResponse(userId, it, null, afterPause = true, null) }
+            ).also {
+                Timber.d("updating need test: ${it.getUnreadCount()} - $accountUnreadCount")
+                if (it.getUnreadCount() != accountUnreadCount)
+                    syncResponseHandler.handleResponse(userId, it, null, afterPause = true, null)
+            }
         }
         val isInitialSync = token == null
         if (isInitialSync) {
@@ -160,7 +175,6 @@ internal class DefaultSyncTask @Inject constructor(
             )
             syncRequestStateTracker.startRoot(InitialSyncStep.ImportingAccount, 100)
         }
-
 
         var syncResponseToReturn: SyncResponse? = null
         val syncStatisticsData = SyncStatisticsData(isInitialSync, params.afterPause)
