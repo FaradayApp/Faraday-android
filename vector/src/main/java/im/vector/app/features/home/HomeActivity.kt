@@ -27,6 +27,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.MenuItem.SHOW_AS_ACTION_ALWAYS
 import android.view.View
+import android.widget.Toast
 import androidx.core.view.GravityCompat
 import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
@@ -110,6 +111,7 @@ import org.matrix.android.sdk.api.session.sync.initialSyncStrategy
 import org.matrix.android.sdk.api.settings.LightweightSettingsStorage
 import org.matrix.android.sdk.api.util.MatrixItem
 import timber.log.Timber
+import java.util.UUID
 import javax.inject.Inject
 
 @Parcelize
@@ -117,7 +119,10 @@ data class HomeActivityArgs(
         val clearNotification: Boolean,
         val authenticationDescription: AuthenticationDescription? = null,
         val hasExistingSession: Boolean = false,
-        val inviteNotificationRoomId: String? = null
+        val inviteNotificationRoomId: String? = null,
+        val changeAccount: Boolean = false,
+        val userId: String? = null,
+        val uuid: String? = null,
 ) : Parcelable
 
 @AndroidEntryPoint
@@ -154,6 +159,7 @@ class HomeActivity :
     @Inject lateinit var disclaimerDialog: DisclaimerDialog
     @Inject lateinit var notificationPermissionManager: NotificationPermissionManager
     @Inject lateinit var lightweightSettingsStorage: LightweightSettingsStorage
+    @Inject lateinit var changeAccountUseCase: ChangeAccountUseCase
 
     private var isNewAppLayoutEnabled: Boolean = false // delete once old app layout is removed
     private var isAllLoaded: Boolean = false
@@ -588,7 +594,9 @@ class HomeActivity :
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
+        setIntent(intent)
         val parcelableExtra = intent?.getParcelableExtraCompat<HomeActivityArgs>(Mavericks.KEY_ARG)
+        Timber.d("get new intent: $parcelableExtra")
         if (parcelableExtra?.clearNotification == true) {
             notificationDrawerManager.clearAllEvents()
         }
@@ -598,6 +606,26 @@ class HomeActivity :
                     ?.createPermalink(parcelableExtra.inviteNotificationRoomId)?.let {
                         navigator.openMatrixToBottomSheet(this, it, OriginOfMatrixTo.NOTIFICATION)
                     }
+        }
+        if (parcelableExtra?.changeAccount == true && parcelableExtra.userId != null) {
+            lifecycleScope.launch {
+                Toast.makeText(this@HomeActivity, R.string.load_before_change_account, Toast.LENGTH_SHORT).show()
+                while (!isAllLoaded) {}
+                Timber.d("restart by notification")
+                changeAccountUseCase.execute(parcelableExtra.userId)
+            }.invokeOnCompletion {
+                val restartIntent = newIntent(
+                        context = this,
+                        firstStartMainActivity = true,
+                        clearNotification = false,
+                        authenticationDescription = parcelableExtra.authenticationDescription,
+                        inviteNotificationRoomId = parcelableExtra.inviteNotificationRoomId,
+                        changeAccount = false,
+                        userId = null
+                )
+                startActivity(restartIntent)
+                this.finish()
+            }
         }
         handleIntent(intent)
     }
@@ -829,19 +857,28 @@ class HomeActivity :
                 clearNotification: Boolean = false,
                 authenticationDescription: AuthenticationDescription? = null,
                 existingSession: Boolean = false,
-                inviteNotificationRoomId: String? = null
+                inviteNotificationRoomId: String? = null,
+                changeAccount: Boolean = false,
+                userId: String? = null,
         ): Intent {
             val args = HomeActivityArgs(
                     clearNotification = clearNotification,
                     authenticationDescription = authenticationDescription,
                     hasExistingSession = existingSession,
-                    inviteNotificationRoomId = inviteNotificationRoomId
+                    inviteNotificationRoomId = inviteNotificationRoomId,
+                    changeAccount = changeAccount,
+                    userId = userId,
+                    uuid = UUID.randomUUID().toString(),
             )
 
             val intent = Intent(context, HomeActivity::class.java)
                     .apply {
                         putExtra(Mavericks.KEY_ARG, args)
                     }
+
+            // TODO: NEED TO REMOVE THIS AFTER DEBUG
+            val testIntent = intent.getParcelableExtraCompat<HomeActivityArgs>(Mavericks.KEY_ARG)
+            Timber.d("created intent $testIntent")
 
             return if (firstStartMainActivity) {
                 MainActivity.getIntentWithNextIntent(context, intent)

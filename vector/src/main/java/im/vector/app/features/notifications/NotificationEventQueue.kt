@@ -26,8 +26,20 @@ data class NotificationEventQueue(
          * Acts as a notification debouncer to stop already dismissed push notifications from
          * displaying again when the /sync response is delayed.
          */
-        private val seenEventIds: CircularCache<String>
+        private val seenEventIds: CircularCache<String>,
+        private val seenUserIds: CircularCache<String>,
 ) {
+
+    private fun isSeenEarlier(notifiableEvent: NotifiableEvent) =
+            seenEventIds.contains(notifiableEvent.eventId) &&
+                    (notifiableEvent.userId?.let { seenUserIds.contains(it) } ?: true)
+
+    private fun seenCacheAdd(notifiableEvent: NotifiableEvent) {
+        seenEventIds.put(notifiableEvent.eventId)
+        notifiableEvent.userId?.let {
+            seenUserIds.put(it)
+        }
+    }
 
     fun markRedacted(eventIds: List<String>) {
         eventIds.forEach { redactedId ->
@@ -87,22 +99,33 @@ data class NotificationEventQueue(
                 // Replace the existing notification with the new content
                 replace(replace = edited, with = notifiableEvent)
             }
-            seenEventIds.contains(notifiableEvent.eventId) -> {
+            isSeenEarlier(notifiableEvent) -> {
                 // we've already seen the event, lets skip
                 Timber.d("onNotifiableEventReceived(): skipping event, already seen")
             }
             else -> {
-                seenEventIds.put(notifiableEvent.eventId)
+                seenCacheAdd(notifiableEvent)
                 queue.add(notifiableEvent)
             }
         }
     }
 
     private fun findExistingById(notifiableEvent: NotifiableEvent): NotifiableEvent? {
+        if (notifiableEvent is SimpleNotifiableEvent && notifiableEvent.type == POSSIBLE_SIDE_SERVER_MESSAGE)
+            return queue.firstOrNull { it.eventId == notifiableEvent.eventId && it.userId == notifiableEvent.userId}
+
         return queue.firstOrNull { it.eventId == notifiableEvent.eventId }
     }
 
     private fun findEdited(notifiableEvent: NotifiableEvent): NotifiableEvent? {
+        if (notifiableEvent is SimpleNotifiableEvent && notifiableEvent.type == POSSIBLE_SIDE_SERVER_MESSAGE)
+            return notifiableEvent.editedEventId?.let { editedId ->
+                queue.firstOrNull {
+                    it.userId == notifiableEvent.userId &&
+                    (it.eventId == editedId || it.editedEventId == editedId)
+                }
+            }
+
         return notifiableEvent.editedEventId?.let { editedId ->
             queue.firstOrNull {
                 it.eventId == editedId || it.editedEventId == editedId

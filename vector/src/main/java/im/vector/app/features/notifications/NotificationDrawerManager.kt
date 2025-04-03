@@ -76,7 +76,11 @@ class NotificationDrawerManager @Inject constructor(
 
     private fun createInitialNotificationState(): NotificationState {
         val queuedEvents = notificationEventPersistence.loadEvents(factory = { rawEvents ->
-            NotificationEventQueue(rawEvents.toMutableList(), seenEventIds = CircularCache.create(cacheSize = 25))
+            NotificationEventQueue(
+                    rawEvents.toMutableList(),
+                    seenEventIds = CircularCache.create(cacheSize = 25),
+                    seenUserIds = CircularCache.create(cacheSize = 25)
+            )
         })
         val renderedEvents = queuedEvents.rawEvents().map { ProcessedEvent(ProcessedEvent.Type.KEEP, it) }.toMutableList()
         return NotificationState(queuedEvents, renderedEvents)
@@ -193,7 +197,8 @@ class NotificationDrawerManager @Inject constructor(
         }
 
         if (notificationState.hasAlreadyRendered(eventsToRender)) {
-            Timber.d("Skipping notification update due to event list not changing")
+            Timber.d("Skipping notification update due to event list not changing:\n" +
+                    "$eventsToRender")
         } else {
             notificationState.clearAndAddRenderedEvents(eventsToRender)
             val session = currentSession ?: return

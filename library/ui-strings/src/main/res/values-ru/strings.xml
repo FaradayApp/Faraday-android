@@ -2511,6 +2511,7 @@
     <string name="action_try_it_out">Попробуйте</string>
     <string name="action_disable">Отключить</string>
     <string name="initial_sync_request_reason_unignored_users">- Несколько пользователей больше не игнорируются</string>
+    <string name="load_before_change_account">Аккаунт сменится после загрузки данных</string>
     <string name="initial_sync_request_title">Начальный запрос на синхронизацию</string>
     <string name="threads_beta_enable_notice_message">Обсуждения помогают поддерживать и легко отслеживать тематику бесед.%sВключение обсуждений обновит приложение. Может занять продолжительное время.</string>
     <string name="live_location_sharing_notification_description">Идёт отправка местоположения</string>
@@ -2616,6 +2617,7 @@
     <string name="create_room_action_go">Вперёд</string>
     <string name="ftue_auth_new_password_subtitle">Убедитесь, что он состоит из 8 или более символов.</string>
     <string name="font_size_section_manually">Выбрать вручную</string>
+    <string name="new_notification">Новое уведомление, нажмите для просмотра</string>
     <string name="font_size_title">Выбор размера шрифта</string>
     <plurals name="room_removed_messages">
         <item quantity="one">Удалено %d сообщение</item>

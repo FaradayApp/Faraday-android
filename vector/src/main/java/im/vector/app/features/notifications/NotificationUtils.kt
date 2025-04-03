@@ -117,6 +117,9 @@ class NotificationUtils @Inject constructor(
         fun openSystemSettingsForCallCategory(fragment: Fragment) {
             startNotificationChannelSettingsIntent(fragment, CALL_NOTIFICATION_CHANNEL_ID)
         }
+
+        private val baseSmallIcon: Int
+            get() = R.drawable.ic_chat
     }
 
     private val notificationManager = NotificationManagerCompat.from(context)
@@ -157,55 +160,59 @@ class NotificationUtils @Inject constructor(
          * Default notification importance: shows everywhere, makes noise, but does not visually
          * intrude.
          */
-        notificationManager.createNotificationChannel(NotificationChannel(
-                NOISY_NOTIFICATION_CHANNEL_ID,
-                stringProvider.getString(R.string.notification_noisy_notifications).ifEmpty { "Noisy notifications" },
-                NotificationManager.IMPORTANCE_DEFAULT
-        )
-                .apply {
-                    description = stringProvider.getString(R.string.notification_noisy_notifications)
-                    enableVibration(true)
-                    enableLights(true)
-                    lightColor = accentColor
-                })
+        notificationManager.createNotificationChannel(
+                NotificationChannel(
+                        NOISY_NOTIFICATION_CHANNEL_ID,
+                        stringProvider.getString(R.string.notification_noisy_notifications).ifEmpty { "Noisy notifications" },
+                        NotificationManager.IMPORTANCE_DEFAULT
+                )
+                        .apply {
+                            description = stringProvider.getString(R.string.notification_noisy_notifications)
+                            enableVibration(true)
+                            enableLights(true)
+                            lightColor = accentColor
+                        })
 
         /**
          * Low notification importance: shows everywhere, but is not intrusive.
          */
-        notificationManager.createNotificationChannel(NotificationChannel(
-                SILENT_NOTIFICATION_CHANNEL_ID,
-                stringProvider.getString(R.string.notification_silent_notifications).ifEmpty { "Silent notifications" },
-                NotificationManager.IMPORTANCE_LOW
-        )
-                .apply {
-                    description = stringProvider.getString(R.string.notification_silent_notifications)
-                    setSound(null, null)
-                    enableLights(true)
-                    lightColor = accentColor
-                })
+        notificationManager.createNotificationChannel(
+                NotificationChannel(
+                        SILENT_NOTIFICATION_CHANNEL_ID,
+                        stringProvider.getString(R.string.notification_silent_notifications).ifEmpty { "Silent notifications" },
+                        NotificationManager.IMPORTANCE_LOW
+                )
+                        .apply {
+                            description = stringProvider.getString(R.string.notification_silent_notifications)
+                            setSound(null, null)
+                            enableLights(true)
+                            lightColor = accentColor
+                        })
 
-        notificationManager.createNotificationChannel(NotificationChannel(
-                LISTENING_FOR_EVENTS_NOTIFICATION_CHANNEL_ID,
-                stringProvider.getString(R.string.notification_listening_for_events).ifEmpty { "Listening for events" },
-                NotificationManager.IMPORTANCE_MIN
-        )
-                .apply {
-                    description = stringProvider.getString(R.string.notification_listening_for_events)
-                    setSound(null, null)
-                    setShowBadge(false)
-                })
+        notificationManager.createNotificationChannel(
+                NotificationChannel(
+                        LISTENING_FOR_EVENTS_NOTIFICATION_CHANNEL_ID,
+                        stringProvider.getString(R.string.notification_listening_for_events).ifEmpty { "Listening for events" },
+                        NotificationManager.IMPORTANCE_MIN
+                )
+                        .apply {
+                            description = stringProvider.getString(R.string.notification_listening_for_events)
+                            setSound(null, null)
+                            setShowBadge(false)
+                        })
 
-        notificationManager.createNotificationChannel(NotificationChannel(
-                CALL_NOTIFICATION_CHANNEL_ID,
-                stringProvider.getString(R.string.call).ifEmpty { "Call" },
-                NotificationManager.IMPORTANCE_HIGH
-        )
-                .apply {
-                    description = stringProvider.getString(R.string.call)
-                    setSound(null, null)
-                    enableLights(true)
-                    lightColor = accentColor
-                })
+        notificationManager.createNotificationChannel(
+                NotificationChannel(
+                        CALL_NOTIFICATION_CHANNEL_ID,
+                        stringProvider.getString(R.string.call).ifEmpty { "Call" },
+                        NotificationManager.IMPORTANCE_HIGH
+                )
+                        .apply {
+                            description = stringProvider.getString(R.string.call)
+                            setSound(null, null)
+                            enableLights(true)
+                            lightColor = accentColor
+                        })
     }
 
     fun getChannel(channelId: String): NotificationChannel? {
@@ -588,8 +595,6 @@ class NotificationUtils @Inject constructor(
             else -> buildOpenRoomIntent(roomInfo.userId, roomInfo.roomId)
         }
 
-        val smallIcon = R.drawable.ic_status_bar_sc
-
         val channelID = if (roomInfo.shouldBing) NOISY_NOTIFICATION_CHANNEL_ID else SILENT_NOTIFICATION_CHANNEL_ID
         return NotificationCompat.Builder(context, channelID)
                 .setOnlyAlertOnce(vectorPreferences.onlyAlertOnce() || roomInfo.isUpdated)
@@ -616,7 +621,7 @@ class NotificationUtils @Inject constructor(
                 .setGroup(stringProvider.getString(R.string.app_name))
                 // In order to avoid notification making sound twice (due to the summary notification)
                 .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_ALL)
-                .setSmallIcon(smallIcon)
+                .setSmallIcon(baseSmallIcon)
                 // Set primary color (important for Wear 2.0 Notifications).
                 .setColor(accentColor)
                 // Sets priority for 25 and below. For 26 and above, 'priority' is deprecated for
@@ -703,8 +708,6 @@ class NotificationUtils @Inject constructor(
     ): Notification {
         val accentColor = ContextCompat.getColor(context, R.color.notification_accent_color)
         // Build the pending intent for when the notification is clicked
-        val smallIcon = R.drawable.ic_status_bar_sc
-
         val channelID = if (inviteNotifiableEvent.noisy) NOISY_NOTIFICATION_CHANNEL_ID else SILENT_NOTIFICATION_CHANNEL_ID
 
         return NotificationCompat.Builder(context, channelID)
@@ -713,7 +716,7 @@ class NotificationUtils @Inject constructor(
                 .setContentText(inviteNotifiableEvent.description)
                 .setGroup(stringProvider.getString(R.string.app_name))
                 .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_ALL)
-                .setSmallIcon(smallIcon)
+                .setSmallIcon(baseSmallIcon)
                 .setColor(accentColor)
                 .apply {
                     val roomId = inviteNotifiableEvent.roomId
@@ -783,8 +786,6 @@ class NotificationUtils @Inject constructor(
     ): Notification {
         val accentColor = ContextCompat.getColor(context, R.color.notification_accent_color)
         // Build the pending intent for when the notification is clicked
-        val smallIcon = R.drawable.ic_status_bar_sc
-
         val channelID = if (simpleNotifiableEvent.noisy) NOISY_NOTIFICATION_CHANNEL_ID else SILENT_NOTIFICATION_CHANNEL_ID
 
         return NotificationCompat.Builder(context, channelID)
@@ -793,27 +794,55 @@ class NotificationUtils @Inject constructor(
                 .setContentText(simpleNotifiableEvent.description)
                 .setGroup(stringProvider.getString(R.string.app_name))
                 .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_ALL)
-                .setSmallIcon(smallIcon)
+                .setSmallIcon(baseSmallIcon)
                 .setColor(accentColor)
                 .setAutoCancel(true)
                 .apply {
-                    val contentIntent = HomeActivity.newIntent(context, firstStartMainActivity = true)
-                    contentIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    // pending intent get reused by system, this will mess up the extra params, so put unique info to avoid that
-                    contentIntent.data = createIgnoredUri(simpleNotifiableEvent.eventId)
-                    setContentIntent(PendingIntent.getActivity(context, 0, contentIntent, PendingIntentCompat.FLAG_IMMUTABLE))
+                    if (simpleNotifiableEvent.type == POSSIBLE_SIDE_SERVER_MESSAGE
+                            && simpleNotifiableEvent.userId != null) {
+                        Timber.d("create intent to change account to ${simpleNotifiableEvent.userId}")
+                        val contentIntent = HomeActivity.newIntent(
+                                context, firstStartMainActivity = false,
+                                changeAccount = true,
+                                userId = simpleNotifiableEvent.userId
+                        )
+                        setContentTitle(simpleNotifiableEvent.userId.removePrefix("@").split(":")[0])
+                        contentIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        contentIntent.data = createIgnoredUri(simpleNotifiableEvent.eventId)
+                        setContentIntent(PendingIntent.getActivity(context, 0, contentIntent, PendingIntentCompat.FLAG_IMMUTABLE))
 
-                    if (simpleNotifiableEvent.noisy) {
-                        // Compat
-                        priority = NotificationCompat.PRIORITY_DEFAULT
-                        vectorPreferences.getNotificationRingTone()?.let {
-                            setSound(it)
+                        if (simpleNotifiableEvent.noisy) {
+                            // Compat
+                            priority = NotificationCompat.PRIORITY_DEFAULT
+                            vectorPreferences.getNotificationRingTone()?.let {
+                                setSound(it)
+                            }
+                            setLights(accentColor, 500, 500)
+                        } else {
+                            priority = NotificationCompat.PRIORITY_LOW
                         }
-                        setLights(accentColor, 500, 500)
+                        setAutoCancel(true)
                     } else {
-                        priority = NotificationCompat.PRIORITY_LOW
+                        val contentIntent = HomeActivity.newIntent(
+                                context, firstStartMainActivity = true,
+                        )
+                        contentIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        // pending intent get reused by system, this will mess up the extra params, so put unique info to avoid that
+                        contentIntent.data = createIgnoredUri(simpleNotifiableEvent.eventId)
+                        setContentIntent(PendingIntent.getActivity(context, 0, contentIntent, PendingIntentCompat.FLAG_IMMUTABLE))
+
+                        if (simpleNotifiableEvent.noisy) {
+                            // Compat
+                            priority = NotificationCompat.PRIORITY_DEFAULT
+                            vectorPreferences.getNotificationRingTone()?.let {
+                                setSound(it)
+                            }
+                            setLights(accentColor, 500, 500)
+                        } else {
+                            priority = NotificationCompat.PRIORITY_LOW
+                        }
+                        setAutoCancel(true)
                     }
-                    setAutoCancel(true)
                 }
                 .build()
     }
@@ -943,8 +972,6 @@ class NotificationUtils @Inject constructor(
             lastMessageTimestamp: Long
     ): Notification {
         val accentColor = ContextCompat.getColor(context, R.color.notification_accent_color)
-        val smallIcon = R.drawable.ic_status_bar_sc
-
         return NotificationCompat.Builder(context, if (noisy) NOISY_NOTIFICATION_CHANNEL_ID else SILENT_NOTIFICATION_CHANNEL_ID)
                 .setOnlyAlertOnce(true)
                 // used in compat < N, after summary is built based on child notifications
@@ -952,7 +979,7 @@ class NotificationUtils @Inject constructor(
                 .setStyle(style)
                 .setContentTitle(stringProvider.getString(R.string.app_name))
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-                .setSmallIcon(smallIcon)
+                .setSmallIcon(baseSmallIcon)
                 // set content text to support devices running API level < 24
                 .setContentText(compatSummary)
                 .setGroup(stringProvider.getString(R.string.app_name))
@@ -1033,7 +1060,7 @@ class NotificationUtils @Inject constructor(
                 NotificationCompat.Builder(context, NOISY_NOTIFICATION_CHANNEL_ID)
                         .setContentTitle(stringProvider.getString(R.string.app_name))
                         .setContentText(stringProvider.getString(R.string.settings_troubleshoot_test_push_notification_content))
-                        .setSmallIcon(R.drawable.ic_status_bar_sc)
+                        .setSmallIcon(baseSmallIcon)
                         .setLargeIcon(getBitmap(context, R.drawable.element_logo_sc))
                         .setColor(ContextCompat.getColor(context, R.color.notification_accent_color))
                         .setPriority(NotificationCompat.PRIORITY_MAX)

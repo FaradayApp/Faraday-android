@@ -76,7 +76,7 @@ class NotifiableEventResolver @Inject constructor(
         val timelineEvent = session.getRoom(roomID)?.getTimelineEvent(eventId)
 
         if (timelineEvent == null) {
-            Timber.d("Cannot get timelineEvent")
+            Timber.d("Cannot get timelineEvent with: $userId / $event")
 
             return when {
                 event.supportsNotification() -> {
@@ -96,7 +96,25 @@ class NotifiableEventResolver @Inject constructor(
                             userId = userId
                     )
                 }
-                else -> null
+                else -> {
+                    if (event.isEncrypted() && userId != null) {
+                        SimpleNotifiableEvent(
+                                userId = userId,
+                                eventId = eventId,
+                                editedEventId = null,
+                                noisy = isNoisy,
+                                title = userId,
+                                description = stringProvider.getString(R.string.new_notification),
+                                type = POSSIBLE_SIDE_SERVER_MESSAGE,
+                                timestamp = event.originServerTs ?: 0,
+                                soundName = null,
+                                canBeReplaced = false,
+                        )
+                    } else {
+                        Timber.d("cannot resolve event: $event")
+                        null
+                    }
+                }
             }
         }
 

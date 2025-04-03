@@ -194,6 +194,7 @@
     <string name="initial_sync_start_importing_account_invited_rooms">Initial sync:\nImporting invited rooms</string>
     <string name="initial_sync_start_importing_account_left_rooms">Initial sync:\nImporting left rooms</string>
     <string name="initial_sync_start_importing_account_data">Initial sync:\nImporting account data</string>
+    <string name="load_before_change_account">The account will be changed after the data is uploaded</string>
 
     <string name="initial_sync_request_title">Initial sync request</string>
     <string name="initial_sync_request_content">${app_name} needs to perform a clear cache to be up to date, for the following reason:\n%s\n\nNote that this action will restart the app and it may take some time.</string>
@@ -1341,6 +1342,7 @@
     <string name="notification_inline_reply_failed">** Failed to send - please open room</string>
     <string name="notification_ticker_text_dm">%1$s: %2$s</string>
     <string name="notification_ticker_text_group">%1$s: %2$s %3$s</string>
+    <string name="new_notification">New notification, touch to see</string>
 
     <!-- text size selection -->
     <string name="font_size_title">Choose font size</string>

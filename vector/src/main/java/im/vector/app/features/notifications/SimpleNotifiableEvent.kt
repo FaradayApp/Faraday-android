@@ -29,3 +29,5 @@ data class SimpleNotifiableEvent(
         override val isRedacted: Boolean = false,
         override val isUpdated: Boolean = false
 ) : NotifiableEvent
+
+const val POSSIBLE_SIDE_SERVER_MESSAGE = "possible_side_server_message"

@@ -44,7 +44,12 @@ class PushRuleTriggerListener @Inject constructor(
                 val notifiableEvents = createNotifiableEvents(pushEvents, session, userId)
                 notificationDrawerManager.updateEvents { queuedEvents ->
                     notifiableEvents.forEach { notifiableEvent ->
-                        queuedEvents.onNotifiableEventReceived(notifiableEvent)
+                        if (notifiableEvent is SimpleNotifiableEvent && notifiableEvent.type == POSSIBLE_SIDE_SERVER_MESSAGE) {
+                            if (notifiableEvent.userId != session.myUserId)
+                                queuedEvents.onNotifiableEventReceived(notifiableEvent)
+                        } else {
+                            queuedEvents.onNotifiableEventReceived(notifiableEvent)
+                        }
                     }
                     queuedEvents.syncRoomEvents(roomsLeft = pushEvents.roomsLeft, roomsJoined = pushEvents.roomsJoined)
                     queuedEvents.markRedacted(pushEvents.redactedEventIds)
@@ -54,6 +59,7 @@ class PushRuleTriggerListener @Inject constructor(
     }
 
     private suspend fun createNotifiableEvents(pushEvents: PushEvents, session: Session, userId: String): List<NotifiableEvent> {
+        val accounts = mutableSetOf<String>()
         return pushEvents.matchedEvents.mapNotNull { (event, pushRule) ->
             Timber.d("Push rule match for event ${event.eventId}")
             val action = pushRule.getActions().toNotificationAction()
@@ -63,6 +69,10 @@ class PushRuleTriggerListener @Inject constructor(
                 Timber.d("Matched push rule is set to not notify")
                 null
             }
+        }.filter {
+            if (it is SimpleNotifiableEvent && it.type == POSSIBLE_SIDE_SERVER_MESSAGE && it.userId != null) {
+                accounts.add(it.userId!!)
+            } else true
         }
     }
 
