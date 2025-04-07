@@ -1,0 +1,6 @@
+- Improved notification performance
+- Improved the internal structure of the code
+- The authorization system has been fixed
+- Updated tor
+- Added support for custom tor bridges
+- Updated SDK version
