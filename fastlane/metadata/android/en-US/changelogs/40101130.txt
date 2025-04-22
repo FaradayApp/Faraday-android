@@ -1,0 +1,4 @@
+- Updated Element core
+- Improved UI
+- Improved support for modern Matrix specifications
+- Fixed bugs

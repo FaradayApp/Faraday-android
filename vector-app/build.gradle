@@ -154,7 +154,7 @@ android {
         renderscriptTargetApi 24
         renderscriptSupportModeEnabled true
 
-        versionCode 40101050
+        versionCode 40101130
         versionName "1.6.36.sc86"
 
         // Generate a random app task affinity
@@ -330,7 +330,7 @@ android {
 
         fdroid {
             dimension "store"
-            versionName "1.1.9"
+            versionName "1.2.1"
             buildConfigField "String", "SHORT_FLAVOR_DESCRIPTION", "\"F\""
             buildConfigField "String", "FLAVOR_DESCRIPTION", "\"FDroid\""
             isDefault = true
