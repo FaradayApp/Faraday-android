@@ -120,6 +120,10 @@ allprojects {
         kotlinOptions.allWarningsAsErrors = project.getProperties().getOrDefault("allWarningsAsErrors", "true").toBoolean()
     }
 
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions.jvmTarget = versions.jvmTarget
+    }
+
     // Fix "Java heap space" issue
     tasks.withType(org.jlleitschuh.gradle.ktlint.tasks.BaseKtLintCheckTask).configureEach {
         it.workerMaxHeapSize.set("2G")
