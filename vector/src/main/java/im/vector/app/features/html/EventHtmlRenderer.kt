@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 /*
@@ -45,11 +36,12 @@ import com.bumptech.glide.load.resource.bitmap.TransformationUtils
 import com.bumptech.glide.request.target.Target
 import im.vector.app.R
 import im.vector.app.core.di.ActiveSessionHolder
+import im.vector.app.core.resources.BuildMeta
 import im.vector.app.core.resources.ColorProvider
 import im.vector.app.core.utils.DimensionConverter
 import im.vector.app.features.settings.VectorPreferences
 import im.vector.app.features.themes.ThemeUtils
-import io.element.android.wysiwyg.spans.InlineCodeSpan
+import io.element.android.wysiwyg.view.spans.InlineCodeSpan
 import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.Markwon
 import io.noties.markwon.MarkwonPlugin
@@ -86,6 +78,7 @@ class EventHtmlRenderer @Inject constructor(
         private val dimensionConverter: DimensionConverter,
         private val vectorPreferences: VectorPreferences,
         private val activeSessionHolder: ActiveSessionHolder,
+        private val buildMeta: BuildMeta,
 ) {
 
     companion object {
@@ -100,9 +93,9 @@ class EventHtmlRenderer @Inject constructor(
     }
 
     private fun resolveCodeBlockBackground() =
-            ThemeUtils.getColor(context, R.attr.code_block_bg_color)
+            ThemeUtils.getColor(context, im.vector.lib.ui.styles.R.attr.code_block_bg_color)
     private fun resolveQuoteBarColor() =
-            ThemeUtils.getColor(context, R.attr.quote_bar_color)
+            ThemeUtils.getColor(context, im.vector.lib.ui.styles.R.attr.quote_bar_color)
 
     private var codeBlockBackground: Int = resolveCodeBlockBackground()
     private var quoteBarColor: Int = resolveQuoteBarColor()
@@ -381,8 +374,17 @@ class EventHtmlRenderer @Inject constructor(
             val parsed = markwon.parse(text)
             renderAndProcess(parsed, postProcessors)
         } catch (failure: Throwable) {
-            Timber.v("Fail to render $text to html")
+            Timber.v(failure, "Fail to render text ${text.redactIfNotDebug()} to html")
             text
+        }
+    }
+
+    // Do not leak message content
+    fun String.redactIfNotDebug(): String {
+        return if (buildMeta.isInternalBuild) {
+            this
+        } else {
+            "(REDACTED)"
         }
     }
 
@@ -394,7 +396,7 @@ class EventHtmlRenderer @Inject constructor(
         return try {
             renderAndProcess(node, postProcessors)
         } catch (failure: Throwable) {
-            Timber.v("Fail to render $node to html")
+            Timber.v(failure, "Fail to render node ${node.toString().redactIfNotDebug()} to html")
             return null
         }
     }

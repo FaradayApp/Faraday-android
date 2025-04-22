@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.crypto.recover
@@ -25,7 +16,6 @@ import com.nulabinc.zxcvbn.Zxcvbn
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import im.vector.app.R
 import im.vector.app.core.di.MavericksAssistedViewModelFactory
 import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.error.ErrorFormatter
@@ -37,6 +27,7 @@ import im.vector.app.features.raw.wellknown.SecureBackupMethod
 import im.vector.app.features.raw.wellknown.getElementWellknown
 import im.vector.app.features.raw.wellknown.isSecureBackupRequired
 import im.vector.app.features.raw.wellknown.secureBackupMethod
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.matrix.android.sdk.api.auth.UIABaseAuth
@@ -46,16 +37,15 @@ import org.matrix.android.sdk.api.auth.data.LoginFlowTypes
 import org.matrix.android.sdk.api.auth.registration.RegistrationFlowResponse
 import org.matrix.android.sdk.api.auth.registration.nextUncompletedStage
 import org.matrix.android.sdk.api.extensions.orFalse
+import org.matrix.android.sdk.api.extensions.tryOrNull
 import org.matrix.android.sdk.api.failure.Failure
 import org.matrix.android.sdk.api.raw.RawService
 import org.matrix.android.sdk.api.session.Session
-import org.matrix.android.sdk.api.session.crypto.keysbackup.KeysBackupLastVersionResult
-import org.matrix.android.sdk.api.session.crypto.keysbackup.KeysVersionResult
 import org.matrix.android.sdk.api.session.crypto.keysbackup.extractCurveKeyFromRecoveryKey
 import org.matrix.android.sdk.api.session.crypto.keysbackup.toKeysVersionResult
 import org.matrix.android.sdk.api.session.securestorage.RawBytesKeySpec
 import org.matrix.android.sdk.api.session.uia.DefaultBaseAuth
-import org.matrix.android.sdk.api.util.awaitCallback
+import timber.log.Timber
 import java.io.OutputStream
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resumeWithException
@@ -120,38 +110,47 @@ class BootstrapSharedViewModel @AssistedInject constructor(
                 }
             }
             SetupMode.NORMAL -> {
-                // need to check if user have an existing keybackup
-                setState {
-                    copy(step = BootstrapStep.CheckingMigration)
-                }
+                checkMigration()
+            }
+        }
+    }
 
-                // We need to check if there is an existing backup
-                viewModelScope.launch(Dispatchers.IO) {
-                    val version = awaitCallback<KeysBackupLastVersionResult> {
-                        session.cryptoService().keysBackupService().getCurrentVersion(it)
-                    }.toKeysVersionResult()
-                    if (version == null) {
-                        // we just resume plain bootstrap
-                        doesKeyBackupExist = false
+    private fun checkMigration() {
+        // need to check if user have an existing keybackup
+        setState {
+            copy(step = BootstrapStep.CheckingMigration)
+        }
+
+        // We need to check if there is an existing backup
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val version = tryOrNull { session.cryptoService().keysBackupService().getCurrentVersion() }?.toKeysVersionResult()
+                if (version == null) {
+                    // we just resume plain bootstrap
+                    doesKeyBackupExist = false
+                    setState {
+                        copy(step = BootstrapStep.FirstForm(keyBackUpExist = doesKeyBackupExist, methods = this.secureBackupMethod))
+                    }
+                } else {
+                    // we need to get existing backup passphrase/key and convert to SSSS
+                    val keyVersion = tryOrNull {
+                        session.cryptoService().keysBackupService().getVersion(version.version)
+                    }
+                    if (keyVersion == null) {
+                        // strange case... just finish?
+                        _viewEvents.post(BootstrapViewEvents.Dismiss(false))
+                    } else {
+                        doesKeyBackupExist = true
+                        isBackupCreatedFromPassphrase = keyVersion.getAuthDataAsMegolmBackupAuthData()?.privateKeySalt != null
                         setState {
                             copy(step = BootstrapStep.FirstForm(keyBackUpExist = doesKeyBackupExist, methods = this.secureBackupMethod))
                         }
-                    } else {
-                        // we need to get existing backup passphrase/key and convert to SSSS
-                        val keyVersion = awaitCallback<KeysVersionResult?> {
-                            session.cryptoService().keysBackupService().getVersion(version.version, it)
-                        }
-                        if (keyVersion == null) {
-                            // strange case... just finish?
-                            _viewEvents.post(BootstrapViewEvents.Dismiss(false))
-                        } else {
-                            doesKeyBackupExist = true
-                            isBackupCreatedFromPassphrase = keyVersion.getAuthDataAsMegolmBackupAuthData()?.privateKeySalt != null
-                            setState {
-                                copy(step = BootstrapStep.FirstForm(keyBackUpExist = doesKeyBackupExist, methods = this.secureBackupMethod))
-                            }
-                        }
                     }
+                }
+            } catch (failure: Throwable) {
+                Timber.e(failure, "Error while checking key backup")
+                setState {
+                    copy(step = BootstrapStep.Error(failure))
                 }
             }
         }
@@ -208,7 +207,7 @@ class BootstrapSharedViewModel @AssistedInject constructor(
                 } else {
                     setState {
                         copy(
-                                passphraseConfirmMatch = Fail(Throwable(stringProvider.getString(R.string.passphrase_passphrase_does_not_match)))
+                                passphraseConfirmMatch = Fail(Throwable(stringProvider.getString(CommonStrings.passphrase_passphrase_does_not_match)))
                         )
                     }
                 }
@@ -269,8 +268,11 @@ class BootstrapSharedViewModel @AssistedInject constructor(
             BootstrapActions.ReAuthCancelled -> {
                 pendingAuthHandler.reAuthCancelled()
                 setState {
-                    copy(step = BootstrapStep.AccountReAuth(stringProvider.getString(R.string.authentication_error)))
+                    copy(step = BootstrapStep.AccountReAuth(stringProvider.getString(CommonStrings.authentication_error)))
                 }
+            }
+            BootstrapActions.Retry -> {
+                checkMigration()
             }
         }
     }
@@ -453,7 +455,7 @@ class BootstrapSharedViewModel @AssistedInject constructor(
                         // it's a bad password / auth
                         setState {
                             copy(
-                                    step = BootstrapStep.AccountReAuth(stringProvider.getString(R.string.auth_invalid_login_param))
+                                    step = BootstrapStep.AccountReAuth(stringProvider.getString(CommonStrings.auth_invalid_login_param))
                             )
                         }
                     }
@@ -463,7 +465,7 @@ class BootstrapSharedViewModel @AssistedInject constructor(
                                 bootstrapResult.failure.httpCode == 401) {
                             // Ignore this error
                         } else {
-                            _viewEvents.post(BootstrapViewEvents.ModalError(bootstrapResult.error ?: stringProvider.getString(R.string.matrix_error)))
+                            _viewEvents.post(BootstrapViewEvents.ModalError(bootstrapResult.error ?: stringProvider.getString(CommonStrings.matrix_error)))
                             // Not sure
                             setState {
                                 copy(
@@ -572,16 +574,22 @@ class BootstrapSharedViewModel @AssistedInject constructor(
                     )
                 }
             }
+            is BootstrapStep.Error -> {
+                // do we let you cancel from here?
+                if (state.canLeave) {
+                    _viewEvents.post(BootstrapViewEvents.SkipBootstrap(state.passphrase != null))
+                }
+            }
         }
     }
 
     private fun BackupToQuadSMigrationTask.Result.Failure.toHumanReadable(): String {
         return when (this) {
-            is BackupToQuadSMigrationTask.Result.InvalidRecoverySecret -> stringProvider.getString(R.string.keys_backup_passphrase_error_decrypt)
+            is BackupToQuadSMigrationTask.Result.InvalidRecoverySecret -> stringProvider.getString(CommonStrings.keys_backup_passphrase_error_decrypt)
             is BackupToQuadSMigrationTask.Result.ErrorFailure -> errorFormatter.toHumanReadable(throwable)
             // is BackupToQuadSMigrationTask.Result.NoKeyBackupVersion,
             // is BackupToQuadSMigrationTask.Result.IllegalParams,
-            else -> stringProvider.getString(R.string.unexpected_error)
+            else -> stringProvider.getString(CommonStrings.unexpected_error)
         }
     }
 }

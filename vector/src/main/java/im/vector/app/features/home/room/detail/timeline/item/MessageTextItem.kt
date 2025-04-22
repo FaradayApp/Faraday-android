@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.detail.timeline.item
@@ -20,6 +11,7 @@ import android.text.Spanned
 import android.view.ViewStub
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.text.PrecomputedTextCompat
+import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import com.airbnb.epoxy.EpoxyAttribute
 import com.airbnb.epoxy.EpoxyModelClass
@@ -38,6 +30,7 @@ import im.vector.app.features.home.room.detail.timeline.url.PreviewUrlViewSc
 import im.vector.app.features.home.room.detail.timeline.view.ScMessageBubbleWrapView
 import im.vector.app.features.media.ImageContentRenderer
 import im.vector.lib.core.utils.epoxy.charsequence.EpoxyCharSequence
+import io.element.android.wysiwyg.EditorStyledTextView
 import io.noties.markwon.MarkwonPlugin
 import org.matrix.android.sdk.api.extensions.orFalse
 
@@ -99,8 +92,13 @@ abstract class MessageTextItem : AbsMessageItem<MessageTextItem.Holder>() {
         }
         holder.previewUrlView.delegate = previewUrlCallback
         holder.previewUrlView.renderMessageLayout(attributes.informationData.messageLayout)
-
-        val messageView: AppCompatTextView = holder.messageView(useRichTextEditorStyle) //if (useRichTextEditorStyle) holder.richMessageView else holder.plainMessageView
+        if (useRichTextEditorStyle) {
+            holder.plainMessageView?.isVisible = false
+        } else {
+            holder.richMessageView?.isVisible = false
+        }
+        val messageView: AppCompatTextView = holder.messageView(useRichTextEditorStyle)
+        messageView.isVisible = true
         if (useBigFont) {
             messageView.textSize = 44F
         } else {
@@ -150,13 +148,29 @@ abstract class MessageTextItem : AbsMessageItem<MessageTextItem.Holder>() {
         lateinit var previewUrlView: AbstractPreviewUrlView // set to either previewUrlViewElement or previewUrlViewSc by layout
         private val richMessageStub by bind<ViewStub>(R.id.richMessageTextViewStub)
         private val plainMessageStub by bind<ViewStub>(R.id.plainMessageTextViewStub)
-        val richMessageView: AppCompatTextView by lazy {
-            richMessageStub.inflate().findViewById(R.id.messageTextView)
+        var richMessageView: EditorStyledTextView? = null
+            private set
+        var plainMessageView: AppCompatTextView? = null
+            private set
+
+        fun requireRichMessageView(): AppCompatTextView {
+            val view = richMessageView ?: richMessageStub.inflate().findViewById<EditorStyledTextView>(R.id.messageTextView).also {
+                // Required to ensure that `inlineCodeBgHelper` and `codeBlockBgHelper` are initialized
+                it.updateStyle(
+                        styleConfig = it.styleConfig,
+                        mentionDisplayHandler = null,
+                )
+            }
+            richMessageView = view
+            return view
         }
-        val plainMessageView: AppCompatTextView by lazy {
-            plainMessageStub.inflate().findViewById(R.id.messageTextView)
+
+        fun requirePlainMessageView(): AppCompatTextView {
+            val view = plainMessageView ?: plainMessageStub.inflate().findViewById(R.id.messageTextView)
+            plainMessageView = view
+            return view
         }
-        fun messageView(useRichTextEditorStyle: Boolean) = if (useRichTextEditorStyle) richMessageView else plainMessageView
+        fun messageView(useRichTextEditorStyle: Boolean) = if (useRichTextEditorStyle) requireRichMessageView() else requirePlainMessageView()
     }
 
     inner class PreviewUrlViewUpdater : PreviewUrlRetriever.PreviewUrlRetrieverListener {

@@ -20,6 +20,8 @@ stringdir="$mydir/library/ui-strings/src/main/res"
 # Element -> SchildiChat
 find "$stringdir" -name strings.xml -exec \
     sed -i 's|Element|SchildiChat|g' '{}' \;
+find "$stringdir" -name strings.xml -exec \
+    sed -i 's|SchildiChat X|SchildiChat Next|g' '{}' \;
 # Restore Element where it makes sense
 find "$stringdir" -name strings.xml -exec \
     sed -i 's/SchildiChat \(Web\|iOS\|Desktop\)/Element \1/g' '{}' \;

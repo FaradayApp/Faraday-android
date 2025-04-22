@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.onboarding.ftueauth
@@ -21,6 +12,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.autofill.HintConstants
 import androidx.core.text.isDigitsOnly
 import androidx.core.view.isVisible
@@ -29,6 +21,8 @@ import com.airbnb.mvrx.withState
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.R
+import im.vector.app.config.Config
+import im.vector.app.config.SunsetConfig
 import im.vector.app.core.extensions.clearErrorOnChange
 import im.vector.app.core.extensions.content
 import im.vector.app.core.extensions.editText
@@ -41,6 +35,9 @@ import im.vector.app.core.extensions.realignPercentagesToParent
 import im.vector.app.core.extensions.setOnFocusLostListener
 import im.vector.app.core.extensions.setOnImeDoneListener
 import im.vector.app.core.extensions.toReducedUrl
+import im.vector.app.core.resources.BuildMeta
+import im.vector.app.core.utils.openApplicationStore
+import im.vector.app.core.utils.openUrlInChromeCustomTab
 import im.vector.app.databinding.FragmentFtueCombinedRegisterBinding
 import im.vector.app.features.login.LoginMode
 import im.vector.app.features.login.SSORedirectRouterActivity
@@ -50,6 +47,7 @@ import im.vector.app.features.onboarding.OnboardingAction
 import im.vector.app.features.onboarding.OnboardingAction.AuthenticateAction
 import im.vector.app.features.onboarding.OnboardingViewEvents
 import im.vector.app.features.onboarding.OnboardingViewState
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import org.matrix.android.sdk.api.auth.SSOAction
@@ -61,12 +59,14 @@ import org.matrix.android.sdk.api.failure.isRegistrationDisabled
 import org.matrix.android.sdk.api.failure.isUsernameInUse
 import org.matrix.android.sdk.api.failure.isWeakPassword
 import reactivecircus.flowbinding.android.widget.textChanges
+import javax.inject.Inject
 
 private const val MINIMUM_PASSWORD_LENGTH = 8
 
 @AndroidEntryPoint
 class FtueAuthCombinedRegisterFragment :
         AbstractSSOFtueAuthFragment<FragmentFtueCombinedRegisterBinding>() {
+    @Inject lateinit var buildMeta: BuildMeta
 
     override fun getBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentFtueCombinedRegisterBinding {
         return FragmentFtueCombinedRegisterBinding.inflate(inflater, container, false)
@@ -85,7 +85,7 @@ class FtueAuthCombinedRegisterFragment :
 
         views.createAccountInput.onTextChange(viewLifecycleOwner) {
             viewModel.handle(OnboardingAction.ResetSelectedRegistrationUserName)
-            views.createAccountEntryFooter.text = ""
+            views.createAccountEntryFooter.text = null
         }
 
         views.createAccountInput.setOnFocusLostListener(viewLifecycleOwner) {
@@ -119,20 +119,20 @@ class FtueAuthCombinedRegisterFragment :
             // This can be called by the IME action, so deal with empty cases
             var error = 0
             if (login.isEmpty()) {
-                views.createAccountInput.error = getString(R.string.error_empty_field_choose_user_name)
+                views.createAccountInput.error = getString(CommonStrings.error_empty_field_choose_user_name)
                 error++
             }
             if (state.isNumericOnlyUserIdForbidden() && login.isDigitsOnly()) {
-                views.createAccountInput.error = getString(R.string.error_forbidden_digits_only_username)
+                views.createAccountInput.error = getString(CommonStrings.error_forbidden_digits_only_username)
                 error++
             }
             if (password.isEmpty()) {
-                views.createAccountPasswordInput.error = getString(R.string.error_empty_field_choose_password)
+                views.createAccountPasswordInput.error = getString(CommonStrings.error_empty_field_choose_password)
                 error++
             }
 
             if (error == 0) {
-                val initialDeviceName = getString(R.string.login_default_session_public_name)
+                val initialDeviceName = getString(CommonStrings.login_default_session_public_name)
                 val registerAction = when {
                     login.isMatrixId() -> AuthenticateAction.RegisterWithMatrixId(login, password, initialDeviceName)
                     else -> AuthenticateAction.Register(login, password, initialDeviceName)
@@ -160,22 +160,22 @@ class FtueAuthCombinedRegisterFragment :
                 views.createAccountInput.error = errorFormatter.toHumanReadable(throwable)
             }
             throwable.isLoginEmailUnknown() -> {
-                views.createAccountInput.error = getString(R.string.login_login_with_email_error)
+                views.createAccountInput.error = getString(CommonStrings.login_login_with_email_error)
             }
             throwable.isInvalidPassword() && views.createAccountPasswordInput.hasSurroundingSpaces() -> {
-                views.createAccountPasswordInput.error = getString(R.string.auth_invalid_login_param_space_in_password)
+                views.createAccountPasswordInput.error = getString(CommonStrings.auth_invalid_login_param_space_in_password)
             }
             throwable.isWeakPassword() || throwable.isInvalidPassword() -> {
                 views.createAccountPasswordInput.error = errorFormatter.toHumanReadable(throwable)
             }
             throwable.isHomeserverUnavailable() -> {
-                views.createAccountInput.error = getString(R.string.login_error_homeserver_not_found)
+                views.createAccountInput.error = getString(CommonStrings.login_error_homeserver_not_found)
             }
             throwable.isRegistrationDisabled() -> {
                 MaterialAlertDialogBuilder(requireActivity())
-                        .setTitle(R.string.dialog_title_error)
-                        .setMessage(getString(R.string.login_registration_disabled))
-                        .setPositiveButton(R.string.ok, null)
+                        .setTitle(CommonStrings.dialog_title_error)
+                        .setMessage(getString(CommonStrings.login_registration_disabled))
+                        .setPositiveButton(CommonStrings.ok, null)
                         .show()
             }
             else -> {
@@ -190,7 +190,8 @@ class FtueAuthCombinedRegisterFragment :
     }
 
     private fun setupUi(state: OnboardingViewState) {
-        views.selectedServerName.text = state.selectedHomeserver.userFacingUrl.toReducedUrl()
+        val serverName = state.selectedHomeserver.userFacingUrl.toReducedUrl()
+        views.selectedServerName.text = serverName
 
         if (state.isLoading) {
             // Ensure password is hidden
@@ -199,7 +200,7 @@ class FtueAuthCombinedRegisterFragment :
 
         views.createAccountEntryFooter.text = when {
             state.registrationState.isUserNameAvailable -> getString(
-                    R.string.ftue_auth_create_account_username_entry_footer,
+                    CommonStrings.ftue_auth_create_account_username_entry_footer,
                     state.registrationState.selectedMatrixId
             )
 
@@ -209,6 +210,47 @@ class FtueAuthCombinedRegisterFragment :
         when (state.selectedHomeserver.preferredLoginMode) {
             is LoginMode.SsoAndPassword -> renderSsoProviders(state.deviceId, state.selectedHomeserver.preferredLoginMode)
             else -> hideSsoProviders()
+        }
+
+        (Config.sunsetConfig as? SunsetConfig.Enabled)?.let { config ->
+            val isMasSupportRequired = state.selectedHomeserver.hasOidcCompatibilityFlow
+            views.serverSelectionSpacing.isVisible = !isMasSupportRequired
+            views.serverSelectionDivider.isVisible = !isMasSupportRequired
+            views.chooseServerCardErrorMas.isVisible = isMasSupportRequired
+            views.chooseServerCardDownloadReplacementApp.isVisible = isMasSupportRequired
+
+            if (isMasSupportRequired) {
+                views.chooseServerCardErrorMas.findViewById<TextView>(R.id.view_card_error_title).text =
+                        getString(CommonStrings.error_mas_not_supported_title, serverName)
+                views.chooseServerCardErrorMas.findViewById<TextView>(R.id.view_card_error_subtitle).text =
+                        getString(
+                                CommonStrings.error_mas_not_supported_subtitle,
+                                config.replacementApplicationName,
+                                serverName,
+                        )
+                views.chooseServerCardDownloadReplacementApp.findViewById<TextView>(R.id.view_download_replacement_app_title).text =
+                        getString(CommonStrings.view_download_replacement_app_title, config.replacementApplicationName)
+
+                views.chooseServerCardDownloadReplacementApp.debouncedClicks {
+                    openApplicationStore(
+                            activity = requireActivity(),
+                            buildMeta = buildMeta,
+                            appId = config.replacementApplicationId,
+                    )
+                }
+                views.chooseServerCardDownloadReplacementApp.findViewById<View>(R.id.view_download_replacement_app_learn_more)?.debouncedClicks {
+                    openUrlInChromeCustomTab(
+                            context = requireContext(),
+                            session = null,
+                            url = config.learnMoreLink,
+                    )
+                }
+
+                // Disable form
+                views.createAccountInput.isEnabled = false
+                views.createAccountPasswordInput.isEnabled = false
+                views.createAccountSubmit.isEnabled = false
+            }
         }
     }
 
@@ -236,5 +278,6 @@ class FtueAuthCombinedRegisterFragment :
         }
     }
 
-    private fun OnboardingViewState.isNumericOnlyUserIdForbidden() = selectedHomeserver.userFacingUrl == getString(R.string.matrix_org_server_url)
+    private fun OnboardingViewState.isNumericOnlyUserIdForbidden() =
+            selectedHomeserver.userFacingUrl == getString(im.vector.app.config.R.string.matrix_org_server_url)
 }

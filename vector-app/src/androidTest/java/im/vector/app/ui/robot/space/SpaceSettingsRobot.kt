@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.ui.robot.space
@@ -25,13 +16,14 @@ import im.vector.app.R
 import im.vector.app.espresso.tools.waitUntilActivityVisible
 import im.vector.app.espresso.tools.waitUntilViewVisible
 import im.vector.app.features.roomprofile.settings.joinrule.RoomJoinRuleActivity
+import im.vector.lib.strings.CommonStrings
 
 class SpaceSettingsRobot {
     fun crawl() {
         Espresso.onView(ViewMatchers.withId(R.id.roomSettingsRecyclerView))
                 .perform(
                         RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
-                                ViewMatchers.hasDescendant(ViewMatchers.withText(R.string.room_settings_space_access_title)),
+                                ViewMatchers.hasDescendant(ViewMatchers.withText(CommonStrings.room_settings_space_access_title)),
                                 ViewActions.click()
                         )
                 )
@@ -45,7 +37,7 @@ class SpaceSettingsRobot {
         Espresso.onView(ViewMatchers.withId(R.id.roomSettingsRecyclerView))
                 .perform(
                         RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
-                                ViewMatchers.hasDescendant(ViewMatchers.withText(R.string.space_settings_manage_rooms)),
+                                ViewMatchers.hasDescendant(ViewMatchers.withText(CommonStrings.space_settings_manage_rooms)),
                                 ViewActions.click()
                         )
                 )
@@ -56,7 +48,7 @@ class SpaceSettingsRobot {
         Espresso.onView(ViewMatchers.withId(R.id.roomSettingsRecyclerView))
                 .perform(
                         RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
-                                ViewMatchers.hasDescendant(ViewMatchers.withText(R.string.space_settings_permissions_title)),
+                                ViewMatchers.hasDescendant(ViewMatchers.withText(CommonStrings.space_settings_permissions_title)),
                                 ViewActions.click()
                         )
                 )

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings.threepids
@@ -22,13 +13,13 @@ import com.airbnb.mvrx.MavericksViewModelFactory
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import im.vector.app.R
 import im.vector.app.core.di.MavericksAssistedViewModelFactory
 import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.platform.VectorViewModel
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.core.utils.ReadOnceTrue
 import im.vector.app.features.auth.PendingAuthHandler
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.launch
 import org.matrix.android.sdk.api.auth.UIABaseAuth
 import org.matrix.android.sdk.api.auth.UserInteractiveAuthInterceptor
@@ -185,8 +176,8 @@ class ThreePidsSettingsViewModel @AssistedInject constructor(
                                 IllegalArgumentException(
                                         stringProvider.getString(
                                                 when (action.threePid) {
-                                                    is ThreePid.Email -> R.string.auth_email_already_defined
-                                                    is ThreePid.Msisdn -> R.string.auth_msisdn_already_defined
+                                                    is ThreePid.Email -> CommonStrings.auth_email_already_defined
+                                                    is ThreePid.Msisdn -> CommonStrings.auth_msisdn_already_defined
                                                 }
                                         )
                                 )

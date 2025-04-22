@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.ui.robot
@@ -23,11 +14,12 @@ import com.adevinta.android.barista.interaction.BaristaClickInteractions
 import com.adevinta.android.barista.interaction.BaristaEditTextInteractions
 import im.vector.app.R
 import im.vector.app.espresso.tools.waitUntilViewVisible
+import im.vector.lib.strings.CommonStrings
 
 class OnboardingServersRobot {
 
     fun crawlSignUp() {
-        BaristaVisibilityAssertions.assertDisplayed(R.id.loginServerTitle, R.string.login_server_title)
+        BaristaVisibilityAssertions.assertDisplayed(R.id.loginServerTitle, CommonStrings.login_server_title)
         crawlMatrixServer(isSignUp = true)
         crawlEmsServer()
         crawlOtherServer(isSignUp = true)
@@ -35,7 +27,7 @@ class OnboardingServersRobot {
     }
 
     fun crawlSignIn() {
-        BaristaVisibilityAssertions.assertDisplayed(R.id.loginServerTitle, R.string.login_server_title)
+        BaristaVisibilityAssertions.assertDisplayed(R.id.loginServerTitle, CommonStrings.login_server_title)
         crawlMatrixServer(isSignUp = false)
         crawlEmsServer()
         crawlOtherServer(isSignUp = false)
@@ -49,7 +41,7 @@ class OnboardingServersRobot {
         BaristaClickInteractions.clickOn(R.id.loginServerUrlFormSubmit)
         waitUntilViewVisible(ViewMatchers.withId(R.id.loginSignupSigninTitle))
         BaristaVisibilityAssertions.assertDisplayed(R.id.loginSignupSigninText, "Connect to chat.mozilla.org")
-        BaristaVisibilityAssertions.assertDisplayed(R.id.loginSignupSigninSubmit, R.string.login_signin_sso)
+        BaristaVisibilityAssertions.assertDisplayed(R.id.loginSignupSigninSubmit, CommonStrings.login_signin_sso)
         Espresso.pressBack()
 
         BaristaEditTextInteractions.writeTo(R.id.loginServerUrlFormHomeServerUrl, "https://matrix.org")
@@ -62,14 +54,14 @@ class OnboardingServersRobot {
     private fun crawlEmsServer() {
         BaristaClickInteractions.clickOn(R.id.loginServerChoiceEms)
         waitUntilViewVisible(ViewMatchers.withId(R.id.loginServerUrlFormTitle))
-        BaristaVisibilityAssertions.assertDisplayed(R.id.loginServerUrlFormTitle, R.string.login_connect_to_modular)
+        BaristaVisibilityAssertions.assertDisplayed(R.id.loginServerUrlFormTitle, CommonStrings.login_connect_to_modular)
 
         BaristaEditTextInteractions.writeTo(R.id.loginServerUrlFormHomeServerUrl, "https://one.ems.host")
         BaristaClickInteractions.clickOn(R.id.loginServerUrlFormSubmit)
 
         waitUntilViewVisible(ViewMatchers.withId(R.id.loginSignupSigninTitle))
         BaristaVisibilityAssertions.assertDisplayed(R.id.loginSignupSigninText, "one.ems.host")
-        BaristaVisibilityAssertions.assertDisplayed(R.id.loginSignupSigninSubmit, R.string.login_signin_sso)
+        BaristaVisibilityAssertions.assertDisplayed(R.id.loginSignupSigninSubmit, CommonStrings.login_signin_sso)
         Espresso.pressBack()
         Espresso.pressBack()
     }
@@ -91,7 +83,7 @@ class OnboardingServersRobot {
     private fun crawlSignInWithMatrixId() {
         BaristaClickInteractions.clickOn(R.id.loginServerIKnowMyIdSubmit)
         waitUntilViewVisible(ViewMatchers.withId(R.id.loginTitle))
-        BaristaVisibilityAssertions.assertDisplayed(R.id.loginTitle, R.string.login_signin_matrix_id_title)
+        BaristaVisibilityAssertions.assertDisplayed(R.id.loginTitle, CommonStrings.login_signin_matrix_id_title)
         Espresso.pressBack()
     }
 }

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.media
@@ -23,7 +14,6 @@ import android.widget.ImageView
 import androidx.core.view.isVisible
 import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.transition.Transition
-import im.vector.app.R
 import im.vector.app.core.date.DateFormatKind
 import im.vector.app.core.date.VectorDateFormatter
 import im.vector.app.core.resources.StringProvider
@@ -31,6 +21,7 @@ import im.vector.lib.attachmentviewer.AttachmentInfo
 import im.vector.lib.attachmentviewer.AttachmentSourceProvider
 import im.vector.lib.attachmentviewer.ImageLoaderTarget
 import im.vector.lib.attachmentviewer.VideoLoaderTarget
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -68,7 +59,7 @@ abstract class BaseAttachmentProvider<Type>(
         if (timelineEvent != null) {
             val dateString = dateFormatter.format(timelineEvent.root.originServerTs, DateFormatKind.DEFAULT_DATE_AND_TIME)
             overlayView?.updateWith(
-                    counter = stringProvider.getString(R.string.attachment_viewer_item_x_of_y, position + 1, getItemCount()),
+                    counter = stringProvider.getString(CommonStrings.attachment_viewer_item_x_of_y, position + 1, getItemCount()),
                     senderInfo = "${timelineEvent.senderInfo.disambiguatedDisplayName} $dateString"
             )
             overlayView?.views?.overlayVideoControlsGroup?.isVisible = timelineEvent.root.isVideoMessage()

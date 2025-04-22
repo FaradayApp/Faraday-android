@@ -33,9 +33,8 @@ import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.withResumed
 import com.airbnb.mvrx.Mavericks
 import com.airbnb.mvrx.viewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -60,7 +59,7 @@ import im.vector.app.features.analytics.accountdata.AnalyticsAccountDataViewMode
 import im.vector.app.features.analytics.plan.MobileScreen
 import im.vector.app.features.analytics.plan.ViewRoom
 import im.vector.app.features.crypto.recover.SetupMode
-import im.vector.app.features.disclaimer.DisclaimerDialog
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.home.room.detail.RoomDetailCryptPad
 import im.vector.app.features.home.room.detail.RoomDetailFileSharing
 import im.vector.app.features.home.room.detail.RoomDetailTaigaBoard
@@ -86,6 +85,7 @@ import im.vector.app.features.popup.PopupAlertManager
 import im.vector.app.features.popup.VerificationVectorAlert
 import im.vector.app.features.rageshake.ReportType
 import im.vector.app.features.rageshake.VectorUncaughtExceptionHandler
+import im.vector.app.features.session.coroutineScope
 import im.vector.app.features.settings.VectorSettingsActivity
 import im.vector.app.features.settings.passwordmanagement.enterpassword.EnterPasswordFragment
 import im.vector.app.features.settings.passwordmanagement.enterpassword.EnterPasswordScreenArgs
@@ -99,9 +99,12 @@ import im.vector.app.features.themes.ThemeUtils
 import im.vector.app.features.usercode.UserCodeActivity
 import im.vector.app.features.workers.signout.ServerBackupStatusViewModel
 import im.vector.lib.core.utils.compat.getParcelableExtraCompat
+import im.vector.lib.strings.CommonStrings
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import org.matrix.android.sdk.api.session.permalinks.PermalinkService
 import org.matrix.android.sdk.api.session.sync.InitialSyncStep
@@ -156,7 +159,6 @@ class HomeActivity :
     @Inject lateinit var spaceStateHandler: SpaceStateHandler
     @Inject lateinit var unifiedPushHelper: UnifiedPushHelper
     @Inject lateinit var nightlyProxy: NightlyProxy
-    @Inject lateinit var disclaimerDialog: DisclaimerDialog
     @Inject lateinit var notificationPermissionManager: NotificationPermissionManager
     @Inject lateinit var lightweightSettingsStorage: LightweightSettingsStorage
     @Inject lateinit var changeAccountUseCase: ChangeAccountUseCase
@@ -277,7 +279,8 @@ class HomeActivity :
             }
         }
 
-        homeActivityViewModel.observeViewEvents {
+        Timber.tag("SC_NP_DBG").i("Starting home event observation")
+        homeActivityViewModel.observeViewEvents("SC_NP_DBG") {
             when (it) {
                 is HomeActivityViewEvents.AskPasswordToInitCrossSigning -> handleAskPasswordToInitCrossSigning(it)
                 is HomeActivityViewEvents.CurrentSessionNotVerified -> handleOnNewSession(it)
@@ -285,11 +288,7 @@ class HomeActivity :
                 HomeActivityViewEvents.PromptToEnableSessionPush -> handlePromptToEnablePush()
                 HomeActivityViewEvents.StartRecoverySetupFlow -> handleStartRecoverySetup()
                 is HomeActivityViewEvents.ForceVerification -> {
-                    if (it.sendRequest) {
-                        navigator.requestSelfSessionVerification(this)
-                    } else {
-                        navigator.waitSessionVerification(this)
-                    }
+                    navigator.requestSelfSessionVerification(this)
                 }
                 is HomeActivityViewEvents.OnCrossSignedInvalidated -> handleCrossSigningInvalidated(it)
                 HomeActivityViewEvents.ShowAnalyticsOptIn -> handleShowAnalyticsOptIn()
@@ -320,6 +319,7 @@ class HomeActivity :
     }
 
     private fun handleShowNotificationDialog() {
+        Timber.tag("SC_NP_DBG").i("handleShowNotificationDialog")
         notificationPermissionManager.eventuallyRequestPermission(this, postPermissionLauncher)
     }
 
@@ -391,10 +391,10 @@ class HomeActivity :
 
     private fun handleNotifyUserForThreadsMigration() {
         MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.threads_notice_migration_title)
-                .setMessage(R.string.threads_notice_migration_message)
+                .setTitle(CommonStrings.threads_notice_migration_title)
+                .setMessage(CommonStrings.threads_notice_migration_message)
                 .setCancelable(true)
-                .setPositiveButton(R.string.sas_got_it) { _, _ -> }
+                .setPositiveButton(CommonStrings.sas_got_it) { _, _ -> }
                 .show()
     }
 
@@ -434,9 +434,9 @@ class HomeActivity :
                             deepLink.startsWith(MATRIX_TO_CUSTOM_SCHEME_URL_BASE) ||
                             deepLink.startsWith(SC_MATRIX_TO_CUSTOM_SCHEME_URL_BASE)
                     MaterialAlertDialogBuilder(this@HomeActivity)
-                            .setTitle(R.string.dialog_title_error)
-                            .setMessage(if (isMatrixToLink) R.string.permalink_malformed else R.string.universal_link_malformed)
-                            .setPositiveButton(R.string.ok, null)
+                            .setTitle(CommonStrings.dialog_title_error)
+                            .setMessage(if (isMatrixToLink) CommonStrings.permalink_malformed else CommonStrings.universal_link_malformed)
+                            .setPositiveButton(CommonStrings.ok, null)
                             .show()
                 }
             }
@@ -446,7 +446,9 @@ class HomeActivity :
     private fun handleStartRecoverySetup() {
         // To avoid IllegalStateException in case the transaction was executed after onSaveInstanceState
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED) { navigator.open4SSetup(this@HomeActivity, SetupMode.NORMAL) }
+            withResumed {
+                navigator.open4SSetup(this@HomeActivity, SetupMode.NORMAL)
+            }
         }
     }
 
@@ -483,8 +485,8 @@ class HomeActivity :
         promptSecurityEvent(
                 uid = PopupAlertManager.UPGRADE_SECURITY_UID,
                 userItem = events.userItem,
-                titleRes = R.string.upgrade_security,
-                descRes = R.string.security_prompt_text,
+                titleRes = CommonStrings.upgrade_security,
+                descRes = CommonStrings.security_prompt_text,
         ) {
             it.navigator.upgradeSessionSecurity(it, true)
         }
@@ -495,26 +497,41 @@ class HomeActivity :
         promptSecurityEvent(
                 uid = PopupAlertManager.VERIFY_SESSION_UID,
                 userItem = event.userItem,
-                titleRes = R.string.crosssigning_verify_this_session,
-                descRes = R.string.confirm_your_identity,
+                titleRes = CommonStrings.crosssigning_verify_this_session,
+                descRes = CommonStrings.confirm_your_identity,
         ) {
-            it.navigator.waitSessionVerification(it)
+            // check first if it's not an outdated request?
+            activeSessionHolder.getSafeActiveSession()?.let { session ->
+                session.coroutineScope.launch {
+                    if (!session.cryptoService().crossSigningService().isCrossSigningVerified()) {
+                        withContext(Dispatchers.Main) {
+                            it.navigator.requestSelfSessionVerification(it)
+                        }
+                    }
+                }
+            }
         }
     }
 
     private fun handleOnNewSession(event: HomeActivityViewEvents.CurrentSessionNotVerified) {
         // We need to ask
+        val titleRes = if (event.afterMigration) {
+            CommonStrings.crosssigning_verify_after_update
+        } else {
+            CommonStrings.crosssigning_verify_this_session
+        }
+        val descRes = if (event.afterMigration) {
+            CommonStrings.confirm_your_identity_after_update
+        } else {
+            CommonStrings.confirm_your_identity
+        }
         promptSecurityEvent(
                 uid = PopupAlertManager.VERIFY_SESSION_UID,
                 userItem = event.userItem,
-                titleRes = R.string.crosssigning_verify_this_session,
-                descRes = R.string.confirm_your_identity,
+                titleRes = titleRes,
+                descRes = descRes,
         ) {
-            if (event.waitForIncomingRequest) {
-                it.navigator.waitSessionVerification(it)
-            } else {
-                it.navigator.requestSelfSessionVerification(it)
-            }
+            it.navigator.requestSelfSessionVerification(it)
         }
     }
 
@@ -523,8 +540,8 @@ class HomeActivity :
         promptSecurityEvent(
                 uid = PopupAlertManager.UPGRADE_SECURITY_UID,
                 userItem = event.userItem,
-                titleRes = R.string.crosssigning_cannot_verify_this_session,
-                descRes = R.string.crosssigning_cannot_verify_this_session_desc,
+                titleRes = CommonStrings.crosssigning_cannot_verify_this_session,
+                descRes = CommonStrings.crosssigning_cannot_verify_this_session_desc,
         ) {
             it.navigator.open4SSetup(it, SetupMode.PASSPHRASE_AND_NEEDED_SECRETS_RESET)
         }
@@ -534,14 +551,14 @@ class HomeActivity :
         popupAlertManager.postVectorAlert(
                 DefaultVectorAlert(
                         uid = PopupAlertManager.ENABLE_PUSH_UID,
-                        title = getString(R.string.alert_push_are_disabled_title),
-                        description = getString(R.string.alert_push_are_disabled_description),
+                        title = getString(CommonStrings.alert_push_are_disabled_title),
+                        description = getString(CommonStrings.alert_push_are_disabled_description),
                         iconId = R.drawable.ic_room_actions_notifications_mutes,
                         shouldBeDisplayedIn = {
                             it is HomeActivity
                         }
                 ).apply {
-                    colorInt = ThemeUtils.getColor(this@HomeActivity, R.attr.vctr_notice_secondary)
+                    colorInt = ThemeUtils.getColor(this@HomeActivity, im.vector.lib.ui.styles.R.attr.vctr_notice_secondary)
                     contentAction = Runnable {
                         (weakCurrentActivity?.get() as? VectorBaseActivity<*>)?.let {
                             // action(it)
@@ -552,10 +569,10 @@ class HomeActivity :
                     dismissedAction = Runnable {
                         homeActivityViewModel.handle(HomeActivityViewActions.PushPromptHasBeenReviewed)
                     }
-                    addButton(getString(R.string.action_dismiss), {
+                    addButton(getString(CommonStrings.action_dismiss), {
                         homeActivityViewModel.handle(HomeActivityViewActions.PushPromptHasBeenReviewed)
                     }, true)
-                    addButton(getString(R.string.settings), {
+                    addButton(getString(CommonStrings.settings), {
                         (weakCurrentActivity?.get() as? VectorBaseActivity<*>)?.let {
                             // action(it)
                             homeActivityViewModel.handle(HomeActivityViewActions.PushPromptHasBeenReviewed)
@@ -581,7 +598,7 @@ class HomeActivity :
                         iconId = R.drawable.ic_shield_warning
                 ).apply {
                     viewBinder = VerificationVectorAlert.ViewBinder(userItem, avatarRenderer)
-                    colorInt = ThemeUtils.getColor(this@HomeActivity, R.attr.colorPrimary)
+                    colorInt = ThemeUtils.getColor(this@HomeActivity, com.google.android.material.R.attr.colorPrimary)
                     contentAction = Runnable {
                         (weakCurrentActivity?.get() as? VectorBaseActivity<*>)?.let {
                             action(it)
@@ -592,11 +609,10 @@ class HomeActivity :
         )
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        val parcelableExtra = intent?.getParcelableExtraCompat<HomeActivityArgs>(Mavericks.KEY_ARG)
-        Timber.d("get new intent: $parcelableExtra")
+        val parcelableExtra = intent.getParcelableExtraCompat<HomeActivityArgs>(Mavericks.KEY_ARG)
         if (parcelableExtra?.clearNotification == true) {
             notificationDrawerManager.clearAllEvents()
         }
@@ -609,7 +625,7 @@ class HomeActivity :
         }
         if (parcelableExtra?.changeAccount == true && parcelableExtra.userId != null) {
             lifecycleScope.launch {
-                Toast.makeText(this@HomeActivity, R.string.load_before_change_account, Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@HomeActivity, CommonStrings.load_before_change_account, Toast.LENGTH_SHORT).show()
                 while (!isAllLoaded) {}
                 Timber.d("restart by notification")
                 changeAccountUseCase.execute(parcelableExtra.userId)
@@ -643,13 +659,11 @@ class HomeActivity :
             vectorUncaughtExceptionHandler.clearAppCrashStatus()
 
             MaterialAlertDialogBuilder(this)
-                    .setMessage(R.string.send_bug_report_app_crashed)
+                    .setMessage(CommonStrings.send_bug_report_app_crashed)
                     .setCancelable(false)
-                    .setPositiveButton(R.string.yes) { _, _ -> bugReporter.openBugReportScreen(this) }
-                    .setNegativeButton(R.string.no) { _, _ -> bugReporter.deleteCrashFile() }
+                    .setPositiveButton(CommonStrings.yes) { _, _ -> bugReporter.openBugReportScreen(this) }
+                    .setNegativeButton(CommonStrings.no) { _, _ -> bugReporter.deleteCrashFile() }
                     .show()
-        } else {
-            disclaimerDialog.showDisclaimerDialog(this)
         }
 
         // Force remote backup state update to update the banner if needed
@@ -685,8 +699,8 @@ class HomeActivity :
                 resources,
                 menu.findItem(R.id.dev_base_theme),
                 R.id.dev_base_theme_group,
-                R.array.theme_entries,
-                R.array.theme_values,
+                im.vector.lib.strings.R.array.theme_entries,
+                im.vector.lib.strings.R.array.theme_values,
                 ThemeUtils.getCurrentActiveTheme(this)
         ) { value ->
             ThemeUtils.setCurrentActiveTheme(this, value)
@@ -805,18 +819,19 @@ class HomeActivity :
     private fun launchInviteFriends() {
         activeSessionHolder.getSafeActiveSession()?.permalinkService()?.createPermalink(sharedActionViewModel.session.myUserId)?.let { permalink ->
             analyticsTracker.screen(MobileScreen(screenName = MobileScreen.ScreenName.InviteFriends))
-            val text = getString(R.string.invite_friends_text, permalink)
+            val text = getString(CommonStrings.invite_friends_text, permalink)
 
             startSharePlainTextIntent(
                     context = this,
                     activityResultLauncher = null,
-                    chooserTitle = getString(R.string.invite_friends),
+                    chooserTitle = getString(CommonStrings.invite_friends),
                     text = text,
-                    extraTitle = getString(R.string.invite_friends_rich_title)
+                    extraTitle = getString(CommonStrings.invite_friends_rich_title)
             )
         }
     }
 
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun onBackPressed() {
         if (views.drawerLayout.isDrawerOpen(GravityCompat.START)) {
             views.drawerLayout.closeDrawer(GravityCompat.START)
@@ -875,10 +890,6 @@ class HomeActivity :
                     .apply {
                         putExtra(Mavericks.KEY_ARG, args)
                     }
-
-            // TODO: NEED TO REMOVE THIS AFTER DEBUG
-            val testIntent = intent.getParcelableExtraCompat<HomeActivityArgs>(Mavericks.KEY_ARG)
-            Timber.d("created intent $testIntent")
 
             return if (firstStartMainActivity) {
                 MainActivity.getIntentWithNextIntent(context, intent)

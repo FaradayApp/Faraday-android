@@ -1,18 +1,9 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
- * Copyright (C) 2018 stfalcon.com
+ * Copyright 2020-2024 New Vector Ltd.
+ * Copyright 2018 stfalcon.com
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.lib.attachmentviewer
@@ -31,7 +22,6 @@ import android.view.WindowManager
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -39,6 +29,7 @@ import androidx.core.view.updatePadding
 import androidx.transition.TransitionManager
 import androidx.viewpager2.widget.ViewPager2
 import im.vector.lib.attachmentviewer.databinding.ActivityAttachmentViewerBinding
+import im.vector.lib.ui.styles.R
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 
@@ -71,7 +62,7 @@ abstract class AttachmentViewerActivity : AppCompatActivity(), AttachmentEventLi
     private lateinit var swipeDismissHandler: SwipeToDismissHandler
     private lateinit var directionDetector: SwipeDirectionDetector
     private lateinit var scaleDetector: ScaleGestureDetector
-    private lateinit var gestureDetector: GestureDetectorCompat
+    private lateinit var gestureDetector: GestureDetector
 
     var currentPosition = 0
         private set
@@ -309,7 +300,7 @@ abstract class AttachmentViewerActivity : AppCompatActivity(), AttachmentEventLi
             ScaleGestureDetector(this, ScaleGestureDetector.SimpleOnScaleGestureListener())
 
     private fun createGestureDetector() =
-            GestureDetectorCompat(this, object : GestureDetector.SimpleOnGestureListener() {
+            GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
                 override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
                     if (isImagePagerIdle) {
                         handleSingleTap(e, isOverlayWasClicked)

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.core.ui.views
@@ -25,6 +16,8 @@ import im.vector.app.R
 import im.vector.app.databinding.ViewCurrentCallsBinding
 import im.vector.app.features.call.webrtc.WebRtcCall
 import im.vector.app.features.themes.ThemeUtils
+import im.vector.lib.strings.CommonPlurals
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.session.call.CallState
 
 class CurrentCallsView @JvmOverloads constructor(
@@ -43,7 +36,7 @@ class CurrentCallsView @JvmOverloads constructor(
     init {
         inflate(context, R.layout.view_current_calls, this)
         views = ViewCurrentCallsBinding.bind(this)
-        setBackgroundColor(ThemeUtils.getColor(context, R.attr.colorPrimary))
+        setBackgroundColor(ThemeUtils.getColor(context, com.google.android.material.R.attr.colorPrimary))
         val outValue = TypedValue().also {
             context.theme.resolveAttribute(android.R.attr.selectableItemBackground, it, true)
         }
@@ -59,18 +52,18 @@ class CurrentCallsView @JvmOverloads constructor(
                 is CallState.CreateOffer,
                 is CallState.LocalRinging,
                 is CallState.Dialing -> {
-                    resources.getString(R.string.call_ringing)
+                    resources.getString(CommonStrings.call_ringing)
                 }
                 is CallState.Answering -> {
-                    resources.getString(R.string.call_connecting)
+                    resources.getString(CommonStrings.call_connecting)
                 }
                 else -> {
-                    resources.getString(R.string.call_one_active, formattedDuration)
+                    resources.getString(CommonStrings.call_one_active, formattedDuration)
                 }
             }
         } else {
-            resources.getQuantityString(R.plurals.call_active_status, calls.size, calls.size)
+            resources.getQuantityString(CommonPlurals.call_active_status, calls.size, calls.size)
         }
-        views.currentCallsInfo.text = resources.getString(R.string.call_tap_to_return, tapToReturnFormat)
+        views.currentCallsInfo.text = resources.getString(CommonStrings.call_tap_to_return, tapToReturnFormat)
     }
 }

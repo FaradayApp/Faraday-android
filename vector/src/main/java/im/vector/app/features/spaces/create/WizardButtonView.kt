@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.spaces.create
@@ -79,11 +70,11 @@ class WizardButtonView @JvmOverloads constructor(context: Context, attrs: Attrib
             subTitle = "This is doing something"
         }
 
-        context.withStyledAttributes(attrs, R.styleable.WizardButtonView) {
-            title = getString(R.styleable.WizardButtonView_title)
-            subTitle = getString(R.styleable.WizardButtonView_subTitle)
-            icon = getDrawable(R.styleable.WizardButtonView_icon)
-            tint = getColor(R.styleable.WizardButtonView_iconTint, -1)
+        context.withStyledAttributes(attrs, im.vector.lib.ui.styles.R.styleable.WizardButtonView) {
+            title = getString(im.vector.lib.ui.styles.R.styleable.WizardButtonView_title)
+            subTitle = getString(im.vector.lib.ui.styles.R.styleable.WizardButtonView_subTitle)
+            icon = getDrawable(im.vector.lib.ui.styles.R.styleable.WizardButtonView_icon)
+            tint = getColor(im.vector.lib.ui.styles.R.styleable.WizardButtonView_iconTint, -1)
                     .takeIf { it != -1 }
         }
 

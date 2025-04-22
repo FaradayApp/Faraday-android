@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings.devices
@@ -35,11 +26,12 @@ import im.vector.app.core.extensions.cleanup
 import im.vector.app.core.extensions.configureWith
 import im.vector.app.core.extensions.registerStartForActivityResult
 import im.vector.app.core.platform.VectorBaseFragment
+import im.vector.app.core.utils.openUrlInChromeCustomTab
 import im.vector.app.databinding.DialogBaseEditTextBinding
 import im.vector.app.databinding.FragmentGenericRecyclerBinding
 import im.vector.app.features.auth.ReAuthActivity
 import im.vector.app.features.crypto.recover.SetupMode
-import im.vector.app.features.crypto.verification.VerificationBottomSheet
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.auth.data.LoginFlowTypes
 import org.matrix.android.sdk.api.session.crypto.model.DeviceInfo
 import javax.inject.Inject
@@ -67,7 +59,7 @@ class VectorSettingsDevicesFragment :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        views.waitingView.waitingStatusText.setText(R.string.please_wait)
+        views.waitingView.waitingStatusText.setText(CommonStrings.please_wait)
         views.waitingView.waitingStatusText.isVisible = true
         devicesController.callback = this
         views.genericRecyclerView.configureWith(devicesController, dividerDrawable = R.drawable.divider_horizontal)
@@ -78,11 +70,12 @@ class VectorSettingsDevicesFragment :
                 is DevicesViewEvents.RequestReAuth -> askForReAuthentication(it)
                 is DevicesViewEvents.PromptRenameDevice -> displayDeviceRenameDialog(it.deviceInfo)
                 is DevicesViewEvents.ShowVerifyDevice -> {
-                    VerificationBottomSheet.withArgs(
-                            roomId = null,
-                            otherUserId = it.userId,
-                            transactionId = it.transactionId
-                    ).show(childFragmentManager, "REQPOP")
+                    // TODO selfverif
+//                    VerificationBottomSheet.withArgs(
+// //                            roomId = null,
+//                            otherUserId = it.userId,
+//                            transactionId = it.transactionId ?: ""
+//                    ).show(childFragmentManager, "REQPOP")
                 }
                 is DevicesViewEvents.SelfVerification -> {
                     navigator.requestSelfSessionVerification(requireActivity())
@@ -94,6 +87,9 @@ class VectorSettingsDevicesFragment :
                 }
                 is DevicesViewEvents.PromptResetSecrets -> {
                     navigator.open4SSetup(requireActivity(), SetupMode.PASSPHRASE_AND_NEEDED_SECRETS_RESET)
+                }
+                is DevicesViewEvents.OpenBrowser -> {
+                    openUrlInChromeCustomTab(requireContext(), null, it.url)
                 }
             }
         }
@@ -107,7 +103,7 @@ class VectorSettingsDevicesFragment :
 
     override fun onResume() {
         super.onResume()
-        (activity as? AppCompatActivity)?.supportActionBar?.setTitle(R.string.settings_active_sessions_manage)
+        (activity as? AppCompatActivity)?.supportActionBar?.setTitle(CommonStrings.settings_active_sessions_manage)
         viewModel.handle(DevicesAction.Refresh)
     }
 
@@ -134,14 +130,14 @@ class VectorSettingsDevicesFragment :
         views.editText.setText(deviceInfo.displayName)
 
         MaterialAlertDialogBuilder(requireActivity())
-                .setTitle(R.string.devices_details_device_name)
+                .setTitle(CommonStrings.devices_details_device_name)
                 .setView(layout)
-                .setPositiveButton(R.string.ok) { _, _ ->
+                .setPositiveButton(CommonStrings.ok) { _, _ ->
                     val newName = views.editText.text.toString()
 
                     viewModel.handle(DevicesAction.Rename(deviceInfo.deviceId!!, newName))
                 }
-                .setNegativeButton(R.string.action_cancel, null)
+                .setNegativeButton(CommonStrings.action_cancel, null)
                 .show()
     }
 
@@ -172,7 +168,7 @@ class VectorSettingsDevicesFragment :
                 requireContext(),
                 reAuthReq.registrationFlowResponse,
                 reAuthReq.lastErrorCode,
-                getString(R.string.devices_delete_dialog_title)
+                getString(CommonStrings.devices_delete_dialog_title)
         ).let { intent ->
             reAuthActivityResultLauncher.launch(intent)
         }

@@ -23,7 +23,7 @@ import im.vector.app.R
 import im.vector.app.core.platform.SimpleTextWatcher
 import im.vector.app.core.utils.isValidUrl
 import im.vector.app.databinding.DialogKanbanBoardBinding
-
+import im.vector.lib.strings.CommonStrings
 
 /**
  * Dialog to prompt user to enter kanban board url.
@@ -57,7 +57,7 @@ class KanbanBoardDialog {
 
         views.kanbanBoardDialogSaveButton.setOnClickListener {
             if(!views.kanbanBoardDialogEt.text.toString().isValidUrl()) {
-                views.kanbanBoardDialogTil.error = activity.getString(R.string.login_error_invalid_home_server)
+                views.kanbanBoardDialogTil.error = activity.getString(CommonStrings.login_error_invalid_home_server)
                 return@setOnClickListener
             }
             kanbanBoardDialogListener.onKanbanBoardAdded(views.kanbanBoardDialogEt.text.toString())

@@ -77,14 +77,28 @@ data class HomeServerCapabilities(
         val canRemotelyTogglePushNotificationsOfDevices: Boolean = false,
 
         /**
-         * True if the home server supports event redaction with relations.
+         * True if the home server supports redaction of related events.
          */
-        var canRedactEventWithRelations: Boolean = false,
+        var canRedactRelatedEvents: Boolean = false,
 
         /**
          * External account management url for use with MSC3824 delegated OIDC, provided in Wellknown.
          */
         val externalAccountManagementUrl: String? = null,
+
+        /**
+         * Authentication issuer for use with MSC3824 delegated OIDC, provided in Wellknown.
+         */
+        val authenticationIssuer: String? = null,
+
+        /**
+         * If set to true, the SDK will not use the network constraint when configuring Worker for the WorkManager, provided in Wellknown.
+         */
+        val disableNetworkConstraint: Boolean? = null,
+        /**
+         * True if the home server supports authenticated media.
+         */
+        val canUseAuthenticatedMedia: Boolean = false,
 ) {
 
     enum class RoomCapabilitySupport {
@@ -140,6 +154,8 @@ data class HomeServerCapabilities(
         val cap = roomVersions?.capabilities?.get(feature)
         return cap?.preferred ?: cap?.support?.lastOrNull()
     }
+
+    val delegatedOidcAuthEnabled: Boolean = authenticationIssuer != null
 
     companion object {
         const val MAX_UPLOAD_FILE_SIZE_UNKNOWN = -1L

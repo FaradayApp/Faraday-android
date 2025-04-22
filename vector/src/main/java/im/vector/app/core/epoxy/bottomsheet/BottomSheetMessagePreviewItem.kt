@@ -1,18 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.core.epoxy.bottomsheet
 
@@ -32,7 +22,7 @@ import im.vector.app.core.epoxy.onClick
 import im.vector.app.core.extensions.setTextOrHide
 import im.vector.app.core.glide.GlideApp
 import im.vector.app.features.displayname.getBestName
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.home.room.detail.timeline.action.LocationUiData
 import im.vector.app.features.home.room.detail.timeline.item.BindingOptions
 import im.vector.app.features.home.room.detail.timeline.tools.findPillsAndProcess
@@ -103,10 +93,10 @@ abstract class BottomSheetMessagePreviewItem : VectorEpoxyModel<BottomSheetMessa
                     .apply(RequestOptions.centerCropTransform())
                     .into(holder.staticMapImageView)
 
-            safeLocationUiData.locationPinProvider.create(safeLocationUiData.locationOwnerId) { pinDrawable ->
-                GlideApp.with(holder.staticMapPinImageView)
-                        .load(pinDrawable)
-                        .into(holder.staticMapPinImageView)
+            val pinMatrixItem = matrixItem.takeIf { safeLocationUiData.locationOwnerId != null }
+            safeLocationUiData.locationPinProvider.create(pinMatrixItem) { pinDrawable ->
+                // we are not using Glide since it does not display it correctly when there is no user photo
+                holder.staticMapPinImageView.setImageDrawable(pinDrawable)
             }
         }
     }

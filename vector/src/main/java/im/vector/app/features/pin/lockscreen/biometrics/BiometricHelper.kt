@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.pin.lockscreen.biometrics
@@ -34,14 +25,13 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ApplicationContext
-import im.vector.app.R
 import im.vector.app.features.pin.lockscreen.configuration.LockScreenConfiguration
 import im.vector.app.features.pin.lockscreen.crypto.LockScreenKeyRepository
 import im.vector.app.features.pin.lockscreen.ui.fallbackprompt.FallbackBiometricDialogFragment
 import im.vector.app.features.pin.lockscreen.utils.DevicePromptCheck
 import im.vector.app.features.pin.lockscreen.utils.hasFlag
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.BufferOverflow
@@ -155,11 +145,11 @@ class BiometricHelper @AssistedInject constructor(
         return authenticate(activity)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @OptIn(DelicateCoroutinesApi::class)
     private fun authenticateInternal(
-        activity: FragmentActivity,
-        checkSystemKeyExists: Boolean,
-        cryptoObject: BiometricPrompt.CryptoObject,
+            activity: FragmentActivity,
+            checkSystemKeyExists: Boolean,
+            cryptoObject: BiometricPrompt.CryptoObject,
     ): Flow<Boolean> {
         if (checkSystemKeyExists && !isSystemAuthEnabledAndValid) return flowOf(false)
 
@@ -195,17 +185,17 @@ class BiometricHelper @AssistedInject constructor(
 
     @VisibleForTesting(otherwise = PRIVATE)
     internal fun authenticateWithPromptInternal(
-        activity: FragmentActivity,
-        cryptoObject: BiometricPrompt.CryptoObject,
-        channel: Channel<Boolean>,
+            activity: FragmentActivity,
+            cryptoObject: BiometricPrompt.CryptoObject,
+            channel: Channel<Boolean>,
     ): BiometricPrompt {
         val executor = ContextCompat.getMainExecutor(context)
         val callback = createSuspendingAuthCallback(channel, executor.asCoroutineDispatcher())
         val authenticators = getAvailableAuthenticators()
         val isUsingDeviceCredentialAuthenticator = authenticators.hasFlag(DEVICE_CREDENTIAL)
-        val cancelButtonTitle = configuration.biometricCancelButtonTitle ?: context.getString(R.string.lockscreen_cancel)
+        val cancelButtonTitle = configuration.biometricCancelButtonTitle ?: context.getString(im.vector.lib.ui.styles.R.string.lockscreen_cancel)
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
-                .setTitle(configuration.biometricTitle ?: context.getString(R.string.lockscreen_sign_in))
+                .setTitle(configuration.biometricTitle ?: context.getString(im.vector.lib.ui.styles.R.string.lockscreen_sign_in))
                 .apply {
                     configuration.biometricSubtitle?.let {
                         setSubtitle(it)
@@ -314,9 +304,9 @@ class BiometricHelper @AssistedInject constructor(
             fallbackFragment.onDismiss = { cancelPrompt() }
             fallbackFragment.authenticationFlow = authenticationFLow
 
-            activity.supportFragmentManager.beginTransaction()
+            val transaction = activity.supportFragmentManager.beginTransaction()
                     .runOnCommit { scope.launch { showPrompt() } }
-                    .apply { fallbackFragment.show(this, FALLBACK_BIOMETRIC_FRAGMENT_TAG) }
+            fallbackFragment.show(transaction, FALLBACK_BIOMETRIC_FRAGMENT_TAG)
         } else {
             scope.launch { showPrompt() }
         }

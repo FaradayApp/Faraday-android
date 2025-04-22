@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings.devices.v2
@@ -25,9 +16,9 @@ import im.vector.app.core.utils.PublishDataSource
 import im.vector.lib.core.utils.flow.throttleFirst
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import org.matrix.android.sdk.api.session.crypto.verification.VerificationEvent
 import org.matrix.android.sdk.api.session.crypto.verification.VerificationService
 import org.matrix.android.sdk.api.session.crypto.verification.VerificationTransaction
-import org.matrix.android.sdk.api.session.crypto.verification.VerificationTxState
 import kotlin.time.Duration.Companion.seconds
 
 abstract class VectorSessionsListViewModel<S : MavericksState, VA : VectorViewModelAction, VE : VectorViewEvents>(
@@ -40,28 +31,40 @@ abstract class VectorSessionsListViewModel<S : MavericksState, VA : VectorViewMo
     private val refreshThrottleDelayMs = 4.seconds.inWholeMilliseconds
 
     init {
-        addVerificationListener()
+//        addVerificationListener()
         observeRefreshSource()
-    }
-
-    override fun onCleared() {
-        removeVerificationListener()
-        super.onCleared()
-    }
-
-    private fun addVerificationListener() {
         activeSessionHolder.getSafeActiveSession()
                 ?.cryptoService()
                 ?.verificationService()
-                ?.addListener(this)
+                ?.requestEventFlow()
+                ?.onEach {
+                    when (it) {
+                        is VerificationEvent.RequestAdded -> verificationRequestCreated(it.request)
+                        is VerificationEvent.RequestUpdated -> verificationRequestUpdated(it.request)
+                        is VerificationEvent.TransactionAdded -> transactionCreated(it.transaction)
+                        is VerificationEvent.TransactionUpdated -> transactionUpdated(it.transaction)
+                    }
+                }
+                ?.launchIn(viewModelScope)
     }
 
-    private fun removeVerificationListener() {
-        activeSessionHolder.getSafeActiveSession()
-                ?.cryptoService()
-                ?.verificationService()
-                ?.removeListener(this)
-    }
+//    override fun onCleared() {
+//        super.onCleared()
+//    }
+
+//    private fun addVerificationListener() {
+//        activeSessionHolder.getSafeActiveSession()
+//                ?.cryptoService()
+//                ?.verificationService()
+//                ?.addListener(this)
+//    }
+
+//    private fun removeVerificationListener() {
+//        activeSessionHolder.getSafeActiveSession()
+//                ?.cryptoService()
+//                ?.verificationService()
+//                ?.removeListener(this)
+//    }
 
     private fun observeRefreshSource() {
         refreshSource.stream()
@@ -71,7 +74,7 @@ abstract class VectorSessionsListViewModel<S : MavericksState, VA : VectorViewMo
     }
 
     override fun transactionUpdated(tx: VerificationTransaction) {
-        if (tx.state == VerificationTxState.Verified) {
+        if (tx.isSuccessful()) {
             refreshDeviceList()
         }
     }

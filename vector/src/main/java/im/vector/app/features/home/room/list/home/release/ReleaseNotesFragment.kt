@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.list.home.release
@@ -30,6 +21,7 @@ import im.vector.app.R
 import im.vector.app.core.epoxy.onClick
 import im.vector.app.core.platform.VectorBaseFragment
 import im.vector.app.databinding.BottomSheetReleaseNotesBinding
+import im.vector.lib.strings.CommonStrings
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -92,18 +84,18 @@ class ReleaseNotesFragment : VectorBaseFragment<BottomSheetReleaseNotesBinding>(
         return ReleaseCarouselData(
                 listOf(
                         ReleaseCarouselData.Item(
-                                R.string.onboarding_new_app_layout_welcome_title,
-                                R.string.onboarding_new_app_layout_welcome_message,
+                                CommonStrings.onboarding_new_app_layout_welcome_title,
+                                CommonStrings.onboarding_new_app_layout_welcome_message,
                                 R.drawable.ill_app_layout_onboarding_rooms
                         ),
                         ReleaseCarouselData.Item(
-                                R.string.onboarding_new_app_layout_spaces_title,
-                                R.string.onboarding_new_app_layout_spaces_message,
+                                CommonStrings.onboarding_new_app_layout_spaces_title,
+                                CommonStrings.onboarding_new_app_layout_spaces_message,
                                 R.drawable.ill_app_layout_onboarding_spaces
                         ),
                         ReleaseCarouselData.Item(
-                                R.string.onboarding_new_app_layout_feedback_title,
-                                R.string.onboarding_new_app_layout_feedback_message,
+                                CommonStrings.onboarding_new_app_layout_feedback_title,
+                                CommonStrings.onboarding_new_app_layout_feedback_message,
                                 R.drawable.ill_app_layout_onboarding_rooms
                         ),
                 )
@@ -122,9 +114,9 @@ class ReleaseNotesFragment : VectorBaseFragment<BottomSheetReleaseNotesBinding>(
     private fun updateButtonText(selectedIndex: Int) {
         val isLastItem = selectedIndex == views.releaseNotesCarouselIndicator.tabCount - 1
         if (isLastItem) {
-            views.releaseNotesButtonNext.setText(R.string.onboarding_new_app_layout_button_try)
+            views.releaseNotesButtonNext.setText(CommonStrings.onboarding_new_app_layout_button_try)
         } else {
-            views.releaseNotesButtonNext.setText(R.string.action_next)
+            views.releaseNotesButtonNext.setText(CommonStrings.action_next)
         }
     }
 

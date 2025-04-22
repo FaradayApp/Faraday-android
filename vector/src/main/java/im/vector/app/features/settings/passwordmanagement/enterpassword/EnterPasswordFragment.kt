@@ -24,7 +24,6 @@ import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 import com.airbnb.mvrx.args
 import com.airbnb.mvrx.fragmentViewModel
-import im.vector.app.R
 import im.vector.app.core.platform.VectorBaseFragment
 import im.vector.app.databinding.FragmentPasswordEnterBinding
 import im.vector.app.features.MainActivity
@@ -33,6 +32,7 @@ import im.vector.app.features.home.HomeActivity
 import im.vector.app.features.settings.VectorSettingsActivity
 import im.vector.app.features.settings.passwordmanagement.passwordmanagementmain.VectorSettingsPasswordManagementFragment
 import im.vector.app.features.settings.passwordmanagement.setpassword.PasswordErrorLocation
+import im.vector.lib.strings.CommonStrings
 
 class EnterPasswordFragment :
         VectorBaseFragment<FragmentPasswordEnterBinding>() {
@@ -54,8 +54,8 @@ class EnterPasswordFragment :
 
     private fun setUpViews() {
         views.buttonNext.text = when(enterPasswordScreenArgs.type) {
-            EnterPasswordScreenType.HOME -> getString(R.string.enter)
-            EnterPasswordScreenType.SETTINGS -> getString(R.string.action_next)
+            EnterPasswordScreenType.HOME -> getString(CommonStrings.enter)
+            EnterPasswordScreenType.SETTINGS -> getString(CommonStrings.action_next)
         }
         views.buttonNext.setOnClickListener {
             viewModel.handle(EnterPasswordAction.OnClickNext)

@@ -30,6 +30,7 @@ import im.vector.app.R
 import im.vector.app.core.extensions.observeEvent
 import im.vector.app.core.settings.connectionmethods.onion.TorEvent
 import im.vector.app.features.settings.connectionmethod.ConnectionSettingsBaseFragment
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.util.ConnectionType
 import timber.log.Timber
 
@@ -115,11 +116,11 @@ class LoginConnectionSettingsFragment : ConnectionSettingsBaseFragment() {
 
         torLoggingDialog = MaterialAlertDialogBuilder(requireContext())
                 .setCancelable(false)
-                .setNeutralButton(getString(R.string.action_hide)) { dialog, _ ->
+                .setNeutralButton(getString(CommonStrings.action_hide)) { dialog, _ ->
                     torHidden = true
                     dialog.dismiss()
                 }
-                .setNegativeButton(getString(R.string.action_cancel)) { _, _ ->
+                .setNegativeButton(getString(CommonStrings.action_cancel)) { _, _ ->
                     cancelTorInit()
                 }
                 .create()
@@ -143,7 +144,7 @@ class LoginConnectionSettingsFragment : ConnectionSettingsBaseFragment() {
                 }
 
                 is TorEvent.ConnectionFailed -> {
-                    torLoggingDialog?.setMessage(getString(R.string.tor_connection_failed))
+                    torLoggingDialog?.setMessage(getString(CommonStrings.tor_connection_failed))
                     if (!torHidden && torLoggingDialog?.isShowing == false) torLoggingDialog?.show()
                     torLoggingDialog?.run {
                         getButton(BUTTON_NEUTRAL)?.isVisible = false

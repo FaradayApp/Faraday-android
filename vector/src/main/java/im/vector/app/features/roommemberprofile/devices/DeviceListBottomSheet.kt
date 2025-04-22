@@ -1,18 +1,8 @@
 /*
- * Copyright 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.roommemberprofile.devices
 
@@ -31,7 +21,6 @@ import im.vector.app.R
 import im.vector.app.core.extensions.commitTransaction
 import im.vector.app.core.platform.VectorBaseBottomSheetDialogFragment
 import im.vector.app.databinding.BottomSheetWithFragmentsBinding
-import im.vector.app.features.crypto.verification.VerificationBottomSheet
 import kotlinx.parcelize.Parcelize
 import kotlin.reflect.KClass
 
@@ -48,15 +37,7 @@ class DeviceListBottomSheet :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.observeViewEvents {
-            when (it) {
-                is DeviceListBottomSheetViewEvents.Verify -> {
-                    VerificationBottomSheet.withArgs(
-                            roomId = null,
-                            otherUserId = it.userId,
-                            transactionId = it.txID
-                    ).show(requireActivity().supportFragmentManager, "REQPOP")
-                }
-            }
+            // nop
         }
     }
 
@@ -109,13 +90,12 @@ class DeviceListBottomSheet :
     @Parcelize
     data class Args(
             val userId: String,
-            val allowDeviceAction: Boolean
     ) : Parcelable
 
     companion object {
-        fun newInstance(userId: String, allowDeviceAction: Boolean = true): DeviceListBottomSheet {
+        fun newInstance(userId: String): DeviceListBottomSheet {
             return DeviceListBottomSheet().apply {
-                setArguments(Args(userId, allowDeviceAction))
+                setArguments(Args(userId))
             }
         }
     }

@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.crypto.keysbackup.restore
 
@@ -21,10 +12,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.platform.VectorBaseFragment
 import im.vector.app.core.utils.LiveEvent
 import im.vector.app.databinding.FragmentKeysBackupRestoreSuccessBinding
+import im.vector.lib.strings.CommonPlurals
+import im.vector.lib.strings.CommonStrings
 
 @AndroidEntryPoint
 class KeysBackupRestoreSuccessFragment :
@@ -43,19 +35,19 @@ class KeysBackupRestoreSuccessFragment :
         if (compareValues(sharedViewModel.importKeyResult?.totalNumberOfKeys, 0) > 0) {
             sharedViewModel.importKeyResult?.let {
                 val part1 = resources.getQuantityString(
-                        R.plurals.keys_backup_restore_success_description_part1,
+                        CommonPlurals.keys_backup_restore_success_description_part1,
                         it.totalNumberOfKeys, it.totalNumberOfKeys
                 )
                 val part2 = resources.getQuantityString(
-                        R.plurals.keys_backup_restore_success_description_part2,
+                        CommonPlurals.keys_backup_restore_success_description_part2,
                         it.successfullyNumberOfImportedKeys, it.successfullyNumberOfImportedKeys
                 )
                 views.successDetailsText.text = String.format("%s\n%s", part1, part2)
             }
             // We don't put emoji in string xml as it will crash on old devices
-            views.successText.text = context?.getString(R.string.keys_backup_restore_success_title, "🎉")
+            views.successText.text = context?.getString(CommonStrings.keys_backup_restore_success_title, "🎉")
         } else {
-            views.successText.text = context?.getString(R.string.keys_backup_restore_success_title_already_up_to_date)
+            views.successText.text = context?.getString(CommonStrings.keys_backup_restore_success_title_already_up_to_date)
             views.successDetailsText.isVisible = false
         }
         views.keysBackupSetupDoneButton.debouncedClicks { onDone() }

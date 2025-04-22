@@ -73,7 +73,7 @@ internal class DefaultRegistrationWizard(
             userName: String?,
             password: String?,
             initialDeviceDisplayName: String?,
-            deviceId: String?
+            deviceId: String
     ): RegistrationResult {
         val params = RegistrationParams(
                 username = userName,

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2023 New Vector Ltd
+ * Copyright 2023, 2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings.notifications.usecase
@@ -48,19 +39,19 @@ internal class GetPushRulesOnInvalidStateUseCaseTest {
     fun `given a list of push rules with children not matching their parent when execute then returns the list of not matching rules`() {
         // Given
         val firstActions = listOf(Action.Notify)
-        val secondActions = listOf(Action.DoNotNotify)
+        val secondActions = emptyList<Action>()
         givenARuleList(
                 listOf(
                         // first set of related rules
                         givenARuleId(RuleIds.RULE_ID_ONE_TO_ONE_ROOM, true, firstActions),
-                        givenARuleId(RuleIds.RULE_ID_POLL_START_ONE_TO_ONE, true, listOf(Action.DoNotNotify)), // diff
+                        givenARuleId(RuleIds.RULE_ID_POLL_START_ONE_TO_ONE, true, emptyList()), // diff
                         givenARuleId(RuleIds.RULE_ID_POLL_START_ONE_TO_ONE_UNSTABLE, true, emptyList()), // diff
                         givenARuleId(RuleIds.RULE_ID_POLL_END_ONE_TO_ONE, false, listOf(Action.Notify)), // diff
                         givenARuleId(RuleIds.RULE_ID_POLL_END_ONE_TO_ONE_UNSTABLE, true, listOf(Action.Notify)),
                         // second set of related rules
                         givenARuleId(RuleIds.RULE_ID_ALL_OTHER_MESSAGES_ROOMS, false, secondActions),
                         givenARuleId(RuleIds.RULE_ID_POLL_START, true, listOf(Action.Notify)), // diff
-                        givenARuleId(RuleIds.RULE_ID_POLL_START_UNSTABLE, false, listOf(Action.DoNotNotify)),
+                        givenARuleId(RuleIds.RULE_ID_POLL_START_UNSTABLE, false, emptyList()),
                         givenARuleId(RuleIds.RULE_ID_POLL_END, false, listOf(Action.Notify)), // diff
                         givenARuleId(RuleIds.RULE_ID_POLL_END_UNSTABLE, true, listOf()), // diff
                         // Another rule

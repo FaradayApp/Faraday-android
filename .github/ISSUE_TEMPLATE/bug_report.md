@@ -32,6 +32,7 @@ If applicable, add screenshots to help explain your problem.
  - Store: [e.g. F-Droid, Google Play, SpiritCroc's F-Droid]
  - Homeserver: [e.g. matrix.org]
  - Related labs settings: [Have you enabled any settings in labs (which ones), and does the issue still exist when disabling these?]
+ - Logs have been submitted using the app's built-in bug report (/"rageshake") mechanism: [yes/no]
 
 **Upstream relevance**
  - Does this issue exist in Element Android?

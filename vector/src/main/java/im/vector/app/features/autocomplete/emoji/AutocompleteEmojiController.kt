@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.autocomplete.emoji
@@ -21,9 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.epoxy.TypedEpoxyController
 import im.vector.app.EmojiCompatFontProvider
 import im.vector.app.features.autocomplete.AutocompleteClickListener
-import im.vector.app.features.autocomplete.autocompleteHeaderItem
 import im.vector.app.features.autocomplete.member.AutocompleteEmojiDataItem
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarHelper
 import im.vector.app.features.reactions.data.EmojiItem
 import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.session.content.ContentUrlResolver
@@ -67,8 +57,8 @@ class AutocompleteEmojiController @Inject constructor(
     }
 
     private fun buildHeaderItem(header: AutocompleteEmojiDataItem.Header) {
-        autocompleteHeaderItem {
-            id(header.id)
+        autocompleteEmojiHeaderItem {
+            id("h/${header.id}")
             title(header.title)
         }
     }
@@ -76,13 +66,13 @@ class AutocompleteEmojiController @Inject constructor(
     private fun buildEmojiItem(emojiItem: EmojiItem) {
         val host = this
         autocompleteEmojiItem {
-            id(emojiItem.name)
+            id("e/${emojiItem.name}/${emojiItem.mxcUrl}")
             emojiItem(emojiItem)
             // For caching reasons, we use the AvatarRenderer's thumbnail size here
             emoteUrl(
                     host.session.contentUrlResolver().resolveThumbnail(
                             emojiItem.mxcUrl,
-                            AvatarRenderer.THUMBNAIL_SIZE, AvatarRenderer.THUMBNAIL_SIZE, ContentUrlResolver.ThumbnailMethod.SCALE
+                            AvatarHelper.THUMBNAIL_SIZE, AvatarHelper.THUMBNAIL_SIZE, ContentUrlResolver.ThumbnailMethod.SCALE
                     )
             )
             emojiTypeFace(host.emojiTypeface)
@@ -93,7 +83,7 @@ class AutocompleteEmojiController @Inject constructor(
     private fun buildExpandItem(item: AutocompleteEmojiDataItem.Expand) {
         val host = this
         autocompleteExpandItem {
-            id(item.loadMoreKey + "/" + item.loadMoreKeySecondary)
+            id("x/${item.loadMoreKey}/${item.loadMoreKeySecondary}")
             count(item.count)
             onClickListener { host.listener?.onLoadMoreClick(item) }
         }
@@ -110,8 +100,10 @@ class AutocompleteEmojiController @Inject constructor(
     }
 
     companion object {
+        // Count of standard emoji matches
+        const val STANDARD_EMOJI_MAX = 7
         // Count of emojis for the current room's image pack
-        const val CUSTOM_THIS_ROOM_MAX = 10
+        const val CUSTOM_THIS_ROOM_MAX = 8
         // Count of emojis per other image pack
         const val CUSTOM_OTHER_ROOM_MAX = 5
         // Count of emojis for global account data
@@ -122,7 +114,8 @@ class AutocompleteEmojiController @Inject constructor(
         const val MAX = 50
         // Total max after expanding a section
         const val MAX_EXPAND = 10000
-        // Internal ID
+        // Internal IDs
         const val ACCOUNT_DATA_EMOTE_ID = "de.spiritcroc.riotx.ACCOUNT_DATA_EMOTES"
+        const val STANDARD_EMOJI_ID = "de.spiritcroc.riotx.STANDARD_EMOJI"
     }
 }

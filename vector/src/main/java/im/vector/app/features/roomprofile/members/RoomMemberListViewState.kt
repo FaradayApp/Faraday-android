@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.roomprofile.members
@@ -20,9 +11,9 @@ import androidx.annotation.StringRes
 import com.airbnb.mvrx.Async
 import com.airbnb.mvrx.MavericksState
 import com.airbnb.mvrx.Uninitialized
-import im.vector.app.R
 import im.vector.app.core.platform.GenericIdArgs
 import im.vector.app.features.roomprofile.RoomProfileArgs
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.session.crypto.model.UserVerificationLevel
 import org.matrix.android.sdk.api.session.events.model.Event
 import org.matrix.android.sdk.api.session.room.model.RoomMemberSummary
@@ -54,17 +45,17 @@ typealias RoomMemberSummaries = List<Pair<RoomMemberListCategories, List<RoomMem
 typealias RoomMemberSummariesWithPower = List<Pair<RoomMemberListCategories, List<RoomMemberListViewModel.RoomMemberSummaryWithPower>>>
 
 enum class RoomMemberListCategories(@StringRes val titleRes: Int) {
-    ADMIN(R.string.room_member_power_level_admins),
-    MODERATOR(R.string.room_member_power_level_moderators),
-    CUSTOM(R.string.room_member_power_level_custom),
-    INVITE(R.string.room_member_power_level_invites),
-    USER(R.string.room_member_power_level_users),
+    ADMIN(CommonStrings.room_member_power_level_admins),
+    MODERATOR(CommonStrings.room_member_power_level_moderators),
+    CUSTOM(CommonStrings.room_member_power_level_custom),
+    INVITE(CommonStrings.room_member_power_level_invites),
+    USER(CommonStrings.room_member_power_level_users),
 
     // Singular variants
-    SG_ADMIN(R.string.power_level_admin),
-    SG_MODERATOR(R.string.power_level_moderator),
-    SG_CUSTOM(R.string.power_level_custom_no_value),
-    SG_USER(R.string.power_level_default),
+    SG_ADMIN(CommonStrings.power_level_admin),
+    SG_MODERATOR(CommonStrings.power_level_moderator),
+    SG_CUSTOM(CommonStrings.power_level_custom_no_value),
+    SG_USER(CommonStrings.power_level_default),
     // Header for unified members
-    MEMBER(R.string.room_member_power_level_users)
+    MEMBER(CommonStrings.room_member_power_level_users)
 }

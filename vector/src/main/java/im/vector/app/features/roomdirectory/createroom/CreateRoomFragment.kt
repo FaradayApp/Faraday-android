@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.roomdirectory.createroom
@@ -31,7 +22,6 @@ import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.dialogs.GalleryOrCameraDialogHelper
 import im.vector.app.core.dialogs.GalleryOrCameraDialogHelperFactory
 import im.vector.app.core.extensions.cleanup
@@ -46,6 +36,7 @@ import im.vector.app.features.roomdirectory.RoomDirectorySharedActionViewModel
 import im.vector.app.features.roomprofile.settings.joinrule.RoomJoinRuleBottomSheet
 import im.vector.app.features.roomprofile.settings.joinrule.RoomJoinRuleSharedActionViewModel
 import im.vector.app.features.roomprofile.settings.joinrule.toOption
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.parcelize.Parcelize
@@ -96,7 +87,7 @@ class CreateRoomFragment :
         setupWaitingView()
         setupRecyclerView()
         setupToolbar(views.createRoomToolbar)
-                .setTitle(if (args.isSpace) R.string.create_new_space else R.string.create_new_room)
+                .setTitle(if (args.isSpace) CommonStrings.create_new_space else CommonStrings.create_new_room)
                 .allowBack(useCross = true)
         viewModel.observeViewEvents {
             when (it) {
@@ -129,7 +120,7 @@ class CreateRoomFragment :
     private fun setupWaitingView() {
         views.waitingView.waitingStatusText.isVisible = true
         views.waitingView.waitingStatusText.setText(
-                if (args.isSpace) R.string.create_space_in_progress else R.string.create_room_in_progress
+                if (args.isSpace) CommonStrings.create_space_in_progress else CommonStrings.create_room_in_progress
         )
     }
 
@@ -214,12 +205,12 @@ class CreateRoomFragment :
         return withState(viewModel) {
             return@withState if (!it.isEmpty()) {
                 MaterialAlertDialogBuilder(requireContext())
-                        .setTitle(R.string.dialog_title_warning)
-                        .setMessage(R.string.warning_room_not_created_yet)
-                        .setPositiveButton(R.string.yes) { _, _ ->
+                        .setTitle(CommonStrings.dialog_title_warning)
+                        .setMessage(CommonStrings.warning_room_not_created_yet)
+                        .setPositiveButton(CommonStrings.yes) { _, _ ->
                             viewModel.handle(CreateRoomAction.Reset)
                         }
-                        .setNegativeButton(R.string.no, null)
+                        .setNegativeButton(CommonStrings.no, null)
                         .show()
                 true
             } else {

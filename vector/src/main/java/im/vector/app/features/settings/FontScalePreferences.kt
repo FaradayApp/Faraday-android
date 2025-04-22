@@ -1,17 +1,8 @@
 /*
- * Copyright 2018 New Vector Ltd
+ * Copyright 2018-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings
@@ -19,9 +10,9 @@ package im.vector.app.features.settings
 import android.content.SharedPreferences
 import androidx.annotation.StringRes
 import androidx.core.content.edit
-import im.vector.app.R
 import im.vector.app.core.di.DefaultPreferences
 import im.vector.app.core.utils.SystemSettingsProvider
+import im.vector.lib.strings.CommonStrings
 import javax.inject.Inject
 
 /**
@@ -83,13 +74,13 @@ class FontScalePreferencesImpl @Inject constructor(
     }
 
     private val fontScaleValues = listOf(
-            FontScaleValue(0, "FONT_SCALE_TINY", FontScalePreferences.SCALE_TINY, R.string.tiny),
-            FontScaleValue(1, "FONT_SCALE_SMALL", FontScalePreferences.SCALE_SMALL, R.string.small),
-            FontScaleValue(2, "FONT_SCALE_NORMAL", FontScalePreferences.SCALE_NORMAL, R.string.normal),
-            FontScaleValue(3, "FONT_SCALE_LARGE", FontScalePreferences.SCALE_LARGE, R.string.large),
-            FontScaleValue(4, "FONT_SCALE_LARGER", FontScalePreferences.SCALE_LARGER, R.string.larger),
-            FontScaleValue(5, "FONT_SCALE_LARGEST", FontScalePreferences.SCALE_LARGEST, R.string.largest),
-            FontScaleValue(6, "FONT_SCALE_HUGE", FontScalePreferences.SCALE_HUGE, R.string.huge)
+            FontScaleValue(0, "FONT_SCALE_TINY", FontScalePreferences.SCALE_TINY, CommonStrings.tiny),
+            FontScaleValue(1, "FONT_SCALE_SMALL", FontScalePreferences.SCALE_SMALL, CommonStrings.small),
+            FontScaleValue(2, "FONT_SCALE_NORMAL", FontScalePreferences.SCALE_NORMAL, CommonStrings.normal),
+            FontScaleValue(3, "FONT_SCALE_LARGE", FontScalePreferences.SCALE_LARGE, CommonStrings.large),
+            FontScaleValue(4, "FONT_SCALE_LARGER", FontScalePreferences.SCALE_LARGER, CommonStrings.larger),
+            FontScaleValue(5, "FONT_SCALE_LARGEST", FontScalePreferences.SCALE_LARGEST, CommonStrings.largest),
+            FontScaleValue(6, "FONT_SCALE_HUGE", FontScalePreferences.SCALE_HUGE, CommonStrings.huge)
     )
 
     private val normalFontScaleValue = fontScaleValues[2]

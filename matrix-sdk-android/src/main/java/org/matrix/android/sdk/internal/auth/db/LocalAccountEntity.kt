@@ -27,7 +27,7 @@ internal open class LocalAccountEntity(
         var username: String? = null,
         var password: String? = null,
         var homeServerUrl: String = "",
-        var deviceId: String? = null,
+        var deviceId: String = "",
         var refreshToken: String? = null,
         var isNew: Boolean = false,
         var unreadCount: Int = 0,

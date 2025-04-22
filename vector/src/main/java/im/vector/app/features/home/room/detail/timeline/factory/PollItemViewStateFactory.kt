@@ -1,25 +1,17 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.detail.timeline.factory
 
-import im.vector.app.R
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.features.home.room.detail.timeline.item.PollResponseData
 import im.vector.app.features.poll.PollItemViewState
+import im.vector.lib.strings.CommonPlurals
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.extensions.orFalse
 import org.matrix.android.sdk.api.session.room.model.message.MessagePollContent
 import org.matrix.android.sdk.api.session.room.model.message.PollCreationInfo
@@ -61,7 +53,7 @@ class PollItemViewStateFactory @Inject constructor(
     private fun createSendingPollViewState(question: String, pollCreationInfo: PollCreationInfo?): PollItemViewState {
         return PollItemViewState(
                 question = question,
-                votesStatus = stringProvider.getString(R.string.poll_no_votes_cast),
+                votesStatus = stringProvider.getString(CommonStrings.poll_no_votes_cast),
                 canVote = false,
                 optionViewStates = pollOptionViewStateFactory.createPollSendingOptions(pollCreationInfo),
         )
@@ -74,9 +66,9 @@ class PollItemViewStateFactory @Inject constructor(
             totalVotes: Int,
     ): PollItemViewState {
         val totalVotesText = if (pollResponseData?.hasEncryptedRelatedEvents.orFalse()) {
-            stringProvider.getString(R.string.unable_to_decrypt_some_events_in_poll)
+            stringProvider.getString(CommonStrings.unable_to_decrypt_some_events_in_poll)
         } else {
-            stringProvider.getQuantityString(R.plurals.poll_total_vote_count_after_ended, totalVotes, totalVotes)
+            stringProvider.getQuantityString(CommonPlurals.poll_total_vote_count_after_ended, totalVotes, totalVotes)
         }
         return PollItemViewState(
                 question = question,
@@ -93,7 +85,7 @@ class PollItemViewStateFactory @Inject constructor(
     ): PollItemViewState {
         return PollItemViewState(
                 question = question,
-                votesStatus = stringProvider.getString(R.string.poll_undisclosed_not_ended),
+                votesStatus = stringProvider.getString(CommonStrings.poll_undisclosed_not_ended),
                 canVote = true,
                 optionViewStates = pollOptionViewStateFactory.createPollUndisclosedOptions(pollCreationInfo, pollResponseData),
         )
@@ -106,9 +98,9 @@ class PollItemViewStateFactory @Inject constructor(
             totalVotes: Int
     ): PollItemViewState {
         val totalVotesText = if (pollResponseData?.hasEncryptedRelatedEvents.orFalse()) {
-            stringProvider.getString(R.string.unable_to_decrypt_some_events_in_poll)
+            stringProvider.getString(CommonStrings.unable_to_decrypt_some_events_in_poll)
         } else {
-            stringProvider.getQuantityString(R.plurals.poll_total_vote_count_before_ended_and_voted, totalVotes, totalVotes)
+            stringProvider.getQuantityString(CommonPlurals.poll_total_vote_count_before_ended_and_voted, totalVotes, totalVotes)
         }
         return PollItemViewState(
                 question = question,
@@ -124,9 +116,9 @@ class PollItemViewStateFactory @Inject constructor(
             totalVotes: Int
     ): PollItemViewState {
         val totalVotesText = if (totalVotes == 0) {
-            stringProvider.getString(R.string.poll_no_votes_cast)
+            stringProvider.getString(CommonStrings.poll_no_votes_cast)
         } else {
-            stringProvider.getQuantityString(R.plurals.poll_total_vote_count_before_ended_and_not_voted, totalVotes, totalVotes)
+            stringProvider.getQuantityString(CommonPlurals.poll_total_vote_count_before_ended_and_not_voted, totalVotes, totalVotes)
         }
         return PollItemViewState(
                 question = question,

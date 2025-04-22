@@ -1,0 +1,2 @@
+- Update codebase to Element v1.6.22
+- Fix misaligned color preferences

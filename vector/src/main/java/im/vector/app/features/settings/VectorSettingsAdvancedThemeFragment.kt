@@ -21,13 +21,14 @@ import de.spiritcroc.preference.ColorMatrixListPreference
 import im.vector.app.R
 import im.vector.app.core.extensions.restart
 import im.vector.app.features.themes.ThemeUtils
+import im.vector.lib.strings.CommonStrings
 import javax.inject.Inject
 
 class VectorSettingsAdvancedThemeFragment @Inject constructor(
         //private val vectorPreferences: VectorPreferences
 ) : VectorSettingsBaseFragment() {
 
-    override var titleRes = R.string.settings_advanced_theme_settings
+    override var titleRes = CommonStrings.settings_advanced_theme_settings
     override val preferenceXmlRes = R.xml.vector_settings_advanced_theme_settings
 
     override fun bindPref() {

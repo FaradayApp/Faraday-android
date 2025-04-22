@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.detail.timeline.item
@@ -28,6 +19,7 @@ import im.vector.app.features.home.room.detail.RoomDetailAction.VoiceBroadcastAc
 import im.vector.app.features.voicebroadcast.model.VoiceBroadcastState
 import im.vector.app.features.voicebroadcast.recording.VoiceBroadcastRecorder
 import im.vector.app.features.voicebroadcast.views.VoiceBroadcastMetadataView
+import im.vector.lib.strings.CommonStrings
 import org.threeten.bp.Duration
 
 @EpoxyModelClass
@@ -75,7 +67,7 @@ abstract class MessageVoiceBroadcastRecordingItem : AbsMessageVoiceBroadcastItem
                     holder.view.context,
                     Duration.ofSeconds(remainingTime.coerceAtLeast(0L))
             )
-            holder.remainingTimeMetadata.value = holder.view.resources.getString(R.string.voice_broadcast_recording_time_left, formattedDuration)
+            holder.remainingTimeMetadata.value = holder.view.resources.getString(CommonStrings.voice_broadcast_recording_time_left, formattedDuration)
             holder.remainingTimeMetadata.isVisible = true
         } else {
             holder.remainingTimeMetadata.isVisible = false
@@ -107,10 +99,10 @@ abstract class MessageVoiceBroadcastRecordingItem : AbsMessageVoiceBroadcastItem
         recordButton.isEnabled = true
         renderErrorState(holder, false)
 
-        val drawableColor = colorProvider.getColorFromAttribute(R.attr.vctr_content_secondary)
+        val drawableColor = colorProvider.getColorFromAttribute(im.vector.lib.ui.styles.R.attr.vctr_content_secondary)
         val drawable = drawableProvider.getDrawable(R.drawable.ic_play_pause_pause, drawableColor)
         recordButton.setImageDrawable(drawable)
-        recordButton.contentDescription = holder.view.resources.getString(R.string.a11y_pause_voice_broadcast_record)
+        recordButton.contentDescription = holder.view.resources.getString(CommonStrings.a11y_pause_voice_broadcast_record)
         recordButton.onClick { callback?.onTimelineItemAction(VoiceBroadcastAction.Recording.Pause) }
         stopRecordButton.onClick { callback?.onTimelineItemAction(VoiceBroadcastAction.Recording.Stop) }
     }
@@ -121,7 +113,7 @@ abstract class MessageVoiceBroadcastRecordingItem : AbsMessageVoiceBroadcastItem
         renderErrorState(holder, false)
 
         recordButton.setImageResource(R.drawable.ic_recording_dot)
-        recordButton.contentDescription = holder.view.resources.getString(R.string.a11y_resume_voice_broadcast_record)
+        recordButton.contentDescription = holder.view.resources.getString(CommonStrings.a11y_resume_voice_broadcast_record)
         recordButton.onClick { callback?.onTimelineItemAction(VoiceBroadcastAction.Recording.Resume) }
         stopRecordButton.onClick { callback?.onTimelineItemAction(VoiceBroadcastAction.Recording.Stop) }
     }

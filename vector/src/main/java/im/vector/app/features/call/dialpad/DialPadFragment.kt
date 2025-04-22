@@ -1,21 +1,13 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.call.dialpad
 
+import android.annotation.SuppressLint
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.res.ColorStateList
@@ -37,7 +29,7 @@ import androidx.core.widget.ImageViewCompat
 import androidx.fragment.app.Fragment
 import com.android.dialer.dialpadview.DialpadView
 import com.android.dialer.dialpadview.DigitsEditText
-import im.vector.app.R
+import com.android.dialer.dialpadview.R
 import im.vector.app.core.extensions.singletonEntryPoint
 import im.vector.app.features.analytics.AnalyticsTracker
 import im.vector.app.features.analytics.plan.MobileScreen
@@ -70,6 +62,7 @@ class DialPadFragment : Fragment(), TextWatcher {
         analyticsTracker.screen(MobileScreen(screenName = MobileScreen.ScreenName.Dialpad))
     }
 
+    @SuppressLint("WrongThread")
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
@@ -77,14 +70,14 @@ class DialPadFragment : Fragment(), TextWatcher {
     ): View {
         initArgs(savedInstanceState)
         val view = inflater.inflate(R.layout.dialpad_fragment, container, false)
-        view.setBackgroundColor(ThemeUtils.getColor(requireContext(), R.attr.backgroundColor))
+        view.setBackgroundColor(ThemeUtils.getColor(requireContext(), com.google.android.material.R.attr.backgroundColor))
         val dialpadView = view.findViewById<View>(R.id.dialpad_view) as DialpadView
         dialpadView.findViewById<View>(R.id.dialpad_key_voicemail).isVisible = false
         digits = dialpadView.digits as DigitsEditText
         digits.isCursorVisible = cursorVisible
         digits.inputType = InputType.TYPE_CLASS_PHONE
         digits.keyListener = DialerKeyListener.getInstance()
-        digits.setTextColor(ThemeUtils.getColor(requireContext(), R.attr.vctr_content_primary))
+        digits.setTextColor(ThemeUtils.getColor(requireContext(), im.vector.lib.ui.styles.R.attr.vctr_content_primary))
         digits.addTextChangedListener(PhoneNumberFormattingTextWatcher(if (formatAsYouType) regionCode else ""))
         digits.addTextChangedListener(this)
         dialpadView.findViewById<View>(R.id.zero).setOnClickListener { keyPressed(KeyEvent.KEYCODE_0, "0") }
@@ -119,7 +112,7 @@ class DialPadFragment : Fragment(), TextWatcher {
                 clear()
                 true
             }
-            val tintColor = ThemeUtils.getColor(requireContext(), R.attr.vctr_content_secondary)
+            val tintColor = ThemeUtils.getColor(requireContext(), im.vector.lib.ui.styles.R.attr.vctr_content_secondary)
             ImageViewCompat.setImageTintList(dialpadView.deleteButton, ColorStateList.valueOf(tintColor))
         } else {
             dialpadView.deleteButton.isVisible = false
@@ -190,7 +183,7 @@ class DialPadFragment : Fragment(), TextWatcher {
 
     fun clear() {
         if (::digits.isInitialized) {
-            digits.setText("")
+            digits.text = null
         }
     }
 

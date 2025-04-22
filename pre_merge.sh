@@ -13,7 +13,7 @@ versionMajor=`get_prop ext.versionMajor`
 versionMinor=`get_prop ext.versionMinor`
 versionPatch=`get_prop ext.versionPatch`
 tag="sc_last_v$versionMajor.$versionMinor.$versionPatch"
-git tag "$tag"
+git tag "$tag" || true
 
 # Revert Schildi's upstream string changes
 git checkout `upstream_common_base` -- "$mydir/library/ui-strings/src/main/res/**/strings.xml"

@@ -1,18 +1,8 @@
 /*
- * Copyright 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.roommemberprofile
@@ -50,14 +40,15 @@ import im.vector.app.databinding.DialogShareQrCodeBinding
 import im.vector.app.databinding.FragmentMatrixProfileBinding
 import im.vector.app.databinding.ViewStubRoomMemberProfileHeaderBinding
 import im.vector.app.features.analytics.plan.MobileScreen
-import im.vector.app.features.crypto.verification.VerificationBottomSheet
+import im.vector.app.features.crypto.verification.user.UserVerificationBottomSheet
 import im.vector.app.features.displayname.getBestName
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.home.room.detail.RoomDetailPendingAction
 import im.vector.app.features.home.room.detail.RoomDetailPendingActionStore
 import im.vector.app.features.home.room.detail.timeline.helper.MatrixItemColorProvider
 import im.vector.app.features.roommemberprofile.devices.DeviceListBottomSheet
 import im.vector.app.features.roommemberprofile.powerlevel.EditPowerLevelDialogs
+import im.vector.lib.strings.CommonStrings
 import kotlinx.parcelize.Parcelize
 import org.matrix.android.sdk.api.session.crypto.model.UserVerificationLevel
 import org.matrix.android.sdk.api.session.room.powerlevels.Role
@@ -140,9 +131,18 @@ class RoomMemberProfileFragment :
                 is RoomMemberProfileViewEvents.OnIgnoreActionSuccess -> Unit
                 is RoomMemberProfileViewEvents.OnInviteActionSuccess -> Unit
                 RoomMemberProfileViewEvents.GoBack -> handleGoBack()
+                RoomMemberProfileViewEvents.OnReportActionSuccess -> handleReportSuccess()
             }
         }
         setupLongClicks()
+    }
+
+    private fun handleReportSuccess() {
+        MaterialAlertDialogBuilder(requireContext())
+                .setTitle(CommonStrings.user_reported_as_inappropriate_title)
+                .setMessage(CommonStrings.user_reported_as_inappropriate_content)
+                .setPositiveButton(CommonStrings.ok, null)
+                .show()
     }
 
     private fun setupLongClicks() {
@@ -178,19 +178,19 @@ class RoomMemberProfileFragment :
 
     private fun handleStartVerification(startVerification: RoomMemberProfileViewEvents.StartVerification) {
         if (startVerification.canCrossSign) {
-            VerificationBottomSheet
-                    .withArgs(roomId = null, otherUserId = startVerification.userId)
+            UserVerificationBottomSheet
+                    .verifyUser(otherUserId = startVerification.userId)
                     .show(parentFragmentManager, "VERIF")
         } else {
             MaterialAlertDialogBuilder(requireContext())
-                    .setTitle(R.string.dialog_title_warning)
-                    .setMessage(R.string.verify_cannot_cross_sign)
-                    .setPositiveButton(R.string.verification_profile_verify) { _, _ ->
-                        VerificationBottomSheet
-                                .withArgs(roomId = null, otherUserId = startVerification.userId)
+                    .setTitle(CommonStrings.dialog_title_warning)
+                    .setMessage(CommonStrings.verify_cannot_cross_sign)
+                    .setPositiveButton(CommonStrings.verification_profile_verify) { _, _ ->
+                        UserVerificationBottomSheet
+                                .verifyUser(otherUserId = startVerification.userId)
                                 .show(parentFragmentManager, "VERIF")
                     }
-                    .setNegativeButton(R.string.action_cancel, null)
+                    .setNegativeButton(CommonStrings.action_cancel, null)
                     .show()
         }
     }
@@ -280,13 +280,13 @@ class RoomMemberProfileFragment :
         val positiveButtonRes: Int
         val confirmationRes: Int
         if (isIgnored) {
-            confirmationRes = R.string.room_participants_action_unignore_prompt_msg
-            titleRes = R.string.room_participants_action_unignore_title
-            positiveButtonRes = R.string.room_participants_action_unignore
+            confirmationRes = CommonStrings.room_participants_action_unignore_prompt_msg
+            titleRes = CommonStrings.room_participants_action_unignore_title
+            positiveButtonRes = CommonStrings.room_participants_action_unignore
         } else {
-            confirmationRes = R.string.room_participants_action_ignore_prompt_msg
-            titleRes = R.string.room_participants_action_ignore_title
-            positiveButtonRes = R.string.room_participants_action_ignore
+            confirmationRes = CommonStrings.room_participants_action_ignore_prompt_msg
+            titleRes = CommonStrings.room_participants_action_ignore_title
+            positiveButtonRes = CommonStrings.room_participants_action_ignore
         }
         ConfirmationDialogBuilder
                 .show(
@@ -299,6 +299,10 @@ class RoomMemberProfileFragment :
                 ) {
                     viewModel.handle(RoomMemberProfileAction.IgnoreUser)
                 }
+    }
+
+    override fun onReportClicked() {
+        viewModel.handle(RoomMemberProfileAction.ReportUser)
     }
 
     override fun onTapVerify() {
@@ -338,8 +342,8 @@ class RoomMemberProfileFragment :
         views.itemShareQrCodeImage.setData(permalink)
         MaterialAlertDialogBuilder(requireContext())
                 .setView(view)
-                .setNeutralButton(R.string.ok, null)
-                .setPositiveButton(R.string.share_by_text) { _, _ ->
+                .setNeutralButton(CommonStrings.ok, null)
+                .setPositiveButton(CommonStrings.share_by_text) { _, _ ->
                     startSharePlainTextIntent(
                             context = requireContext(),
                             activityResultLauncher = null,
@@ -361,20 +365,20 @@ class RoomMemberProfileFragment :
         views.editText.hint = "#000000"
 
         MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.room_member_override_nick_color)
+                .setTitle(CommonStrings.room_member_override_nick_color)
                 .setView(layout)
-                .setPositiveButton(R.string.ok) { _, _ ->
+                .setPositiveButton(CommonStrings.ok) { _, _ ->
                     val newColor = views.editText.text.toString()
                     if (newColor != state.userColorOverride) {
                         viewModel.handle(RoomMemberProfileAction.SetUserColorOverride(newColor))
                     }
                 }
-                .setNegativeButton(R.string.action_cancel, null)
+                .setNegativeButton(CommonStrings.action_cancel, null)
                 .show()
     }
 
     override fun onEditPowerLevel(currentRole: Role) {
-        EditPowerLevelDialogs.showChoice(requireActivity(), R.string.power_level_edit_title, currentRole) { newPowerLevel ->
+        EditPowerLevelDialogs.showChoice(requireActivity(), CommonStrings.power_level_edit_title, currentRole) { newPowerLevel ->
             viewModel.handle(RoomMemberProfileAction.SetPowerLevel(currentRole.value, newPowerLevel, true))
         }
     }
@@ -384,11 +388,11 @@ class RoomMemberProfileFragment :
                 .show(
                         activity = requireActivity(),
                         askForReason = true,
-                        confirmationRes = if (isSpace) R.string.space_participants_remove_prompt_msg
-                        else R.string.room_participants_remove_prompt_msg,
-                        positiveRes = R.string.room_participants_action_remove,
-                        reasonHintRes = R.string.room_participants_remove_reason,
-                        titleRes = R.string.room_participants_remove_title
+                        confirmationRes = if (isSpace) CommonStrings.space_participants_remove_prompt_msg
+                        else CommonStrings.room_participants_remove_prompt_msg,
+                        positiveRes = CommonStrings.room_participants_action_remove,
+                        reasonHintRes = CommonStrings.room_participants_remove_reason,
+                        titleRes = CommonStrings.room_participants_remove_title
                 ) { reason ->
                     viewModel.handle(RoomMemberProfileAction.KickUser(reason))
                 }
@@ -399,15 +403,15 @@ class RoomMemberProfileFragment :
         val positiveButtonRes: Int
         val confirmationRes: Int
         if (isUserBanned) {
-            confirmationRes = if (isSpace) R.string.space_participants_unban_prompt_msg
-            else R.string.room_participants_unban_prompt_msg
-            titleRes = R.string.room_participants_unban_title
-            positiveButtonRes = R.string.room_participants_action_unban
+            confirmationRes = if (isSpace) CommonStrings.space_participants_unban_prompt_msg
+            else CommonStrings.room_participants_unban_prompt_msg
+            titleRes = CommonStrings.room_participants_unban_title
+            positiveButtonRes = CommonStrings.room_participants_action_unban
         } else {
-            confirmationRes = if (isSpace) R.string.space_participants_ban_prompt_msg
-            else R.string.room_participants_ban_prompt_msg
-            titleRes = R.string.room_participants_ban_title
-            positiveButtonRes = R.string.room_participants_action_ban
+            confirmationRes = if (isSpace) CommonStrings.space_participants_ban_prompt_msg
+            else CommonStrings.room_participants_ban_prompt_msg
+            titleRes = CommonStrings.room_participants_ban_title
+            positiveButtonRes = CommonStrings.room_participants_action_ban
         }
         ConfirmationDialogBuilder
                 .show(
@@ -415,7 +419,7 @@ class RoomMemberProfileFragment :
                         askForReason = !isUserBanned,
                         confirmationRes = confirmationRes,
                         positiveRes = positiveButtonRes,
-                        reasonHintRes = R.string.room_participants_ban_reason,
+                        reasonHintRes = CommonStrings.room_participants_ban_reason,
                         titleRes = titleRes
                 ) { reason ->
                     viewModel.handle(RoomMemberProfileAction.BanOrUnbanUser(reason))
@@ -427,10 +431,10 @@ class RoomMemberProfileFragment :
                 .show(
                         activity = requireActivity(),
                         askForReason = false,
-                        confirmationRes = R.string.room_participants_action_cancel_invite_prompt_msg,
-                        positiveRes = R.string.room_participants_action_cancel_invite,
+                        confirmationRes = CommonStrings.room_participants_action_cancel_invite_prompt_msg,
+                        positiveRes = CommonStrings.room_participants_action_cancel_invite,
                         reasonHintRes = 0,
-                        titleRes = R.string.room_participants_action_cancel_invite_title
+                        titleRes = CommonStrings.room_participants_action_cancel_invite_title
                 ) {
                     viewModel.handle(RoomMemberProfileAction.KickUser(null))
                 }

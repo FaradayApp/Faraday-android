@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.notifications
 
@@ -24,7 +15,9 @@ import im.vector.app.R
 import im.vector.app.core.resources.BuildMeta
 import im.vector.app.core.utils.FirstThrottler
 import im.vector.app.features.displayname.getBestName
+import im.vector.app.features.session.coroutineScope
 import im.vector.app.features.settings.VectorPreferences
+import kotlinx.coroutines.launch
 import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.session.content.ContentUrlResolver
 import org.matrix.android.sdk.api.session.getUserOrDefault
@@ -62,7 +55,7 @@ class NotificationDrawerManager @Inject constructor(
      * Lazily initializes the NotificationState as we rely on having a current session in order to fetch the persisted queue of events.
      */
     private val notificationState by lazy { createInitialNotificationState() }
-    private val avatarSize = context.resources.getDimensionPixelSize(R.dimen.profile_avatar_size)
+    private val avatarSize = context.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.profile_avatar_size)
     private var currentRoomId: String? = null
     private var currentThreadId: String? = null
     private val firstThrottler = FirstThrottler(200)
@@ -125,11 +118,15 @@ class NotificationDrawerManager @Inject constructor(
      * Used to ignore events related to that room (no need to display notification) and clean any existing notification on this room.
      */
     fun setCurrentRoom(roomId: String?) {
-        updateEvents {
-            val hasChanged = roomId != currentRoomId
-            currentRoomId = roomId
-            if (hasChanged && roomId != null) {
-                it.clearMessagesForRoom(roomId)
+        val dispatcher = currentSession?.coroutineDispatchers?.io ?: return
+        val scope = currentSession?.coroutineScope ?: return
+        scope.launch(dispatcher) {
+            updateEvents {
+                val hasChanged = roomId != currentRoomId
+                currentRoomId = roomId
+                if (hasChanged && roomId != null) {
+                    it.clearMessagesForRoom(roomId)
+                }
             }
         }
     }
@@ -139,12 +136,16 @@ class NotificationDrawerManager @Inject constructor(
      * Used to ignore events related to that thread (no need to display notification) and clean any existing notification on this room.
      */
     fun setCurrentThread(threadId: String?) {
-        updateEvents {
-            val hasChanged = threadId != currentThreadId
-            currentThreadId = threadId
-            currentRoomId?.let { roomId ->
-                if (hasChanged && threadId != null) {
-                    it.clearMessagesForThread(roomId, threadId)
+        val dispatcher = currentSession?.coroutineDispatchers?.io ?: return
+        val scope = currentSession?.coroutineScope ?: return
+        scope.launch(dispatcher) {
+            updateEvents {
+                val hasChanged = threadId != currentThreadId
+                currentThreadId = threadId
+                currentRoomId?.let { roomId ->
+                    if (hasChanged && threadId != null) {
+                        it.clearMessagesForThread(roomId, threadId)
+                    }
                 }
             }
         }

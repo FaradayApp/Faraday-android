@@ -9,8 +9,6 @@ import android.view.View
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.text.getSpans
 import androidx.core.text.toSpanned
-import androidx.core.view.ViewCompat.LAYOUT_DIRECTION_RTL
-import im.vector.app.R
 import im.vector.app.features.html.HtmlCodeSpan
 import io.noties.markwon.core.spans.EmphasisSpan
 import kotlin.math.ceil
@@ -67,7 +65,7 @@ interface AbstractFooteredTextView {
         val lastLine = layout.lineCount - 1
 
         // Let's check if the last line's text has the same RTL behaviour as the layout direction.
-        val viewIsRtl = layoutDirection == LAYOUT_DIRECTION_RTL
+        val viewIsRtl = layoutDirection == View.LAYOUT_DIRECTION_RTL
         val looksLikeRtl = layout.getParagraphDirection(lastLine) == Layout.DIR_RIGHT_TO_LEFT
         /*
         val lastVisibleCharacter = layout.getLineVisibleEnd(lastLine) - 1
@@ -104,7 +102,7 @@ interface AbstractFooteredTextView {
                 if (looksLikeRtl == viewIsRtl)
                     widthLastLine
                 else
-                    (maxLineWidth + resources.getDimensionPixelSize(R.dimen.sc_footer_rtl_mismatch_extra_padding))
+                    (maxLineWidth + resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.sc_footer_rtl_mismatch_extra_padding))
                 ) + footerState.footerWidth
 
         // If the last line is a multi-line code block, we have never space in the last line (as the black background always uses full width)
@@ -139,12 +137,12 @@ interface AbstractFooteredTextView {
             newHeight += footerState.footerHeight
             // Ensure enough width for footer bellow
             newWidth = max(newWidth, footerState.footerWidth +
-                    resources.getDimensionPixelSize(R.dimen.sc_footer_padding_compensation) +
-                    2 * resources.getDimensionPixelSize(R.dimen.sc_footer_overlay_padding))
+                    resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.sc_footer_padding_compensation) +
+                    2 * resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.sc_footer_overlay_padding))
         }
 
         if (addItalicPadding) {
-            newWidth += resources.getDimensionPixelSize(R.dimen.italic_text_view_extra_padding)
+            newWidth += resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.italic_text_view_extra_padding)
         }
 
         //setMeasuredDimension(newWidth, newHeight)

@@ -25,11 +25,13 @@ import com.airbnb.epoxy.Carousel
 import com.airbnb.epoxy.Carousel.SnapHelperFactory
 import com.airbnb.epoxy.EpoxyController
 import com.airbnb.epoxy.EpoxyModel
+import com.airbnb.epoxy.ModelProp
 import com.airbnb.epoxy.ModelView
 import com.github.rubensousa.gravitysnaphelper.GravitySnapHelper
 import im.vector.app.core.resources.StringProvider
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.home.room.list.UnreadCounterBadgeView
+import im.vector.app.features.settings.VectorPreferences
 import org.matrix.android.sdk.api.session.room.model.RoomSummary
 import org.matrix.android.sdk.api.util.toMatrixItem
 import javax.inject.Inject
@@ -39,6 +41,7 @@ import kotlin.math.min
 class SpaceBarController @Inject constructor(
         val stringProvider: StringProvider,
         private val avatarRenderer: AvatarRenderer,
+        private val vectorPreferences: VectorPreferences,
 ) : EpoxyController() {
 
     private var data: SpaceBarData = SpaceBarData()
@@ -61,6 +64,7 @@ class SpaceBarController @Inject constructor(
 
     private fun addSpaces(host: SpaceBarController, spaces: List<RoomSummary?>, selectedSpace: RoomSummary?) {
         spaceBarCarousel {
+            enableSnap(host.vectorPreferences.preferSpecificSpacePagerSpace())
             id("spaces_carousel")
             padding(
                     Carousel.Padding(
@@ -146,12 +150,21 @@ class SpaceBarController @Inject constructor(
             // Scroll to an element such that the new selection is roughly in the middle
             val firstVisible = lm.findFirstCompletelyVisibleItemPosition()
             val visibleRange = lm.findLastCompletelyVisibleItemPosition() - firstVisible + 1
-            val overshoot = visibleRange/2
-            val currentMiddle = firstVisible + overshoot
-            if (currentMiddle < position) {
-                effectivePosition = position + overshoot
-            } else if (currentMiddle > position) {
-                effectivePosition = position - overshoot
+            if (vectorPreferences.preferSpecificSpacePagerSpace()) { // scroll to smallest space possible
+                effectivePosition = when {
+                    position < 1 -> 0 // show home only if it is selected
+                    firstVisible < 1 && position <= visibleRange -> 1 + visibleRange // hide home
+                    position > firstVisible + visibleRange -> position // make selection visible by scrolling right
+                    else -> max(1, position - visibleRange) // make selection visible by scrolling left, as right as possible without scrolling to home
+                }
+            } else { // center current space
+                val overshoot = visibleRange / 2
+                val currentMiddle = firstVisible + overshoot
+                if (currentMiddle < position) {
+                    effectivePosition = position + overshoot
+                } else if (currentMiddle > position) {
+                    effectivePosition = position - overshoot
+                }
             }
             // List limits
             effectivePosition = max(0, min(effectivePosition, lm.itemCount-1))
@@ -168,16 +181,19 @@ private inline fun <T> SpaceBarCarouselModelBuilder.withModelsFrom(
 }
 
 @ModelView(autoLayout = ModelView.Size.MATCH_WIDTH_WRAP_HEIGHT)
-internal class SpaceBarCarousel(context: Context?) : Carousel(context) {
+class SpaceBarCarousel(context: Context?) : Carousel(context) {
+    private var mEnableSnap: Boolean = false
+    @ModelProp // Couldn't get ModelProp to work without explicit setter
+    fun setEnableSnap(value: Boolean) {
+        mEnableSnap = value
+    }
     override fun getSnapHelperFactory(): SnapHelperFactory? {
-        return null // SpaceBarSnapHelperFactory()
+        return if (mEnableSnap) SpaceBarSnapHelperFactory() else null
     }
 }
 
-/*
 internal class SpaceBarSnapHelperFactory: SnapHelperFactory() {
     override fun buildSnapHelper(context: Context?): SnapHelper {
-        return GravitySnapHelper(Gravity.CENTER)
+        return GravitySnapHelper(Gravity.START)
     }
 }
- */

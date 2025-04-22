@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.onboarding.ftueauth
@@ -26,7 +17,6 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.clearErrorOnChange
 import im.vector.app.core.extensions.content
 import im.vector.app.core.extensions.editText
@@ -41,12 +31,11 @@ import im.vector.app.features.VectorFeatures
 import im.vector.app.features.login.LoginMode
 import im.vector.app.features.login.SSORedirectRouterActivity
 import im.vector.app.features.login.SocialLoginButtonsView
-import im.vector.app.features.login.qr.QrCodeLoginArgs
-import im.vector.app.features.login.qr.QrCodeLoginType
 import im.vector.app.features.login.render
 import im.vector.app.features.onboarding.OnboardingAction
 import im.vector.app.features.onboarding.OnboardingViewEvents
 import im.vector.app.features.onboarding.OnboardingViewState
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import org.matrix.android.sdk.api.auth.SSOAction
@@ -75,26 +64,6 @@ class FtueAuthCombinedLoginFragment :
             viewModel.handle(OnboardingAction.UserNameEnteredAction.Login(views.loginInput.content()))
         }
         views.loginForgotPassword.debouncedClicks { viewModel.handle(OnboardingAction.PostViewEvent(OnboardingViewEvents.OnForgetPasswordClicked)) }
-
-        viewModel.onEach(OnboardingViewState::canLoginWithQrCode) {
-            configureQrCodeLoginButtonVisibility(it)
-        }
-    }
-
-    private fun configureQrCodeLoginButtonVisibility(canLoginWithQrCode: Boolean) {
-        views.loginWithQrCode.isVisible = canLoginWithQrCode
-        if (canLoginWithQrCode) {
-            views.loginWithQrCode.debouncedClicks {
-                navigator
-                        .openLoginWithQrCode(
-                                requireActivity(),
-                                QrCodeLoginArgs(
-                                        loginType = QrCodeLoginType.LOGIN,
-                                        showQrCodeImmediately = false,
-                                )
-                        )
-            }
-        }
     }
 
     private fun setupSubmitButton() {
@@ -113,7 +82,7 @@ class FtueAuthCombinedLoginFragment :
                 .onUsernameOrIdError { views.loginInput.error = it }
                 .onPasswordError { views.loginPasswordInput.error = it }
                 .onValid { usernameOrId, password ->
-                    val initialDeviceName = getString(R.string.login_default_session_public_name)
+                    val initialDeviceName = getString(CommonStrings.login_default_session_public_name)
                     viewModel.handle(OnboardingAction.AuthenticateAction.Login(usernameOrId, password, initialDeviceName))
                 }
     }

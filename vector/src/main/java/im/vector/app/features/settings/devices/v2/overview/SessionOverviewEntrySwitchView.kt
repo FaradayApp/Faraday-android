@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings.devices.v2.overview
@@ -23,7 +14,6 @@ import android.view.LayoutInflater
 import android.widget.CompoundButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.use
-import im.vector.app.R
 import im.vector.app.core.extensions.setAttributeBackground
 import im.vector.app.databinding.ViewSessionOverviewEntrySwitchBinding
 
@@ -42,7 +32,7 @@ class SessionOverviewEntrySwitchView @JvmOverloads constructor(
         initBackground()
         context.obtainStyledAttributes(
                 attrs,
-                R.styleable.SessionOverviewEntrySwitchView,
+                im.vector.lib.ui.styles.R.styleable.SessionOverviewEntrySwitchView,
                 0,
                 0
         ).use {
@@ -58,17 +48,17 @@ class SessionOverviewEntrySwitchView @JvmOverloads constructor(
     }
 
     private fun setTitle(typedArray: TypedArray) {
-        val title = typedArray.getString(R.styleable.SessionOverviewEntrySwitchView_sessionOverviewEntrySwitchTitle)
+        val title = typedArray.getString(im.vector.lib.ui.styles.R.styleable.SessionOverviewEntrySwitchView_sessionOverviewEntrySwitchTitle)
         binding.sessionsOverviewEntryTitle.text = title
     }
 
     private fun setDescription(typedArray: TypedArray) {
-        val description = typedArray.getString(R.styleable.SessionOverviewEntrySwitchView_sessionOverviewEntrySwitchDescription)
+        val description = typedArray.getString(im.vector.lib.ui.styles.R.styleable.SessionOverviewEntrySwitchView_sessionOverviewEntrySwitchDescription)
         binding.sessionsOverviewEntryDescription.text = description
     }
 
     private fun setSwitchedEnabled(typedArray: TypedArray) {
-        val enabled = typedArray.getBoolean(R.styleable.SessionOverviewEntrySwitchView_sessionOverviewEntrySwitchEnabled, false)
+        val enabled = typedArray.getBoolean(im.vector.lib.ui.styles.R.styleable.SessionOverviewEntrySwitchView_sessionOverviewEntrySwitchEnabled, false)
         binding.sessionsOverviewEntrySwitch.isChecked = enabled
     }
 

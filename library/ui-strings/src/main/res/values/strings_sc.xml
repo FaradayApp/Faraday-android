@@ -146,6 +146,8 @@
 
     <string name="settings_enable_space_pager">Swipe chat list to switch space</string>
     <string name="settings_enable_space_pager_summary">Allow to switch between root spaces by swiping horizontally in the chat list</string>
+    <string name="settings_space_pager_prefer_space_1">Prefer lower root space</string>
+    <string name="settings_space_pager_prefer_space_1_summary">Prioritize showing spaces in the bottom space bar that you have moved to the top of your root space list</string>
 
     <string name="settings_notif_only_alert_once">Only alert once</string>
     <string name="settings_notif_only_alert_once_summary">Omit alert sounds for new messages if there is already an open notification for that chat</string>
@@ -228,5 +230,15 @@
     <string name="use_latest_app_sc">Use the latest ${app_name_sc_stable} on your other devices:</string>
 
     <string name="action_send_as_sticker">Send as sticker</string>
+
+    <string name="settings_clear_highlight_on_scroll">Clear highlight on scroll</string>
+    <string name="settings_clear_highlight_on_scroll_summary">Remove highlight from messages when you scroll</string>
+
+    <!-- SC-TMP, until merged upstream: https://github.com/vector-im/element-android/pull/5781 -->
+    <string name="settings_call_ringtone_use_default_stun_title">Allow fallback call assist server</string>
+    <string name="settings_call_ringtone_use_default_stun_summary">Will use %s as assist when your homeserver does not offer one (your IP address will be seen by the stun server during a call
+)</string>
+
+    <string name="settings_integrations_scalar_warning">⚠️ This setting by default (unless overridden by your homeserver\'s configuration) enables access to \"scalar\", Element\'s integration manager which is unfortunately proprietary, i.e. its source code is not open and can not be checked by the public or the SchildiChat developers.</string>
 
 </resources>

@@ -28,7 +28,7 @@ buildscript {
         classpath 'com.google.gms:google-services:4.3.15'
         classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:4.0.0.2929'
         classpath 'com.google.android.gms:oss-licenses-plugin:0.10.6'
-        classpath "com.likethesalad.android:stem-plugin:2.3.0"
+        classpath "com.likethesalad.android:stem-plugin:2.9.0"
         classpath 'org.owasp:dependency-check-gradle:8.2.1'
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:1.8.10"
         classpath "org.jetbrains.kotlinx:kotlinx-knit:0.4.0"
@@ -41,14 +41,14 @@ buildscript {
 
 plugins {
     // ktlint Plugin
-    id "org.jlleitschuh.gradle.ktlint" version "11.3.1"
+    id "org.jlleitschuh.gradle.ktlint" version "11.3.2"
     // Detekt
-    id "io.gitlab.arturbosch.detekt" version "1.22.0"
+    id "io.gitlab.arturbosch.detekt" version "1.23.7"
     // Ksp
-    id "com.google.devtools.ksp" version "1.8.10-1.0.9"
+    id "com.google.devtools.ksp" version "1.9.24-1.0.20"
 
     // Dependency Analysis
-    id 'com.autonomousapps.dependency-analysis' version "1.19.0"
+    id 'com.autonomousapps.dependency-analysis' version "1.20.0"
     // Gradle doctor
     id "com.osacky.doctor" version "0.8.1"
 }
@@ -87,9 +87,9 @@ allprojects {
         }
         // Jitsi repo
         maven {
-            url 'https://github.com/vector-im/jitsi_libre_maven/raw/main/android-sdk-6.2.2'
+            url "https://github.com/element-hq/jitsi_libre_maven/raw/main/mobile-sdk-10.2.0"
             // Note: to test Jitsi release you can use a local file like this:
-            // url "file:///Users/bmarty/workspaces/jitsi_libre_maven/android-sdk-6.2.2"
+            // url "file:///Users/bmarty/workspaces/jitsi_libre_maven/mobile-sdk-10.2.0"
             content {
                 groups.jitsi.regex.each { includeGroupByRegex it }
                 groups.jitsi.group.each { includeGroup it }
@@ -101,6 +101,13 @@ allprojects {
             content {
                 groups.google.regex.each { includeGroupByRegex it }
                 groups.google.group.each { includeGroup it }
+            }
+        }
+        maven {
+            url 'https://s01.oss.sonatype.org/content/repositories/snapshots'
+            content {
+                groups.mavenSnapshots.regex.each { includeGroupByRegex it }
+                groups.mavenSnapshots.group.each { includeGroup it }
             }
         }
         google()
@@ -161,8 +168,11 @@ allprojects {
     }
 
     detekt {
+        // preconfigure defaults
         buildUponDefaultConfig = true
+        // activate all available (even unstable) rules.
         allRules = true
+        // point to your custom config defining rules to run, overwriting default behavior
         config = files("$rootDir/tools/detekt/detekt.yml")
     }
 }
@@ -190,15 +200,15 @@ apply plugin: 'org.sonarqube'
 sonar {
     properties {
         property "sonar.projectName", "element-android"
-        property "sonar.projectKey", "vector-im_element-android"
+        property "sonar.projectKey", "element-android"
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.projectVersion", project(":vector").android.defaultConfig.versionName
         property "sonar.sourceEncoding", "UTF-8"
-        property "sonar.links.homepage", "https://github.com/vector-im/element-android/"
-        property "sonar.links.ci", "https://github.com/vector-im/element-android/actions"
-        property "sonar.links.scm", "https://github.com/vector-im/element-android/"
-        property "sonar.links.issue", "https://github.com/vector-im/element-android/issues"
-        property "sonar.organization", "new_vector_ltd_organization"
+        property "sonar.links.homepage", "https://github.com/element-hq/element-android/"
+        property "sonar.links.ci", "https://github.com/element-hq/element-android/actions"
+        property "sonar.links.scm", "https://github.com/element-hq/element-android/"
+        property "sonar.links.issue", "https://github.com/element-hq/element-android/issues"
+        property "sonar.organization", "element-hq"
         property "sonar.java.coveragePlugin", "jacoco"
         property "sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/reports/jacoco/generateCoverageReport/generateCoverageReport.xml"
         property "sonar.login", project.hasProperty("SONAR_LOGIN") ? SONAR_LOGIN : "invalid"
@@ -312,6 +322,10 @@ ext.initScreenshotTests = { project ->
             exclude screenshotTestCapture
         }
     }
+}
+
+tasks.withType(Test) {
+    maxHeapSize = "2g"
 }
 
 // Workaround to have KSP generated Kotlin code available in the IDE (for code completion)

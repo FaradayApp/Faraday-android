@@ -16,6 +16,7 @@
 
 package im.vector.app.features.login
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,6 +46,8 @@ open class PromptSimplifiedModeActivity : VectorBaseActivity<ActivityLoginBindin
         }
     }
 
+    @Deprecated("Deprecated in Java")
+    @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
         // Don't call super - we don't want to quit on back press, user should select a mode
     }

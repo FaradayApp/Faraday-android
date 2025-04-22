@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.core.platform
@@ -41,16 +32,17 @@ import com.bumptech.glide.util.Util.assertMainThread
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.EntryPointAccessors
-import im.vector.app.R
 import im.vector.app.core.di.ActivityEntryPoint
 import im.vector.app.core.dialogs.UnrecognizedCertificateDialog
 import im.vector.app.core.error.ErrorFormatter
+import im.vector.app.core.extensions.giveAccessibilityFocus
 import im.vector.app.core.extensions.singletonEntryPoint
 import im.vector.app.core.extensions.toMvRxBundle
 import im.vector.app.core.utils.ToolbarConfig
 import im.vector.app.features.analytics.AnalyticsTracker
 import im.vector.app.features.analytics.plan.MobileScreen
 import im.vector.app.features.navigation.Navigator
+import im.vector.lib.strings.CommonStrings
 import im.vector.lib.ui.styles.dialogs.MaterialProgressDialog
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -251,7 +243,7 @@ abstract class VectorBaseFragment<VB : ViewBinding> : Fragment(), MavericksView 
     protected fun showLoadingDialog(message: CharSequence? = null) {
         progress?.dismiss()
         progress = MaterialProgressDialog(requireContext())
-                .show(message ?: getString(R.string.please_wait))
+                .show(message ?: getString(CommonStrings.please_wait))
     }
 
     protected fun dismissLoadingDialog() {
@@ -315,9 +307,24 @@ abstract class VectorBaseFragment<VB : ViewBinding> : Fragment(), MavericksView 
     protected fun displayErrorDialog(throwable: Throwable) {
         Timber.i(throwable, "Showing error dialog for throwable")
         MaterialAlertDialogBuilder(requireActivity())
-                .setTitle(R.string.dialog_title_error)
+                .setTitle(CommonStrings.dialog_title_error)
                 .setMessage(errorFormatter.toHumanReadable(throwable))
-                .setPositiveButton(R.string.ok, null)
+                .setPositiveButton(CommonStrings.ok, null)
                 .show()
+    }
+
+    /* ==========================================================================================
+     * Accessibility - a11y
+     * ========================================================================================== */
+
+    private var hasBeenAccessibilityFocused = false
+
+    /**
+     * Ensure the View get the accessibility focus. This method has effect only once per fragment instance.
+     */
+    protected fun View.giveAccessibilityFocusOnce() {
+        if (hasBeenAccessibilityFocused) return
+        hasBeenAccessibilityFocused = true
+        giveAccessibilityFocus()
     }
 }

@@ -9,7 +9,7 @@ import im.vector.app.features.home.room.detail.timeline.view.ScMessageBubbleWrap
 
 interface BubbleDependentView<H: VectorEpoxyHolder> {
 
-    fun getScBubbleMargin(resources: Resources): Int = resources.getDimensionPixelSize(R.dimen.dual_bubble_one_side_without_avatar_margin)
+    fun getScBubbleMargin(resources: Resources): Int = resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.dual_bubble_one_side_without_avatar_margin)
     fun getViewStubMinimumWidth(holder: H): Int = 0
 
     fun allowFooterOverlay(holder: H, bubbleWrapView: ScMessageBubbleWrapView): Boolean = false

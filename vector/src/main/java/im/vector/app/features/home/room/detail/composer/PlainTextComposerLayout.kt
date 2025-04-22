@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.detail.composer
@@ -35,13 +26,14 @@ import im.vector.app.core.extensions.setTextIfDifferent
 import im.vector.app.core.extensions.showKeyboard
 import im.vector.app.core.utils.DimensionConverter
 import im.vector.app.databinding.ComposerLayoutScBinding
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.home.room.detail.TimelineViewModel
 import im.vector.app.features.home.room.detail.timeline.helper.MatrixItemColorProvider
 import im.vector.app.features.home.room.detail.timeline.image.buildImageContentRendererData
 import im.vector.app.features.html.EventHtmlRenderer
 import im.vector.app.features.html.PillsPostProcessor
 import im.vector.app.features.media.ImageContentRenderer
+import im.vector.lib.strings.CommonStrings
 import org.commonmark.parser.Parser
 import org.matrix.android.sdk.api.session.room.model.message.MessageAudioContent
 import org.matrix.android.sdk.api.session.room.model.message.MessageBeaconInfoContent
@@ -50,7 +42,7 @@ import org.matrix.android.sdk.api.session.room.model.message.MessageEndPollConte
 import org.matrix.android.sdk.api.session.room.model.message.MessageFormat
 import org.matrix.android.sdk.api.session.room.model.message.MessagePollContent
 import org.matrix.android.sdk.api.session.room.model.message.MessageTextContent
-import org.matrix.android.sdk.api.util.ContentUtils.extractUsefulTextFromHtmlReply
+import org.matrix.android.sdk.api.util.ContentUtils
 import org.matrix.android.sdk.api.util.MatrixItem
 import org.matrix.android.sdk.api.util.toMatrixItem
 import org.matrix.android.sdk.internal.session.room.send.pills.asSticker
@@ -178,10 +170,10 @@ class PlainTextComposerLayout @JvmOverloads constructor(
 
         views.sendButton.apply {
             if (mode is MessageComposerMode.Edit) {
-                contentDescription = resources.getString(R.string.action_save)
+                contentDescription = resources.getString(CommonStrings.action_save)
                 setImageResource(R.drawable.ic_check_on)
             } else {
-                contentDescription = resources.getString(R.string.action_send)
+                contentDescription = resources.getString(CommonStrings.action_send)
                 setImageResource(R.drawable.ic_send)
             }
         }
@@ -223,14 +215,19 @@ class PlainTextComposerLayout @JvmOverloads constructor(
         val nonFormattedBody = when (messageContent) {
             is MessageAudioContent -> getAudioContentBodyText(messageContent)
             is MessagePollContent -> messageContent.getBestPollCreationInfo()?.question?.getBestQuestion()
-            is MessageBeaconInfoContent -> resources.getString(R.string.live_location_description)
-            is MessageEndPollContent -> resources.getString(R.string.message_reply_to_ended_poll_preview)
+            is MessageBeaconInfoContent -> resources.getString(CommonStrings.live_location_description)
+            is MessageEndPollContent -> resources.getString(CommonStrings.message_reply_to_ended_poll_preview)
             else -> messageContent?.body.orEmpty()
         }
         var formattedBody: CharSequence? = null
         if (messageContent is MessageTextContent && messageContent.format == MessageFormat.FORMAT_MATRIX_HTML) {
             val parser = Parser.builder().build()
-            val document = parser.parse(messageContent.formattedBody?.let { extractUsefulTextFromHtmlReply(it) } ?: messageContent.body)
+
+            val bodyToParse = messageContent.formattedBody?.let {
+                ContentUtils.extractUsefulTextFromHtmlReply(it)
+            } ?: ContentUtils.extractUsefulTextFromReply(messageContent.body)
+
+            val document = parser.parse(bodyToParse)
             formattedBody = eventHtmlRenderer.render(document, pillsPostProcessor)
         }
         views.composerRelatedMessageContent.text = (formattedBody ?: nonFormattedBody)
@@ -251,7 +248,13 @@ class PlainTextComposerLayout @JvmOverloads constructor(
 
         avatarRenderer.render(event.senderInfo.toMatrixItem(), views.composerRelatedMessageAvatar)
 
-        views.composerEditText.setText(defaultContent)
+        val content = if (specialMode is MessageComposerMode.Edit) {
+            formattedBody ?: defaultContent
+        } else {
+            defaultContent
+        }
+
+        views.composerEditText.setText(content)
 
         expand {
             // need to do it here also when not using quick reply
@@ -265,9 +268,9 @@ class PlainTextComposerLayout @JvmOverloads constructor(
     private fun getAudioContentBodyText(messageContent: MessageAudioContent): String {
         val formattedDuration = DateUtils.formatElapsedTime(((messageContent.audioInfo?.duration ?: 0) / 1000).toLong())
         return if (messageContent.voiceMessageIndicator != null) {
-            resources.getString(R.string.voice_message_reply_content, formattedDuration)
+            resources.getString(CommonStrings.voice_message_reply_content, formattedDuration)
         } else {
-            resources.getString(R.string.audio_message_reply_content, messageContent.body, formattedDuration)
+            resources.getString(CommonStrings.audio_message_reply_content, messageContent.body, formattedDuration)
         }
     }
 }

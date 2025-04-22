@@ -23,6 +23,7 @@ import io.realm.kotlin.createObject
 import org.matrix.android.sdk.api.session.events.model.content.EncryptedEventContent
 import org.matrix.android.sdk.api.session.events.model.toModel
 import org.matrix.android.sdk.api.session.room.model.RoomMemberContent
+import org.matrix.android.sdk.api.session.room.read.ReadService
 import org.matrix.android.sdk.api.session.room.read.ReadService.Companion.THREAD_ID_MAIN
 import org.matrix.android.sdk.api.session.room.read.ReadService.Companion.THREAD_ID_MAIN_OR_NULL
 import org.matrix.android.sdk.internal.crypto.model.SessionInfo
@@ -80,7 +81,7 @@ internal fun ChunkEntity.addTimelineEvent(
     val senderId = eventEntity.sender ?: ""
 
     // Update RR for the sender of a new message with a dummy one
-    val readReceiptsSummaryEntity = if (!ownedByThreadChunk) handleReadReceipts(realm, roomId, eventEntity, senderId) else null
+    val readReceiptsSummaryEntity = handleReadReceiptsOfSender(realm, roomId, eventEntity, senderId)
     val timelineEventEntity = realm.createObject<TimelineEventEntity>().apply {
         this.localId = localId
         this.root = eventEntity
@@ -130,7 +131,7 @@ internal fun computeIsUnique(
 
 private val rrDimber = Dimber("ReadReceipts", DbgUtil.DBG_READ_RECEIPTS)
 
-private fun handleReadReceipts(realm: Realm, roomId: String, eventEntity: EventEntity, senderId: String): ReadReceiptsSummaryEntity {
+private fun handleReadReceiptsOfSender(realm: Realm, roomId: String, eventEntity: EventEntity, senderId: String): ReadReceiptsSummaryEntity {
     val readReceiptsSummaryEntity = ReadReceiptsSummaryEntity.where(realm, eventEntity.eventId).findFirst()
             ?: realm.createObject<ReadReceiptsSummaryEntity>(eventEntity.eventId).apply {
                 this.roomId = roomId
@@ -140,12 +141,20 @@ private fun handleReadReceipts(realm: Realm, roomId: String, eventEntity: EventE
         val timestampOfEvent = originServerTs.toDouble()
         // SC: fight duplicate read receipts in main timeline
         val receiptDestinations = if (eventEntity.rootThreadEventId in listOf(null, THREAD_ID_MAIN)) {
+            // Upstream v1.3.32 now does ?: THREAD_ID_MAIN for this... but that might cause some issues with jumping receipts
+            // that we had before, so stick to our approach for now...?
+            // setOf(eventEntity.rootThreadEventId ?: THREAD_ID_MAIN, THREAD_ID_MAIN_OR_NULL)
             setOf(eventEntity.rootThreadEventId, THREAD_ID_MAIN_OR_NULL)
         } else {
             setOf(eventEntity.rootThreadEventId)
         }
         receiptDestinations.forEach { rootThreadEventId ->
-            val readReceiptOfSender = ReadReceiptEntity.getOrCreate(realm, roomId = roomId, userId = senderId, threadId = rootThreadEventId)
+            val readReceiptOfSender = ReadReceiptEntity.getOrCreate(
+                    realm = realm,
+                    roomId = roomId,
+                    userId = senderId,
+                    threadId = rootThreadEventId
+            )
             val shouldForceMon: Boolean
             val shouldSkipMon: Boolean
             if (rootThreadEventId == THREAD_ID_MAIN_OR_NULL) {

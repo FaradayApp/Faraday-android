@@ -2931,5 +2931,52 @@
     <string name="settings_notification_error_on_update">Nous avons rencontré une erreur lors de la mise-à-jour de vos préférences de notification. Veuillez réessayer.</string>
     <string name="direct_room_encryption_enabled_waiting_users_tile_description">Une fois que les utilisateurs invités seront connectés sur ${app_name}, vous pourrez discuter et le salon sera chiffré de bout en bout</string>
     <string name="direct_room_encryption_enabled_waiting_users">En attente de la connexion des utilisateurs sur ${app_name}</string>
-    <string name="direct_room_user_list_only_invite_one_email">Vous ne pouvez envoyer qu’une seule invitation par e-mail à la fois</string>
+    <string name="direct_room_user_list_only_invite_one_email">Vous ne pouvez envoyer qu’une seule invitation par courriel à la fois</string>
+    <string name="pill_message_unknown_room_or_space">Salon/Espace</string>
+    <string name="pill_message_in_unknown_room">Message dans le salon</string>
+    <string name="pill_message_in_room">Message dans %s</string>
+    <string name="pill_message_from_unknown_user">Message</string>
+    <string name="pill_message_from_user">Message de %s</string>
+    <string name="encrypted_by_deleted">Chiffré par un appareil supprimé</string>
+    <string name="secure_backup_reset_danger_warning">Veuillez ne continuer que si vous êtes certain d’avoir perdu tous vos autres appareils et votre clé de sécurité.</string>
+    <string name="secure_backup_reset_all_no_other_devices_long">La réinitialisation de vos clés de vérification ne peut pas être annulé. Après la réinitialisation, vous n’aurez plus accès à vos anciens messages chiffrés, et tous les amis que vous aviez précédemment vérifiés verront des avertissement de sécurité jusqu\'à ce vous les vérifiiez à nouveau.</string>
+    <string name="verification_not_found">La demande de vérification n’a pas été trouvée. Elle a peut-être été annulée, ou prise en charge dans une autre session.</string>
+    <string name="verification_request_was_sent">Une demande de vérification a été envoyée. Ouvrez l’une de vos autres sessions pour accepter et commencer la vérification.</string>
+    <string name="_resume">Reprendre</string>
+    <string name="verification_verify_identity">Vérifiez votre identité pour accéder aux messages chiffrés et prouver votre identité aux autres.</string>
+    <string name="verification_verify_with_another_device">Vérifier avec un autre appareil</string>
+    <string name="verification_request_waiting_for_recovery">Vérification depuis la clé ou phrase de sécurité…</string>
+    <string name="settings_acceptable_use_policy">Politique d’utilisation acceptable</string>
+    <string name="settings_crypto_version">Version de cryptographie</string>
+    <string name="action_proceed_to_reset">Faire la réinitialisation</string>
+    <string name="notice_display_name_changed_to">%1$s a modifié son nom d’affichage en %2$s</string>
+    <string name="avatar_of_user">Image de profile de l’utilisateur %1$s</string>
+    <string name="avatar_of_room">Avatar du salon %1$s</string>
+    <string name="avatar_of_space">Avatar de l’espace %1$s</string>
+    <string name="confirm_your_identity_after_update">La messagerie sécurisée a été améliorée avec la dernière mise-à-jour. Veuillez re-vérifier votre appareil.</string>
+    <string name="verification_profile_other_device_untrust_info">Jusqu’à ce que cet utilisateur fasse confiance à cette session, les messages sur cette session sont étiquetés avec des avertissements.</string>
+    <string name="crosssigning_verify_after_update">Application mise-à-jour</string>
+    <string name="sign_out_anyway">Se déconnecter malgré tout</string>
+    <string name="sign_out_failed_dialog_message">Impossible de joindre le serveur d’accueil. Si vous vous déconnectez malgré tout, cet appareil ne sera pas effacé de la liste de vos appareils, vous pourrez l’enlever en utilisant un autre client.</string>
+    <string name="invite_unknown_users_dialog_content">Impossible de trouver les profils pour les identifiants Matrix listés ci-dessous. Voulez-vous quand même les inviter \?
+\n
+\n%s</string>
+    <string name="invite_unknown_users_dialog_submit">Inviter quand même</string>
+    <string name="login_splash_sign_in">Se connecter</string>
+    <string name="create_room_unknown_users_dialog_content">Impossible de trouver des profils pour les ID Matrix listés ci-dessous. Voulez-vous tout de même débuter une nouvelle conversation \?
+\n
+\n%s</string>
+    <string name="create_room_unknown_users_dialog_submit">Commencer la conversation quand même</string>
+    <string name="user_reported_as_inappropriate_title">Utilisateur signalé</string>
+    <string name="message_report_user">Signaler l’utilisateur</string>
+    <string name="user_reported_as_inappropriate_content">Ce contenu a été signalé.
+\n
+\nSi vous ne voulez plus voir de contenu de cet utilisateur, vous pouvez l’ignorer pour masquer ses messages.</string>
+    <string name="call_unsupported">Appel non pris en charge</string>
+    <string name="call_unsupported_matrix_rtc_call">Appel non pris en charge. La nouvelle application SchildiChat Next est nécessaire pour rejoindre cet appel.</string>
+    <string name="microphone_in_use_title">Microphone en service</string>
+    <string name="error_mas_not_supported_title">Vous ne pouvez plus créer de compte sur %1$s avec cette application</string>
+    <string name="error_mas_not_supported_subtitle">Téléchargez %1$s pour utiliser %2$s avec votre compte, ou choisissez un autre serveur d’accueil.</string>
+    <string name="view_download_replacement_app_title">Télécharger %1$s</string>
+    <string name="view_download_replacement_app_subtitle">Plus rapide, plus sécurisé et fourni avec des outils de collaboration efficaces.</string>
 </resources>

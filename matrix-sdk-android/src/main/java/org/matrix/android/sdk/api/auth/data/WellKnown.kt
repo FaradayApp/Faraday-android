@@ -61,9 +61,10 @@ data class WellKnown(
          */
         @Json(name = "org.matrix.msc2965.authentication")
         val unstableDelegatedAuthConfig: DelegatedAuthConfig? = null,
+
         /**
-         * Checks whether multi-account and nuke-password are supported by current server.
+         * If set to true, the SDK will not use the network constraint when configuring Worker for the WorkManager.
          */
-        @Json(name = "useSecurityFeatures")
-        val useSecurityFeatures: String? = null
+        @Json(name = "io.element.disable_network_constraint")
+        val disableNetworkConstraint: Boolean? = null,
 )

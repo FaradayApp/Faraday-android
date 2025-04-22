@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.widgets
@@ -59,6 +50,7 @@ import im.vector.app.features.widgets.webview.WebviewPermissionUtils
 import im.vector.app.features.widgets.webview.clearAfterWidget
 import im.vector.app.features.widgets.webview.setupForWidget
 import im.vector.lib.core.utils.compat.resolveActivityCompat
+import im.vector.lib.strings.CommonStrings
 import kotlinx.parcelize.Parcelize
 import org.matrix.android.sdk.api.session.terms.TermsService
 import timber.log.Timber
@@ -375,7 +367,7 @@ class WidgetFragment :
 
     override fun onPermissionRequest(request: PermissionRequest) {
         permissionUtils.promptForPermissions(
-                title = R.string.room_widget_resource_permission_title,
+                title = CommonStrings.room_widget_resource_permission_title,
                 request = request,
                 context = requireContext(),
                 activity = requireActivity(),
@@ -411,7 +403,7 @@ class WidgetFragment :
             views.widgetProgressBar.isVisible = false
             views.widgetErrorLayout.isVisible = true
             views.widgetWebView.isInvisible = true
-            views.widgetErrorText.text = getString(R.string.room_widget_failed_to_load, message)
+            views.widgetErrorText.text = getString(CommonStrings.room_widget_failed_to_load, message)
         }
     }
 
@@ -427,11 +419,11 @@ class WidgetFragment :
 
     private fun deleteWidget() {
         MaterialAlertDialogBuilder(requireContext())
-                .setMessage(R.string.widget_delete_message_confirmation)
-                .setPositiveButton(R.string.action_remove) { _, _ ->
+                .setMessage(CommonStrings.widget_delete_message_confirmation)
+                .setPositiveButton(CommonStrings.action_remove) { _, _ ->
                     viewModel.handle(WidgetAction.DeleteWidget)
                 }
-                .setNegativeButton(R.string.action_cancel, null)
+                .setNegativeButton(CommonStrings.action_cancel, null)
                 .show()
     }
 

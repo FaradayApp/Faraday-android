@@ -1,26 +1,17 @@
 /*
- * Copyright 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.settings.troubleshoot
 
-import im.vector.app.R
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.error.ErrorFormatter
 import im.vector.app.core.pushers.PushersManager
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.features.session.coroutineScope
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -36,7 +27,7 @@ class TestPushFromPushGateway @Inject constructor(
         private val errorFormatter: ErrorFormatter,
         private val pushersManager: PushersManager,
         private val activeSessionHolder: ActiveSessionHolder,
-) : TroubleshootTest(R.string.settings_troubleshoot_test_push_loop_title) {
+) : TroubleshootTest(CommonStrings.settings_troubleshoot_test_push_loop_title) {
 
     private var action: Job? = null
     private var pushReceived: Boolean = false
@@ -52,17 +43,17 @@ class TestPushFromPushGateway @Inject constructor(
                                 {
                                     if (pushReceived) {
                                         // Push already received (race condition)
-                                        description = stringProvider.getString(R.string.settings_troubleshoot_test_push_loop_success)
+                                        description = stringProvider.getString(CommonStrings.settings_troubleshoot_test_push_loop_success)
                                         TestStatus.SUCCESS
                                     } else {
                                         // Wait for the push to be received
-                                        description = stringProvider.getString(R.string.settings_troubleshoot_test_push_loop_waiting_for_push)
+                                        description = stringProvider.getString(CommonStrings.settings_troubleshoot_test_push_loop_waiting_for_push)
                                         TestStatus.RUNNING
                                     }
                                 },
                                 {
                                     description = if (it is PushGatewayFailure.PusherRejected) {
-                                        stringProvider.getString(R.string.settings_troubleshoot_test_push_loop_failed)
+                                        stringProvider.getString(CommonStrings.settings_troubleshoot_test_push_loop_failed)
                                     } else {
                                         errorFormatter.toHumanReadable(it)
                                     }
@@ -75,7 +66,7 @@ class TestPushFromPushGateway @Inject constructor(
 
     override fun onPushReceived() {
         pushReceived = true
-        description = stringProvider.getString(R.string.settings_troubleshoot_test_push_loop_success)
+        description = stringProvider.getString(CommonStrings.settings_troubleshoot_test_push_loop_success)
         status = TestStatus.SUCCESS
     }
 

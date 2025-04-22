@@ -147,6 +147,7 @@ git_changelog() {
         | grep -v "weblate/sc" \
         | grep -v "\\[.*merge.*\\]" \
         | grep -v "Disable Android Auto supports" \
+        | grep -v "Switch to alternative Schil" \
         | grep -v "\\[gplay-release\\]" \
         || echo "No significant changes since the last stable release"
 }
@@ -188,7 +189,9 @@ if [ "$release_type" = "test" ]; then
     git commit -m "Test version $versionCode"
 else
     git commit -m "Increment version"
-    git tag "$new_tag"
+    git tag "$new_tag" -m "Version $version ($versionCode)
+
+$(cat "$changelog_file")"
 fi
 
 if ((do_translation_pull)); then

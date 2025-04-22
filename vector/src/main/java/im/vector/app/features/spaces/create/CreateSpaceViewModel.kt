@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.spaces.create
@@ -25,19 +16,19 @@ import com.airbnb.mvrx.ViewModelContext
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import im.vector.app.R
 import im.vector.app.core.di.MavericksAssistedViewModelFactory
 import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.error.ErrorFormatter
-import im.vector.app.core.extensions.isEmail
 import im.vector.app.core.platform.VectorViewModel
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.features.analytics.AnalyticsTracker
 import im.vector.app.features.analytics.plan.Interaction
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.matrix.android.sdk.api.MatrixPatterns
 import org.matrix.android.sdk.api.MatrixPatterns.getServerName
+import org.matrix.android.sdk.api.extensions.isEmail
 import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.session.identity.IdentityServiceListener
 import org.matrix.android.sdk.api.session.room.AliasAvailabilityResult
@@ -99,8 +90,8 @@ class CreateSpaceViewModel @AssistedInject constructor(
         override fun initialState(viewModelContext: ViewModelContext): CreateSpaceState {
             return CreateSpaceState(
                     defaultRooms = mapOf(
-                            0 to viewModelContext.activity.getString(R.string.create_spaces_default_public_room_name),
-                            1 to viewModelContext.activity.getString(R.string.create_spaces_default_public_random_room_name)
+                            0 to viewModelContext.activity.getString(CommonStrings.create_spaces_default_public_room_name),
+                            1 to viewModelContext.activity.getString(CommonStrings.create_spaces_default_public_random_room_name)
                     )
             )
         }
@@ -298,7 +289,7 @@ class CreateSpaceViewModel @AssistedInject constructor(
         if (state.name.isNullOrBlank()) {
             setState {
                 copy(
-                        nameInlineError = stringProvider.getString(R.string.create_space_error_empty_field_space_name)
+                        nameInlineError = stringProvider.getString(CommonStrings.create_space_error_empty_field_space_name)
                 )
             }
         } else {

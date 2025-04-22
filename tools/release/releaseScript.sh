@@ -1,20 +1,9 @@
 #!/usr/bin/env bash
 
+# Copyright 2022-2024 New Vector Ltd.
 #
-# Copyright (c) 2022 New Vector Ltd
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
+# SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+# Please see LICENSE files in the repository root for full details.
 
 # Ignore any error to not stop the script
 set +e
@@ -66,7 +55,7 @@ if [ ${envError} == 1 ]; then
   exit 1
 fi
 
-buildToolsVersion="30.0.2"
+buildToolsVersion="35.0.0"
 buildToolsPath="${androidHome}/build-tools/${buildToolsVersion}"
 
 if [[ ! -d ${buildToolsPath} ]]; then
@@ -204,7 +193,7 @@ printf -v versionMinor2Digits "%02d" ${versionMinor}
 printf -v versionPatch2Digits "%02d" ${versionPatch}
 fastlaneFile="4${versionMajor2Digits}${versionMinor2Digits}${versionPatch2Digits}0.txt"
 fastlanePathFile="./fastlane/metadata/android/en-US/changelogs/${fastlaneFile}"
-printf "Main changes in this version: TODO.\nFull changelog: https://github.com/vector-im/element-android/releases" > ${fastlanePathFile}
+printf "Main changes in this version: TODO.\nFull changelog: https://github.com/element-hq/element-android/releases" > ${fastlanePathFile}
 
 read -p "I have created the file ${fastlanePathFile}, please edit it and press enter when it's done."
 git add ${fastlanePathFile}
@@ -266,7 +255,7 @@ else
 fi
 
 printf "\n================================================================================\n"
-printf "Wait for the GitHub action https://github.com/vector-im/element-android/actions/workflows/build.yml?query=branch%%3Amain to build the 'main' branch.\n"
+printf "Wait for the GitHub action https://github.com/element-hq/element-android/actions/workflows/build.yml?query=branch%%3Amain to build the 'main' branch.\n"
 read -p "After GHA is finished, please enter the artifact URL (for 'vector-gplay-release-unsigned'): " artifactUrl
 
 printf "\n================================================================================\n"
@@ -354,12 +343,16 @@ read -p "Does it look correct? Press enter when it's done."
 printf "\n================================================================================\n"
 read -p "Installing apk on a real device, press enter when a real device is connected. "
 apkPath="${targetPath}/vector-gplay-arm64-v8a-release-signed.apk"
+# Ignore error
+set +e
 adb -d install ${apkPath}
+# Do not ignore error
+set -e
 
 read -p "Please run the APK on your phone to check that the upgrade went well (no init sync, etc.). Press enter when it's done."
 
 printf "\n================================================================================\n"
-githubCreateReleaseLink="https://github.com/vector-im/element-android/releases/new?tag=v${version}&title=Element%20Android%20v${version}&body=${changelogUrlEncoded}"
+githubCreateReleaseLink="https://github.com/element-hq/element-android/releases/new?tag=v${version}&title=Element%20Android%20v${version}&body=${changelogUrlEncoded}"
 printf "Creating the release on gitHub.\n"
 printf -- "Open this link: %s\n" ${githubCreateReleaseLink}
 printf "Then\n"
@@ -369,7 +362,7 @@ read -p ". Press enter when it's done. "
 
 printf "\n================================================================================\n"
 printf "Message for the Android internal room:\n\n"
-message="@room Element Android ${version} is ready to be tested. You can get it from https://github.com/vector-im/element-android/releases/tag/v${version}. Please report any feedback here. Thanks!"
+message="@room Element Android ${version} is ready to be tested. You can get it from https://github.com/element-hq/element-android/releases/tag/v${version}. Please report any feedback here. Thanks!"
 printf "${message}\n\n"
 
 if [[ -z "${elementBotToken}" ]]; then

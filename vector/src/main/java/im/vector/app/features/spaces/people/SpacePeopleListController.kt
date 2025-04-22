@@ -1,23 +1,13 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.spaces.people
 
 import com.airbnb.epoxy.TypedEpoxyController
-import im.vector.app.R
 import im.vector.app.core.epoxy.dividerItem
 import im.vector.app.core.epoxy.loadingItem
 import im.vector.app.core.epoxy.profiles.profileMatrixItemWithPowerLevel
@@ -26,11 +16,12 @@ import im.vector.app.core.resources.ColorProvider
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.core.ui.list.genericItem
 import im.vector.app.core.utils.DimensionConverter
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.roomprofile.members.RoomMemberListCategories
 import im.vector.app.features.roomprofile.members.RoomMemberListViewState
 import im.vector.app.features.roomprofile.members.RoomMemberSummaryFilter
 import im.vector.lib.core.utils.epoxy.charsequence.toEpoxyCharSequence
+import im.vector.lib.strings.CommonStrings
 import me.gujun.android.span.span
 import org.matrix.android.sdk.api.session.room.model.RoomMemberSummary
 import org.matrix.android.sdk.api.util.toMatrixItem
@@ -84,8 +75,10 @@ class SpacePeopleListController @Inject constructor(
                                                 if (memberEntry.first == RoomMemberListCategories.INVITE) {
                                                     powerLevelLabel(
                                                             span {
-                                                                span(host.stringProvider.getString(R.string.invited)) {
-                                                                    textColor = host.colorProvider.getColorFromAttribute(R.attr.vctr_content_secondary)
+                                                                span(host.stringProvider.getString(CommonStrings.invited)) {
+                                                                    textColor = host.colorProvider.getColorFromAttribute(
+                                                                            im.vector.lib.ui.styles.R.attr.vctr_content_secondary
+                                                                    )
                                                                     textStyle = "bold"
                                                                     // fontFamily = "monospace"
                                                                 }
@@ -95,10 +88,14 @@ class SpacePeopleListController @Inject constructor(
                                                     powerLevelLabel(
                                                             span {
                                                                 span(" $pl ") {
-                                                                    backgroundColor = host.colorProvider.getColor(R.color.notification_accent_color)
+                                                                    backgroundColor = host.colorProvider.getColor(
+                                                                            im.vector.lib.ui.styles.R.color.notification_accent_color
+                                                                    )
                                                                     paddingTop = host.dimensionConverter.dpToPx(2)
                                                                     paddingBottom = host.dimensionConverter.dpToPx(2)
-                                                                    textColor = host.colorProvider.getColorFromAttribute(R.attr.colorOnPrimary)
+                                                                    textColor = host.colorProvider.getColorFromAttribute(
+                                                                            com.google.android.material.R.attr.colorOnPrimary
+                                                                    )
                                                                     textStyle = "bold"
                                                                     // fontFamily = "monospace"
                                                                 }
@@ -129,15 +126,15 @@ class SpacePeopleListController @Inject constructor(
                 title(
                         span {
                             +"\n"
-                            +host.stringProvider.getString(R.string.no_result_placeholder)
+                            +host.stringProvider.getString(CommonStrings.no_result_placeholder)
                         }.toEpoxyCharSequence()
                 )
                 description(
                         span {
-                            +host.stringProvider.getString(R.string.looking_for_someone_not_in_space, data.roomSummary.invoke()?.displayName ?: "")
+                            +host.stringProvider.getString(CommonStrings.looking_for_someone_not_in_space, data.roomSummary.invoke()?.displayName ?: "")
                             +"\n"
                             span("Invite them") {
-                                textColor = host.colorProvider.getColorFromAttribute(R.attr.colorPrimary)
+                                textColor = host.colorProvider.getColorFromAttribute(com.google.android.material.R.attr.colorPrimary)
                                 textStyle = "bold"
                             }
                         }.toEpoxyCharSequence()
@@ -151,8 +148,8 @@ class SpacePeopleListController @Inject constructor(
 
     private fun toPowerLevelLabel(categories: RoomMemberListCategories): String? {
         return when (categories) {
-            RoomMemberListCategories.ADMIN -> stringProvider.getString(R.string.power_level_admin)
-            RoomMemberListCategories.MODERATOR -> stringProvider.getString(R.string.power_level_moderator)
+            RoomMemberListCategories.ADMIN -> stringProvider.getString(CommonStrings.power_level_admin)
+            RoomMemberListCategories.MODERATOR -> stringProvider.getString(CommonStrings.power_level_moderator)
             else -> null
         }
     }

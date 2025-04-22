@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.workers.signout
@@ -72,7 +63,9 @@ class SignoutCheckViewModel @AssistedInject constructor(
 
     init {
         session.cryptoService().keysBackupService().addListener(this)
-        session.cryptoService().keysBackupService().checkAndStartKeysBackup()
+        viewModelScope.launch {
+            session.cryptoService().keysBackupService().checkAndStartKeysBackup()
+        }
 
         val quad4SIsSetup = session.sharedSecretStorageService().isRecoverySetup()
         val allKeysKnown = session.cryptoService().crossSigningService().allPrivateKeysKnown()
@@ -111,7 +104,9 @@ class SignoutCheckViewModel @AssistedInject constructor(
 
     fun refreshRemoteStateIfNeeded() = withState { state ->
         if (state.keysBackupState == KeysBackupState.Disabled) {
-            session.cryptoService().keysBackupService().checkAndStartKeysBackup()
+            viewModelScope.launch {
+                session.cryptoService().keysBackupService().checkAndStartKeysBackup()
+            }
         }
     }
 

@@ -19,6 +19,12 @@
             android:summary="@string/settings_hide_call_buttons_summary" />
 
         <im.vector.app.core.preference.VectorSwitchPreference
+            android:defaultValue="false"
+            android:key="SETTINGS_CALL_USE_FALLBACK_CALL_ASSIST_SERVER_KEY"
+            android:summary="@string/settings_call_ringtone_use_default_stun_summary"
+            android:title="@string/settings_call_ringtone_use_default_stun_title" />
+
+        <im.vector.app.core.preference.VectorSwitchPreference
             android:defaultValue="true"
             android:disableDependentsState="true"
             android:key="SETTINGS_CALL_RINGTONE_USE_RIOT_PREFERENCE_KEY"

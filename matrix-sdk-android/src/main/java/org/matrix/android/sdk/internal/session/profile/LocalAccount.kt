@@ -22,7 +22,7 @@ data class LocalAccount(
         var username: String?,
         var password: String?,
         var homeServerUrl: String,
-        var deviceId: String?,
+        var deviceId: String,
         var refreshToken: String?,
         var isNew: Boolean = false,
         var unreadCount: Int = 0,

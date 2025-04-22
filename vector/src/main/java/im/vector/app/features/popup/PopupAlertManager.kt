@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.popup
 
@@ -21,9 +12,12 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+import androidx.core.view.ViewCompat
 import com.tapadoo.alerter.Alerter
 import im.vector.app.R
+import im.vector.app.core.extensions.giveAccessibilityFocus
 import im.vector.app.core.platform.VectorBaseActivity
+import im.vector.app.core.resources.StringProvider
 import im.vector.app.core.utils.isAnimationEnabled
 import im.vector.app.features.MainActivity
 import im.vector.app.features.analytics.ui.consent.AnalyticsOptInActivity
@@ -32,6 +26,7 @@ import im.vector.app.features.pin.PinActivity
 import im.vector.app.features.signout.hard.SignedOutActivity
 import im.vector.app.features.themes.ThemeUtils
 import im.vector.lib.core.utils.timer.Clock
+import im.vector.lib.strings.CommonStrings
 import timber.log.Timber
 import java.lang.ref.WeakReference
 import javax.inject.Inject
@@ -46,6 +41,7 @@ import javax.inject.Singleton
 @Singleton
 class PopupAlertManager @Inject constructor(
         private val clock: Clock,
+        private val stringProvider: StringProvider,
 ) {
 
     companion object {
@@ -160,7 +156,7 @@ class PopupAlertManager @Inject constructor(
             next = alertQueue.maxByOrNull { it.priority }
             // If next alert with highest priority is higher than the current one, we should display it
             // and add the current one to queue again.
-            if (next != null && next.priority > currentAlerter?.priority ?: Int.MIN_VALUE) {
+            if (next != null && next.priority > (currentAlerter?.priority ?: Int.MIN_VALUE)) {
                 alertQueue.remove(next)
                 currentAlerter?.also {
                     alertQueue.add(0, it)
@@ -247,7 +243,7 @@ class PopupAlertManager @Inject constructor(
                         setIcon(it)
                     }
                     alert.actions.forEach { action ->
-                        addButton(action.title, R.style.Widget_Vector_Button_Text_Alerter) {
+                        addButton(action.title, im.vector.lib.ui.styles.R.style.Widget_Vector_Button_Text_Alerter) {
                             if (action.autoClose) {
                                 currentIsDismissed()
                                 Alerter.hide()
@@ -282,6 +278,9 @@ class PopupAlertManager @Inject constructor(
                     }
                     currentIsDismissed()
                 }
+                .setOnShowListener {
+                    handleAccessibility(activity, animate)
+                }
                 .enableSwipeToDismiss()
                 .enableInfiniteDuration(true)
                 .apply {
@@ -290,11 +289,34 @@ class PopupAlertManager @Inject constructor(
                     } else if (alert.colorAttribute != null) {
                         setBackgroundColorInt(ThemeUtils.getColor(activity, alert.colorAttribute!!))
                     } else {
-                        setBackgroundColorRes(alert.colorRes ?: R.color.notification_accent_color)
+                        setBackgroundColorRes(alert.colorRes ?: im.vector.lib.ui.styles.R.color.notification_accent_color)
                     }
                 }
                 .enableIconPulse(!noAnimation)
                 .show()
+    }
+
+    /* a11y */
+    private fun handleAccessibility(activity: Activity, giveFocus: Boolean) {
+        activity.window.decorView.findViewById<View>(com.tapadoo.alerter.R.id.llAlertBackground)?.let { alertView ->
+            alertView.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+
+            // Add close action for a11y (same action than swipe). User can select the action by swiping on the screen vertically,
+            // and double tap to perform the action
+            ViewCompat.addAccessibilityAction(
+                    alertView,
+                    stringProvider.getString(CommonStrings.action_close)
+            ) { _, _ ->
+                currentIsDismissed()
+                Alerter.hide()
+                true
+            }
+
+            // And give focus to the alert right now, only for first display, i.e. when there is an animation.
+            if (giveFocus) {
+                alertView.giveAccessibilityFocus()
+            }
+        }
     }
 
     private fun currentIsDismissed() {

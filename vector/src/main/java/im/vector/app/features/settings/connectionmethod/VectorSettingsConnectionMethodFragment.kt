@@ -31,6 +31,7 @@ import im.vector.app.core.platform.VectorBaseActivity
 import im.vector.app.core.settings.connectionmethods.i2p.I2PService
 import im.vector.app.features.analytics.AnalyticsTracker
 import im.vector.app.features.analytics.plan.MobileScreen
+import im.vector.lib.strings.CommonStrings
 import net.i2p.data.PrivateKeyFile
 import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.util.ConnectionType
@@ -41,7 +42,7 @@ import java.io.File
 class VectorSettingsConnectionMethodFragment : ConnectionSettingsBaseFragment() {
 
 
-    private var titleRes = R.string.settings_connection_method
+    private var titleRes = CommonStrings.settings_connection_method
 
     private var analyticsScreenName: MobileScreen.ScreenName? = null
 
@@ -122,7 +123,7 @@ class VectorSettingsConnectionMethodFragment : ConnectionSettingsBaseFragment() 
                         val hasNewBridge = newBridge != oldBridge
 
                         if(torService.isProxyRunning && hasNewBridge) {
-                            Toast.makeText(context, getString(R.string.tor_connection_is_already_established), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, getString(CommonStrings.tor_connection_is_already_established), Toast.LENGTH_SHORT).show()
                             restartApp(ConnectionType.ONION)
                         } else {
                             if (hasNewBridge) {

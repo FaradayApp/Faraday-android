@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.pin.lockscreen.ui
@@ -187,7 +178,7 @@ class LockScreenViewModel @AssistedInject constructor(
     /**
      * Wait until the device is unlocked. There seems to be a behavior change on Android 12 that makes [KeyguardManager.isDeviceLocked] return `false` even
      * after an Activity's `onResume` method. If we mix that with the system keys needing the device to be unlocked before they're used, we get crashes.
-     * See issue [#6768](https://github.com/vector-im/element-android/issues/6768).
+     * See issue [#6768](https://github.com/element-hq/element-android/issues/6768).
      */
     private suspend fun waitUntilKeyguardIsUnlocked() {
         if (versionProvider.isAtLeast(Build.VERSION_CODES.S)) {

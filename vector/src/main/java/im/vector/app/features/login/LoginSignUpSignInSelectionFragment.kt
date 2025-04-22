@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.login
@@ -27,6 +18,7 @@ import im.vector.app.R
 import im.vector.app.core.extensions.toReducedUrl
 import im.vector.app.databinding.FragmentLoginSignupSigninSelectionBinding
 import im.vector.app.features.login.SocialLoginButtonsView.Mode
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.auth.SSOAction
 
 /**
@@ -56,19 +48,19 @@ class LoginSignUpSignInSelectionFragment :
             ServerType.MatrixOrg -> {
                 views.loginSignupSigninServerIcon.setImageResource(R.drawable.ic_logo_matrix_org)
                 views.loginSignupSigninServerIcon.isVisible = true
-                views.loginSignupSigninTitle.text = getString(R.string.login_connect_to, state.homeServerUrlFromUser.toReducedUrl())
-                views.loginSignupSigninText.text = getString(R.string.login_server_matrix_org_text)
+                views.loginSignupSigninTitle.text = getString(CommonStrings.login_connect_to, state.homeServerUrlFromUser.toReducedUrl())
+                views.loginSignupSigninText.text = getString(CommonStrings.login_server_matrix_org_text)
             }
             ServerType.EMS -> {
                 views.loginSignupSigninServerIcon.setImageResource(R.drawable.ic_logo_element_matrix_services)
                 views.loginSignupSigninServerIcon.isVisible = true
-                views.loginSignupSigninTitle.text = getString(R.string.login_connect_to_modular)
+                views.loginSignupSigninTitle.text = getString(CommonStrings.login_connect_to_modular)
                 views.loginSignupSigninText.text = state.homeServerUrlFromUser.toReducedUrl()
             }
             ServerType.Other -> {
                 views.loginSignupSigninServerIcon.isVisible = false
-                views.loginSignupSigninTitle.text = getString(R.string.login_server_other_title)
-                views.loginSignupSigninText.text = getString(R.string.login_connect_to, state.homeServerUrlFromUser.toReducedUrl())
+                views.loginSignupSigninTitle.text = getString(CommonStrings.login_server_other_title)
+                views.loginSignupSigninText.text = getString(CommonStrings.login_connect_to, state.homeServerUrlFromUser.toReducedUrl())
             }
             ServerType.Unknown -> Unit /* Should not happen */
         }
@@ -98,11 +90,11 @@ class LoginSignUpSignInSelectionFragment :
         when (state.loginMode) {
             is LoginMode.Sso -> {
                 // change to only one button that is sign in with sso
-                views.loginSignupSigninSubmit.text = getString(R.string.login_signin_sso)
+                views.loginSignupSigninSubmit.text = getString(CommonStrings.login_signin_sso)
                 views.loginSignupSigninSignIn.isVisible = false
             }
             else -> {
-                views.loginSignupSigninSubmit.text = getString(R.string.login_signup)
+                views.loginSignupSigninSubmit.text = getString(CommonStrings.login_signup)
                 views.loginSignupSigninSignIn.isVisible = true
             }
         }

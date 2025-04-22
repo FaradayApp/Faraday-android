@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.matrixto
@@ -24,7 +15,6 @@ import com.airbnb.mvrx.Uninitialized
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import im.vector.app.R
 import im.vector.app.core.di.MavericksAssistedViewModelFactory
 import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.error.ErrorFormatter
@@ -33,6 +23,7 @@ import im.vector.app.core.resources.StringProvider
 import im.vector.app.features.analytics.AnalyticsTracker
 import im.vector.app.features.analytics.extensions.toAnalyticsJoinedRoom
 import im.vector.app.features.createdirect.DirectRoomHelper
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.matrix.android.sdk.api.MatrixPatterns
@@ -89,7 +80,7 @@ class MatrixToBottomSheetViewModel @AssistedInject constructor(
         if (permalinkData is PermalinkData.FallbackLink) {
             setState {
                 copy(
-                        matrixItem = Fail(IllegalArgumentException(stringProvider.getString(R.string.permalink_malformed))),
+                        matrixItem = Fail(IllegalArgumentException(stringProvider.getString(CommonStrings.permalink_malformed))),
                         startChattingState = Uninitialized
                 )
             }
@@ -337,7 +328,7 @@ class MatrixToBottomSheetViewModel @AssistedInject constructor(
                 directRoomHelper.ensureDMExists(action.matrixItem.id)
             } catch (failure: Throwable) {
                 setState {
-                    copy(startChattingState = Fail(Exception(stringProvider.getString(R.string.invite_users_to_room_failure))))
+                    copy(startChattingState = Fail(Exception(stringProvider.getString(CommonStrings.invite_users_to_room_failure))))
                 }
                 return@launch
             }

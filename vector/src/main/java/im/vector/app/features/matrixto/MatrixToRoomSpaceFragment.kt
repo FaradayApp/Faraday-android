@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.matrixto
@@ -34,7 +25,9 @@ import im.vector.app.core.extensions.setTextOrHide
 import im.vector.app.core.platform.ButtonStateView
 import im.vector.app.core.platform.VectorBaseFragment
 import im.vector.app.databinding.FragmentMatrixToRoomSpaceCardBinding
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
+import im.vector.lib.strings.CommonPlurals
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.session.room.model.Membership
 import org.matrix.android.sdk.api.session.room.model.RoomType
 import javax.inject.Inject
@@ -75,10 +68,10 @@ class MatrixToRoomSpaceFragment :
                         if (peek.roomType == RoomType.SPACE) {
                             views.matrixToAccessImage.isVisible = true
                             if (peek.isPublic) {
-                                views.matrixToAccessText.setTextOrHide(context?.getString(R.string.public_space))
+                                views.matrixToAccessText.setTextOrHide(context?.getString(CommonStrings.public_space))
                                 views.matrixToAccessImage.setImageResource(R.drawable.ic_public_room)
                             } else {
-                                views.matrixToAccessText.setTextOrHide(context?.getString(R.string.private_space))
+                                views.matrixToAccessText.setTextOrHide(context?.getString(CommonStrings.private_space))
                                 views.matrixToAccessImage.setImageResource(R.drawable.ic_room_private)
                             }
                         }
@@ -88,16 +81,16 @@ class MatrixToRoomSpaceFragment :
                         val memberCount = peek.memberCount
                         if (memberCount != null) {
                             views.matrixToMemberPills.isVisible = true
-                            views.spaceChildMemberCountText.text = resources.getQuantityString(R.plurals.room_title_members, memberCount, memberCount)
+                            views.spaceChildMemberCountText.text = resources.getQuantityString(CommonPlurals.room_title_members, memberCount, memberCount)
                         } else {
                             // hide the pill
                             views.matrixToMemberPills.isVisible = false
                         }
 
                         val joinTextRes = if (peek.roomType == RoomType.SPACE) {
-                            R.string.join_space
+                            CommonStrings.join_space
                         } else {
-                            R.string.join_room
+                            CommonStrings.join_room
                         }
 
                         when (peek.membership) {
@@ -111,12 +104,12 @@ class MatrixToRoomSpaceFragment :
                                 views.matrixToCardMainButton.isVisible = true
                                 views.matrixToCardSecondaryButton.isVisible = true
                                 views.matrixToCardMainButton.button.text = getString(joinTextRes)
-                                views.matrixToCardSecondaryButton.button.text = getString(R.string.action_decline)
+                                views.matrixToCardSecondaryButton.button.text = getString(CommonStrings.action_decline)
                             }
                             Membership.JOIN -> {
                                 views.matrixToCardMainButton.isVisible = true
                                 views.matrixToCardSecondaryButton.isVisible = false
-                                views.matrixToCardMainButton.button.text = getString(R.string.action_open)
+                                views.matrixToCardMainButton.button.text = getString(CommonStrings.action_open)
                             }
                             Membership.KNOCK,
                             Membership.BAN -> {
@@ -131,9 +124,9 @@ class MatrixToRoomSpaceFragment :
                         views.matrixToCardNameText.text = peek.roomId
                         views.matrixToCardAliasText.isVisible = false
                         views.matrixToMemberPills.isVisible = false
-                        views.matrixToCardDescText.setTextOrHide(getString(R.string.room_preview_no_preview))
+                        views.matrixToCardDescText.setTextOrHide(getString(CommonStrings.room_preview_no_preview))
 
-                        views.matrixToCardMainButton.button.text = getString(R.string.join_anyway)
+                        views.matrixToCardMainButton.button.text = getString(CommonStrings.join_anyway)
                         views.matrixToCardSecondaryButton.isVisible = false
                     }
                     RoomInfoResult.NotFound -> {
@@ -141,7 +134,7 @@ class MatrixToRoomSpaceFragment :
                         views.matrixToCardNameText.isVisible = false
                         views.matrixToCardAliasText.isVisible = false
                         views.matrixToMemberPills.isVisible = false
-                        views.matrixToCardDescText.setTextOrHide(getString(R.string.room_preview_not_found))
+                        views.matrixToCardDescText.setTextOrHide(getString(CommonStrings.room_preview_not_found))
 
                         views.matrixToCardMainButton.isVisible = false
                         views.matrixToCardSecondaryButton.isVisible = false
@@ -150,7 +143,7 @@ class MatrixToRoomSpaceFragment :
                         views.matrixToCardNameText.isVisible = false
                         views.matrixToCardAliasText.isVisible = false
                         views.spaceChildMemberCountText.isVisible = false
-                        views.matrixToCardDescText.setTextOrHide(getString(R.string.room_alias_preview_not_found))
+                        views.matrixToCardDescText.setTextOrHide(getString(CommonStrings.room_alias_preview_not_found))
 
                         views.matrixToCardMainButton.isVisible = false
                         views.matrixToCardSecondaryButton.isVisible = false

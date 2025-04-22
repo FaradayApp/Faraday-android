@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.qrcode
@@ -31,7 +22,6 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.Result
 import com.google.zxing.ResultMetadataType
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.hideKeyboard
 import im.vector.app.core.extensions.registerStartForActivityResult
 import im.vector.app.core.platform.VectorBaseFragment
@@ -43,6 +33,7 @@ import im.vector.app.databinding.FragmentQrCodeScannerBinding
 import im.vector.app.features.usercode.QRCodeBitmapDecodeHelper
 import im.vector.lib.multipicker.MultiPicker
 import im.vector.lib.multipicker.utils.ImageUtils
+import im.vector.lib.strings.CommonStrings
 import kotlinx.parcelize.Parcelize
 import me.dm7.barcodescanner.zxing.ZXingScannerView
 import org.matrix.android.sdk.api.extensions.tryOrNull
@@ -69,7 +60,7 @@ class QrCodeScannerFragment :
         if (allGranted) {
             startCamera()
         } else if (deniedPermanently) {
-            activity?.onPermissionDeniedDialog(R.string.denied_permission_camera)
+            activity?.onPermissionDeniedDialog(CommonStrings.denied_permission_camera)
         }
     }
 
@@ -84,7 +75,7 @@ class QrCodeScannerFragment :
                         // try to see if it is a valid matrix code
                         val bitmap = ImageUtils.getBitmap(requireContext(), uri)
                                 ?: return@let Unit.also {
-                                    Toast.makeText(requireContext(), getString(R.string.qr_code_not_scanned), Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(requireContext(), getString(CommonStrings.qr_code_not_scanned), Toast.LENGTH_SHORT).show()
                                 }
                         handleResult(tryOrNull { QRCodeBitmapDecodeHelper.decodeQRFromBitmap(bitmap) })
                     }

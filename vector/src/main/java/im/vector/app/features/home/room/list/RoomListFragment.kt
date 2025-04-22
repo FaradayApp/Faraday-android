@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.list
@@ -61,6 +52,7 @@ import im.vector.app.features.home.room.list.widget.NotifsFabMenuView
 import im.vector.app.features.matrixto.OriginOfMatrixTo
 import im.vector.app.features.notifications.NotificationDrawerManager
 import im.vector.app.features.settings.VectorPreferences
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
@@ -575,19 +567,22 @@ class RoomListFragment :
     private fun promptLeaveRoom(roomId: String) {
         val isPublicRoom = roomListViewModel.isPublicRoom(roomId)
         val message = buildString {
-            append(getString(R.string.room_participants_leave_prompt_msg))
+            append(getString(CommonStrings.room_participants_leave_prompt_msg))
             if (!isPublicRoom) {
                 append("\n\n")
-                append(getString(R.string.room_participants_leave_private_warning))
+                append(getString(CommonStrings.room_participants_leave_private_warning))
             }
         }
-        MaterialAlertDialogBuilder(requireContext(), if (isPublicRoom) 0 else R.style.ThemeOverlay_Vector_MaterialAlertDialog_Destructive)
-                .setTitle(R.string.room_participants_leave_prompt_title)
+        MaterialAlertDialogBuilder(
+                requireContext(),
+                if (isPublicRoom) 0 else im.vector.lib.ui.styles.R.style.ThemeOverlay_Vector_MaterialAlertDialog_Destructive
+        )
+                .setTitle(CommonStrings.room_participants_leave_prompt_title)
                 .setMessage(message)
-                .setPositiveButton(R.string.action_leave) { _, _ ->
+                .setPositiveButton(CommonStrings.action_leave) { _, _ ->
                     roomListViewModel.handle(RoomListAction.LeaveRoom(roomId))
                 }
-                .setNegativeButton(R.string.action_cancel, null)
+                .setNegativeButton(CommonStrings.action_cancel, null)
                 .show()
     }
 
@@ -602,30 +597,30 @@ class RoomListFragment :
             val emptyState = when (roomListParams.displayMode) {
                 RoomListDisplayMode.ALL ->
                     StateView.State.Empty(
-                            title = getString(R.string.all_list_rooms_empty_title),
+                            title = getString(CommonStrings.all_list_rooms_empty_title),
                             image = ContextCompat.getDrawable(requireContext(), R.drawable.ic_home_bottom_group),
-                            message = getString(R.string.all_list_rooms_empty_body)
+                            message = getString(CommonStrings.all_list_rooms_empty_body)
                     )
                 RoomListDisplayMode.NOTIFICATIONS -> {
                     StateView.State.Empty(
-                            title = getString(R.string.room_list_catchup_empty_title),
+                            title = getString(CommonStrings.room_list_catchup_empty_title),
                             image = ContextCompat.getDrawable(requireContext(), R.drawable.ic_noun_party_popper),
-                            message = getString(R.string.room_list_catchup_empty_body)
+                            message = getString(CommonStrings.room_list_catchup_empty_body)
                     )
                 }
                 RoomListDisplayMode.PEOPLE ->
                     StateView.State.Empty(
-                            title = getString(R.string.room_list_people_empty_title),
+                            title = getString(CommonStrings.room_list_people_empty_title),
                             image = ContextCompat.getDrawable(requireContext(), R.drawable.empty_state_dm),
                             isBigImage = true,
-                            message = getString(R.string.room_list_people_empty_body)
+                            message = getString(CommonStrings.room_list_people_empty_body)
                     )
                 RoomListDisplayMode.ROOMS ->
                     StateView.State.Empty(
-                            title = getString(R.string.room_list_rooms_empty_title),
+                            title = getString(CommonStrings.room_list_rooms_empty_title),
                             image = ContextCompat.getDrawable(requireContext(), R.drawable.empty_state_room),
                             isBigImage = true,
-                            message = getString(R.string.room_list_rooms_empty_body)
+                            message = getString(CommonStrings.room_list_rooms_empty_body)
                     )
                 RoomListDisplayMode.FILTERED ->
                     // Always display the content in this mode, because if the footer

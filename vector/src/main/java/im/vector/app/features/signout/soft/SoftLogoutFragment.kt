@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.signout.soft
@@ -24,7 +15,6 @@ import com.airbnb.mvrx.activityViewModel
 import com.airbnb.mvrx.withState
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.cleanup
 import im.vector.app.core.extensions.configureWith
 import im.vector.app.core.extensions.hideKeyboard
@@ -33,6 +23,8 @@ import im.vector.app.features.login.AbstractLoginFragment
 import im.vector.app.features.login.LoginAction
 import im.vector.app.features.login.LoginMode
 import im.vector.app.features.login.LoginViewEvents
+import im.vector.lib.strings.CommonStrings
+import org.matrix.android.sdk.api.extensions.orFalse
 import javax.inject.Inject
 
 /**
@@ -130,17 +122,17 @@ class SoftLogoutFragment :
         withState(softLogoutViewModel) { state ->
             cleanupUi()
 
-            val messageResId = if (state.hasUnsavedKeys) {
-                R.string.soft_logout_clear_data_dialog_e2e_warning_content
+            val messageResId = if (state.hasUnsavedKeys().orFalse()) {
+                CommonStrings.soft_logout_clear_data_dialog_e2e_warning_content
             } else {
-                R.string.soft_logout_clear_data_dialog_content
+                CommonStrings.soft_logout_clear_data_dialog_content
             }
 
-            MaterialAlertDialogBuilder(requireActivity(), R.style.ThemeOverlay_Vector_MaterialAlertDialog_Destructive)
-                    .setTitle(R.string.soft_logout_clear_data_dialog_title)
+            MaterialAlertDialogBuilder(requireActivity(), im.vector.lib.ui.styles.R.style.ThemeOverlay_Vector_MaterialAlertDialog_Destructive)
+                    .setTitle(CommonStrings.soft_logout_clear_data_dialog_title)
                     .setMessage(messageResId)
-                    .setNegativeButton(R.string.action_cancel, null)
-                    .setPositiveButton(R.string.soft_logout_clear_data_submit) { _, _ ->
+                    .setNegativeButton(CommonStrings.action_cancel, null)
+                    .setPositiveButton(CommonStrings.soft_logout_clear_data_submit) { _, _ ->
                         softLogoutViewModel.handle(SoftLogoutAction.ClearData)
                     }
                     .show()

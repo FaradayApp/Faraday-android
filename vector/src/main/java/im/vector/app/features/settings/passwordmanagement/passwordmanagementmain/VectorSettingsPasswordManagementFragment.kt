@@ -34,6 +34,7 @@ import im.vector.app.features.settings.VectorSettingsBaseFragment
 import im.vector.app.features.settings.passwordmanagement.changepassword.VectorSettingsChangePasswordFragment
 import im.vector.app.features.settings.passwordmanagement.enterpassword.EnterPasswordFragment
 import im.vector.app.features.settings.passwordmanagement.setpassword.VectorSettingsSetPasswordFragment
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.settings.LightweightSettingsStorage
 import java.lang.Exception
 import javax.inject.Inject
@@ -46,7 +47,7 @@ class VectorSettingsPasswordManagementFragment :
 
     private val viewModel: VectorSettingsPasswordManagementViewModel by fragmentViewModel()
 
-    override var titleRes = R.string.settings_password
+    override var titleRes = CommonStrings.settings_password
 
     override val preferenceXmlRes = R.xml.vector_password_management
 
@@ -70,7 +71,6 @@ class VectorSettingsPasswordManagementFragment :
 
     override fun bindPref() {
         passwordPreference?.let { pref ->
-            pref.isIconFrameHidden = true
             pref.isChecked = lightweightSettingsStorage.isApplicationPasswordSet()
             pref.onPreferenceClickListener = Preference.OnPreferenceClickListener {
                 when (passwordPreference?.isChecked == true) {

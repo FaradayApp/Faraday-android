@@ -1,34 +1,27 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.list
 
 import com.airbnb.epoxy.TypedEpoxyController
-import im.vector.app.R
 import im.vector.app.core.epoxy.helpFooterItem
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.core.resources.UserPreferencesProvider
 import im.vector.app.features.home.RoomListDisplayMode
 import im.vector.app.features.home.room.filtered.FilteredRoomFooterItem
 import im.vector.app.features.home.room.filtered.filteredRoomFooterItem
+import im.vector.app.features.settings.VectorPreferences
+import im.vector.lib.strings.CommonStrings
 import javax.inject.Inject
 
 class RoomListFooterController @Inject constructor(
         private val stringProvider: StringProvider,
         private val userPreferencesProvider: UserPreferencesProvider,
+        private val vectorPreferences: VectorPreferences,
 ) : TypedEpoxyController<RoomListViewState>() {
 
     var listener: FilteredRoomFooterItem.Listener? = null
@@ -42,14 +35,14 @@ class RoomListFooterController @Inject constructor(
                     listener(host.listener)
                     currentFilter(data.roomFilter)
                     inSpace(data.asyncSelectedSpace.invoke() != null)
-                    simplifiedMode(false)
+                    simplifiedMode(host.vectorPreferences.simplifiedMode())
                 }
             }
             else -> {
                 if (userPreferencesProvider.shouldShowLongClickOnRoomHelp()) {
                     helpFooterItem {
                         id("long_click_help")
-                        text(host.stringProvider.getString(R.string.help_long_click_on_room_for_more_options))
+                        text(host.stringProvider.getString(CommonStrings.help_long_click_on_room_for_more_options))
                     }
                 }
             }

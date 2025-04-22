@@ -1,18 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.grouplist
@@ -33,6 +23,7 @@ import im.vector.app.core.epoxy.onClick
 import im.vector.app.core.platform.CheckableConstraintLayout
 import im.vector.app.features.home.room.list.UnreadCounterBadgeView
 import im.vector.app.features.themes.ThemeUtils
+import im.vector.lib.strings.CommonStrings
 
 @EpoxyModelClass
 abstract class HomeSpaceSummaryItem : VectorEpoxyModel<HomeSpaceSummaryItem.Holder>(R.layout.item_space) {
@@ -51,12 +42,14 @@ abstract class HomeSpaceSummaryItem : VectorEpoxyModel<HomeSpaceSummaryItem.Hold
     override fun bind(holder: Holder) {
         super.bind(holder)
         holder.rootView.onClick(listener)
-        holder.groupNameView.text = holder.view.context.getString(R.string.group_details_home)
+        holder.groupNameView.text = holder.view.context.getString(CommonStrings.group_details_home)
         holder.rootView.isChecked = selected
         holder.rootView.context.resources
         holder.avatarImageView.background = ContextCompat.getDrawable(holder.view.context, R.drawable.space_home_background)
         holder.avatarImageView.setImageResource(R.drawable.ic_space_home)
-        holder.avatarImageView.imageTintList = ColorStateList.valueOf(ThemeUtils.getColor(holder.view.context, R.attr.vctr_content_primary))
+        holder.avatarImageView.imageTintList = ColorStateList.valueOf(
+                ThemeUtils.getColor(holder.view.context, im.vector.lib.ui.styles.R.attr.vctr_content_primary)
+        )
         holder.avatarImageView.scaleType = ImageView.ScaleType.CENTER_INSIDE
         holder.leaveView.isVisible = false
 

@@ -1,26 +1,13 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings
 
-import android.os.Bundle
-import android.view.View
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.Preference
 import androidx.preference.SwitchPreference
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,6 +22,7 @@ import im.vector.app.features.pin.PinMode
 import im.vector.app.features.pin.lockscreen.biometrics.BiometricHelper
 import im.vector.app.features.pin.lockscreen.configuration.LockScreenConfiguration
 import im.vector.app.features.pin.lockscreen.configuration.LockScreenMode
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.matrix.android.sdk.api.extensions.orFalse
@@ -51,7 +39,7 @@ class VectorSettingsPinFragment :
     @Inject lateinit var biometricHelperFactory: BiometricHelper.BiometricHelperFactory
     @Inject lateinit var defaultLockScreenConfiguration: LockScreenConfiguration
 
-    override var titleRes = R.string.settings_security_application_protection_screen_title
+    override var titleRes = CommonStrings.settings_security_application_protection_screen_title
     override val preferenceXmlRes = R.xml.vector_settings_pin
 
     private val biometricHelper by lazy {
@@ -82,15 +70,13 @@ class VectorSettingsPinFragment :
 
     override fun onResume() {
         super.onResume()
-
         updateBiometricPrefState(isPinCodeChecked = usePinCodePref.isChecked)
+        viewLifecycleOwner.lifecycleScope.launch {
+            refreshPinCodeStatus()
+        }
     }
 
-    override fun bindPref() {}
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        refreshPinCodeStatus()
+    override fun bindPref() {
         usePinCodePref.setOnPreferenceChangeListener { _, value ->
             val isChecked = (value as? Boolean).orFalse()
             updateBiometricPrefState(isPinCodeChecked = isChecked)
@@ -134,46 +120,42 @@ class VectorSettingsPinFragment :
                 .onFailure { Timber.e(it) }
     }
 
-    private fun refreshPinCodeStatus() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                val hasPinCode = pinCodeStore.hasEncodedPin()
-                usePinCodePref.isChecked = hasPinCode
-                usePinCodePref.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-                    if (hasPinCode) {
-                        lifecycleScope.launch {
-                            pinCodeStore.deletePinCode()
-                            refreshPinCodeStatus()
-                        }
-                    } else {
-                        navigator.openPinCode(
-                                requireContext(),
-                                pinActivityResultLauncher,
-                                PinMode.CREATE
-                        )
-                    }
-                    true
+    private suspend fun refreshPinCodeStatus() {
+        val hasPinCode = pinCodeStore.hasEncodedPin()
+        usePinCodePref.isChecked = hasPinCode
+        usePinCodePref.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            if (hasPinCode) {
+                lifecycleScope.launch {
+                    pinCodeStore.deletePinCode()
+                    refreshPinCodeStatus()
                 }
-
-                changePinCodePref.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-                    if (hasPinCode) {
-                        navigator.openPinCode(
-                                requireContext(),
-                                pinActivityResultLauncher,
-                                PinMode.MODIFY
-                        )
-                    }
-                    true
-                }
+            } else {
+                navigator.openPinCode(
+                        requireContext(),
+                        pinActivityResultLauncher,
+                        PinMode.CREATE
+                )
             }
+            true
+        }
+
+        changePinCodePref.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            if (hasPinCode) {
+                navigator.openPinCode(
+                        requireContext(),
+                        pinActivityResultLauncher,
+                        PinMode.MODIFY
+                )
+            }
+            true
         }
     }
 
     private fun showEnableBiometricErrorMessage() {
-        context?.toast(R.string.settings_security_pin_code_use_biometrics_error)
+        context?.toast(CommonStrings.settings_security_pin_code_use_biometrics_error)
     }
 
     private val pinActivityResultLauncher = registerStartForActivityResult {
-        refreshPinCodeStatus()
+        // Nothing to do, refreshPinCodeStatus() will be called by `onResume`
     }
 }

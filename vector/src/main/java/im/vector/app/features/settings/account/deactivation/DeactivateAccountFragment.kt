@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings.account.deactivation
@@ -25,7 +16,6 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.airbnb.mvrx.fragmentViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.registerStartForActivityResult
 import im.vector.app.core.platform.VectorBaseFragment
 import im.vector.app.databinding.FragmentDeactivateAccountBinding
@@ -34,6 +24,7 @@ import im.vector.app.features.MainActivityArgs
 import im.vector.app.features.analytics.plan.MobileScreen
 import im.vector.app.features.auth.ReAuthActivity
 import im.vector.app.features.settings.VectorSettingsActivity
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.auth.data.LoginFlowTypes
 import org.matrix.android.sdk.api.session.uia.exceptions.UiaCancelledException
 
@@ -73,7 +64,7 @@ class DeactivateAccountFragment :
 
     override fun onResume() {
         super.onResume()
-        (activity as? AppCompatActivity)?.supportActionBar?.setTitle(R.string.deactivate_account_title)
+        (activity as? AppCompatActivity)?.supportActionBar?.setTitle(CommonStrings.deactivate_account_title)
     }
 
     private var settingsActivity: VectorSettingsActivity? = null
@@ -131,7 +122,7 @@ class DeactivateAccountFragment :
                             requireContext(),
                             it.registrationFlowResponse,
                             it.lastErrorCode,
-                            getString(R.string.deactivate_account_title)
+                            getString(CommonStrings.deactivate_account_title)
                     ).let { intent ->
                         reAuthActivityResultLauncher.launch(intent)
                     }

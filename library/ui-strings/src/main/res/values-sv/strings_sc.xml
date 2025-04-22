@@ -13,14 +13,14 @@
     <string name="settings_light_theme">Ljus tema</string>
     <string name="settings_system_dark_theme_pre_ten">Följ system mörkt tema</string>
     <string name="settings_dark_theme">Mörkt tema</string>
-    <string name="sc_light_theme">SC Light</string>
+    <string name="sc_light_theme">SC Ljus</string>
     <string name="sc_theme">SC Black</string>
-    <string name="sc_dark_theme">SC Dark</string>
+    <string name="sc_dark_theme">SC Mörk</string>
     <string name="sc_colored_theme">SC Black, färgade bubblor</string>
     <string name="sc_dark_colored_theme">SC Dark, färgade bubblor</string>
-    <string name="element_light_theme">Element Light</string>
-    <string name="element_dark_theme">Element Dark</string>
-    <string name="element_black_theme">Element Black</string>
+    <string name="element_light_theme">Element Ljus</string>
+    <string name="element_dark_theme">Element Mörk</string>
+    <string name="element_black_theme">Element Svart</string>
     <string name="bubble_style">Meddelandebubblor</string>
     <string name="bubble_style_none">Ingen</string>
     <string name="bubble_style_start">Samma sida</string>
@@ -159,4 +159,19 @@
     <string name="in_reply_to_loading">Läser in besvarat meddelande…</string>
     <string name="custom_emotes_account_data">Egna emoji</string>
     <string name="in_reply_to_error">Det gick inte att läsa in besvarat meddelande</string>
+    <string name="settings_enable_member_name_click_summary">Klicka på ett användarnamn för att nämna dem</string>
+    <string name="settings_enable_member_name_click">Klickbara namn</string>
+    <string name="settings_initial_sync">Inledande synkronisering</string>
+    <string name="action_send_as_sticker">Skicka som dekal</string>
+    <string name="settings_sc_dbg_read_receipts">Felsökning av läskvitto</string>
+    <string name="custom_emotes_named_other_room">\"%1$s\" av %2$s</string>
+    <string name="settings_initial_sync_summary">Rensa cache och ladda om från servern</string>
+    <string name="settings_sc_debugging_category_logs">Ytterligare loggar</string>
+    <string name="settings_sc_debugging_category_visuals">Visuell felsökningsinformation</string>
+    <string name="app_ios_android_sc">${app_name_sc_stable} Android</string>
+    <string name="use_other_session_content_description_sc">Använd den senaste ${app_name_sc_stable} på dina andra enheter, ${app_name_sc_stable} Web, ${app_name_sc_stable} Desktop, ${app_name_sc_stable} för Android, eller en annan Matrix-klient som kan korssignera</string>
+    <string name="app_desktop_web_sc">${app_name_sc_stable} Web
+\n${app_name_sc_stable} Desktop</string>
+    <string name="use_latest_app_sc">Använd den senaste ${app_name_sc_stable} på alla dina enheter:</string>
+    <string name="settings_sc_dbg_show_duplicate_read_receipts">Dubbletter av läskvitton</string>
 </resources>

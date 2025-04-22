@@ -18,5 +18,6 @@ include ':library:external:span'
 include ':library:external:barcodescanner:core'
 include ':library:external:barcodescanner:zxing'
 
+include ':library:rustCrypto'
 include ':matrix-sdk-android'
 include ':matrix-sdk-android-flow'

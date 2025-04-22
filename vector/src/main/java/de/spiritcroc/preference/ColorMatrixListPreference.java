@@ -49,7 +49,7 @@ public class ColorMatrixListPreference extends ListPreference {
     }
 
     public ColorMatrixListPreference(Context context, AttributeSet attrs) {
-        this(context, attrs, R.attr.dialogPreferenceStyle);
+        this(context, attrs, android.R.attr.dialogPreferenceStyle);
     }
 
     public ColorMatrixListPreference(Context context) {

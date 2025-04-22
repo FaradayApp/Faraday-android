@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.login
@@ -24,10 +15,10 @@ import androidx.viewbinding.ViewBinding
 import com.airbnb.mvrx.activityViewModel
 import com.airbnb.mvrx.withState
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import im.vector.app.R
 import im.vector.app.core.dialogs.UnrecognizedCertificateDialog
 import im.vector.app.core.platform.OnBackPressed
 import im.vector.app.core.platform.VectorBaseFragment
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.CancellationException
 import org.matrix.android.sdk.api.failure.Failure
 import org.matrix.android.sdk.api.failure.MatrixError
@@ -85,9 +76,9 @@ abstract class AbstractLoginFragment<VB : ViewBinding> : VectorBaseFragment<VB>(
                 if (throwable.error.code == MatrixError.M_FORBIDDEN &&
                         throwable.httpCode == HttpsURLConnection.HTTP_FORBIDDEN /* 403 */) {
                     MaterialAlertDialogBuilder(requireActivity())
-                            .setTitle(R.string.dialog_title_error)
-                            .setMessage(getString(R.string.login_registration_disabled))
-                            .setPositiveButton(R.string.ok, null)
+                            .setTitle(CommonStrings.dialog_title_error)
+                            .setMessage(getString(CommonStrings.login_registration_disabled))
+                            .setPositiveButton(CommonStrings.ok, null)
                             .show()
                 } else {
                     onError(throwable)
@@ -129,14 +120,14 @@ abstract class AbstractLoginFragment<VB : ViewBinding> : VectorBaseFragment<VB>(
             displayCancelDialog && loginViewModel.isRegistrationStarted -> {
                 // Ask for confirmation before cancelling the registration
                 MaterialAlertDialogBuilder(requireActivity())
-                        .setTitle(R.string.login_signup_cancel_confirmation_title)
-                        .setMessage(R.string.login_signup_cancel_confirmation_content)
-                        .setPositiveButton(R.string.yes) { _, _ ->
+                        .setTitle(CommonStrings.login_signup_cancel_confirmation_title)
+                        .setMessage(CommonStrings.login_signup_cancel_confirmation_content)
+                        .setPositiveButton(CommonStrings.yes) { _, _ ->
                             displayCancelDialog = false
                             @Suppress("DEPRECATION")
                             vectorBaseActivity.onBackPressed()
                         }
-                        .setNegativeButton(R.string.no, null)
+                        .setNegativeButton(CommonStrings.no, null)
                         .show()
 
                 true
@@ -144,14 +135,14 @@ abstract class AbstractLoginFragment<VB : ViewBinding> : VectorBaseFragment<VB>(
             displayCancelDialog && isResetPasswordStarted -> {
                 // Ask for confirmation before cancelling the reset password
                 MaterialAlertDialogBuilder(requireActivity())
-                        .setTitle(R.string.login_reset_password_cancel_confirmation_title)
-                        .setMessage(R.string.login_reset_password_cancel_confirmation_content)
-                        .setPositiveButton(R.string.yes) { _, _ ->
+                        .setTitle(CommonStrings.login_reset_password_cancel_confirmation_title)
+                        .setMessage(CommonStrings.login_reset_password_cancel_confirmation_content)
+                        .setPositiveButton(CommonStrings.yes) { _, _ ->
                             displayCancelDialog = false
                             @Suppress("DEPRECATION")
                             vectorBaseActivity.onBackPressed()
                         }
-                        .setNegativeButton(R.string.no, null)
+                        .setNegativeButton(CommonStrings.no, null)
                         .show()
 
                 true

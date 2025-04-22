@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.home.room.detail.timeline.action
 
@@ -31,7 +22,7 @@ import im.vector.app.core.epoxy.bottomsheet.bottomSheetSendStateItem
 import im.vector.app.core.error.ErrorFormatter
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.core.utils.DimensionConverter
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.home.room.detail.timeline.TimelineEventController
 import im.vector.app.features.home.room.detail.timeline.format.EventDetailsFormatter
 import im.vector.app.features.home.room.detail.timeline.helper.LocationPinProvider
@@ -46,6 +37,7 @@ import im.vector.app.features.location.toLocationData
 import im.vector.app.features.media.ImageContentRenderer
 import im.vector.app.features.settings.VectorPreferences
 import im.vector.lib.core.utils.epoxy.charsequence.toEpoxyCharSequence
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.extensions.orFalse
 import org.matrix.android.sdk.api.failure.Failure
 import org.matrix.android.sdk.api.session.events.model.isLocationMessage
@@ -105,7 +97,7 @@ class MessageActionsEpoxyController @Inject constructor(
             // Get more details about the error
             val errorMessage = state.timelineEvent()?.root?.sendStateError()
                     ?.let { errorFormatter.toHumanReadable(Failure.ServerError(it, 0)) }
-                    ?: stringProvider.getString(R.string.unable_to_send_message)
+                    ?: stringProvider.getString(CommonStrings.unable_to_send_message)
             bottomSheetSendStateItem {
                 id("send_state")
                 showProgress(false)
@@ -116,14 +108,14 @@ class MessageActionsEpoxyController @Inject constructor(
             bottomSheetSendStateItem {
                 id("send_state")
                 showProgress(true)
-                text(host.stringProvider.getString(R.string.event_status_sending_message))
+                text(host.stringProvider.getString(CommonStrings.event_status_sending_message))
             }
         } else if (sendState == SendState.SENT) {
             bottomSheetSendStateItem {
                 id("send_state")
                 showProgress(false)
                 drawableStart(R.drawable.ic_message_sent)
-                text(host.stringProvider.getString(R.string.event_status_sent_message))
+                text(host.stringProvider.getString(CommonStrings.event_status_sent_message))
             }
         }
 
@@ -132,17 +124,16 @@ class MessageActionsEpoxyController @Inject constructor(
                 bottomSheetSendStateItem {
                     id("e2e_clear")
                     showProgress(false)
-                    text(host.stringProvider.getString(R.string.unencrypted))
+                    text(host.stringProvider.getString(CommonStrings.unencrypted))
                     drawableStart(R.drawable.ic_shield_warning_small)
                 }
             }
             E2EDecoration.WARN_SENT_BY_UNVERIFIED,
-            E2EDecoration.WARN_SENT_BY_DELETED_SESSION,
             E2EDecoration.WARN_SENT_BY_UNKNOWN -> {
                 bottomSheetSendStateItem {
                     id("e2e_unverified")
                     showProgress(false)
-                    text(host.stringProvider.getString(R.string.encrypted_unverified))
+                    text(host.stringProvider.getString(CommonStrings.encrypted_unverified))
                     drawableStart(R.drawable.ic_shield_warning_small)
                 }
             }
@@ -150,12 +141,19 @@ class MessageActionsEpoxyController @Inject constructor(
                 bottomSheetSendStateItem {
                     id("e2e_unsafe")
                     showProgress(false)
-                    text(host.stringProvider.getString(R.string.key_authenticity_not_guaranteed))
+                    text(host.stringProvider.getString(CommonStrings.key_authenticity_not_guaranteed))
                     drawableStart(R.drawable.ic_shield_gray)
                 }
             }
-            else -> {
-                // nothing
+            E2EDecoration.WARN_SENT_BY_DELETED_SESSION -> {
+                bottomSheetSendStateItem {
+                    id("e2e_deleted")
+                    showProgress(false)
+                    text(host.stringProvider.getString(CommonStrings.encrypted_by_deleted))
+                    drawableStart(R.drawable.ic_shield_warning_small)
+                }
+            }
+            E2EDecoration.NONE -> {
             }
         }
 
@@ -234,7 +232,7 @@ class MessageActionsEpoxyController @Inject constructor(
         val locationUrl = locationContent.toLocationData()
                 ?.let { urlMapProvider.buildStaticMapUrl(it, INITIAL_MAP_ZOOM_IN_TIMELINE, 1200, 800) }
                 ?: return null
-        val locationOwnerId = if (locationContent.isSelfLocation()) state.informationData.matrixItem.id else null
+        val locationOwnerId = if (locationContent.isSelfLocation()) state.informationData.senderId else null
 
         return LocationUiData(
                 locationUrl = locationUrl,

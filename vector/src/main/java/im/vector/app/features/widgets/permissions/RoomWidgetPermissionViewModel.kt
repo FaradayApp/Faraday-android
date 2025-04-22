@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.widgets.permissions
 
@@ -19,10 +10,10 @@ import com.airbnb.mvrx.MavericksViewModelFactory
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import im.vector.app.R
 import im.vector.app.core.di.MavericksAssistedViewModelFactory
 import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.platform.VectorViewModel
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -60,8 +51,8 @@ class RoomWidgetPermissionViewModel @AssistedInject constructor(
                     // For now put all
                     if (widget.type == WidgetType.Jitsi) {
                         val infoShared = listOf(
-                                R.string.room_widget_permission_display_name,
-                                R.string.room_widget_permission_avatar_url
+                                CommonStrings.room_widget_permission_display_name,
+                                CommonStrings.room_widget_permission_avatar_url
                         )
                         RoomWidgetPermissionViewState.WidgetPermissionData(
                                 widget = widget,
@@ -71,12 +62,12 @@ class RoomWidgetPermissionViewModel @AssistedInject constructor(
                         )
                     } else {
                         val infoShared = listOf(
-                                R.string.room_widget_permission_display_name,
-                                R.string.room_widget_permission_avatar_url,
-                                R.string.room_widget_permission_user_id,
-                                R.string.room_widget_permission_theme,
-                                R.string.room_widget_permission_widget_id,
-                                R.string.room_widget_permission_room_id
+                                CommonStrings.room_widget_permission_display_name,
+                                CommonStrings.room_widget_permission_avatar_url,
+                                CommonStrings.room_widget_permission_user_id,
+                                CommonStrings.room_widget_permission_theme,
+                                CommonStrings.room_widget_permission_widget_id,
+                                CommonStrings.room_widget_permission_room_id
                         )
                         RoomWidgetPermissionViewState.WidgetPermissionData(
                                 widget = widget,

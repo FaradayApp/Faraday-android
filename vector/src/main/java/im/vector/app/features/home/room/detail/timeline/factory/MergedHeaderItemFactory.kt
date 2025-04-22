@@ -1,25 +1,15 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.detail.timeline.factory
 
-import im.vector.app.R
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.extensions.prevOrNull
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.home.room.detail.timeline.TimelineEventController
 import im.vector.app.features.home.room.detail.timeline.helper.AvatarSizeProvider
 import im.vector.app.features.home.room.detail.timeline.helper.MergedTimelineEventVisibilityStateChangedListener
@@ -32,6 +22,7 @@ import im.vector.app.features.home.room.detail.timeline.item.MergedSimilarEvents
 import im.vector.app.features.home.room.detail.timeline.item.MergedSimilarEventsItem_
 import im.vector.app.features.home.room.detail.timeline.style.TimelineMessageLayoutFactory
 import im.vector.app.features.home.room.detail.timeline.tools.createLinkMovementMethod
+import im.vector.lib.strings.CommonPlurals
 import org.matrix.android.sdk.api.crypto.MXCRYPTO_ALGORITHM_MEGOLM
 import org.matrix.android.sdk.api.extensions.orFalse
 import org.matrix.android.sdk.api.query.QueryStringValue
@@ -86,7 +77,7 @@ class MergedHeaderItemFactory @Inject constructor(
                 buildRoomCreationMergedSummary(currentPosition, items, partialState, event, eventIdToHighlight, requestModelBuild, callback)
             isStartOfSameTypeEventsSummary(event, nextEvent, addDaySeparator) ->
                 buildSameTypeEventsMergedSummary(currentPosition, items, partialState, event, eventIdToHighlight, requestModelBuild, callback)
-            isStartOfRedactedEventsSummary(event, items, currentPosition, addDaySeparator) ->
+            isStartOfRedactedEventsSummary(event, items, currentPosition, partialState, addDaySeparator) ->
                 buildRedactedEventsMergedSummary(currentPosition, items, partialState, event, eventIdToHighlight, requestModelBuild, callback)
             else -> null
         }
@@ -124,19 +115,25 @@ class MergedHeaderItemFactory @Inject constructor(
      * @param event the main timeline event
      * @param items all known items, sorted from newer event to oldest event
      * @param currentPosition the current position
+     * @param partialState partial state data
      * @param addDaySeparator true to add a day separator
      */
     private fun isStartOfRedactedEventsSummary(
             event: TimelineEvent,
             items: List<TimelineEvent>,
             currentPosition: Int,
+            partialState: TimelineEventController.PartialState,
             addDaySeparator: Boolean,
     ): Boolean {
-        val nextNonRedactionEvent = items
-                .subList(fromIndex = currentPosition + 1, toIndex = items.size)
-                .find { it.root.getClearType() != EventType.REDACTION }
-        return event.root.isRedacted() &&
-                (!nextNonRedactionEvent?.root?.isRedacted().orFalse() || addDaySeparator)
+        val nextDisplayableEvent = items.subList(currentPosition + 1, items.size).firstOrNull {
+            timelineEventVisibilityHelper.shouldShowEvent(
+                    timelineEvent = it,
+                    highlightedEventId = partialState.highlightedEventId,
+                    isFromThreadTimeline = partialState.isFromThreadTimeline(),
+                    rootThreadEventId = partialState.rootThreadEventId
+            )
+        }
+        return event.root.isRedacted() && (nextDisplayableEvent?.root?.isRedacted() == false || addDaySeparator)
     }
 
     private fun buildSameTypeEventsMergedSummary(
@@ -247,9 +244,9 @@ class MergedHeaderItemFactory @Inject constructor(
     private fun getSummaryTitleResId(event: Event): Int? {
         val type = event.getClearType()
         return when {
-            type == EventType.STATE_ROOM_MEMBER -> R.plurals.membership_changes
-            type == EventType.STATE_ROOM_SERVER_ACL -> R.plurals.notice_room_server_acl_changes
-            event.isRedacted() -> R.plurals.room_removed_messages
+            type == EventType.STATE_ROOM_MEMBER -> CommonPlurals.membership_changes
+            type == EventType.STATE_ROOM_SERVER_ACL -> CommonPlurals.notice_room_server_acl_changes
+            event.isRedacted() -> CommonPlurals.room_removed_messages
             else -> null
         }
     }

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings.devices.v2.rename
@@ -19,7 +10,6 @@ package im.vector.app.features.settings.devices.v2.rename
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.extensions.andThen
 import im.vector.app.features.settings.devices.v2.RefreshDevicesUseCase
-import org.matrix.android.sdk.api.util.awaitCallback
 import javax.inject.Inject
 
 class RenameSessionUseCase @Inject constructor(
@@ -33,12 +23,10 @@ class RenameSessionUseCase @Inject constructor(
     }
 
     private suspend fun renameDevice(deviceId: String, newName: String) = runCatching {
-        awaitCallback<Unit> { matrixCallback ->
             activeSessionHolder.getActiveSession()
                     .cryptoService()
-                    .setDeviceName(deviceId, newName, matrixCallback)
-        }
+                    .setDeviceName(deviceId, newName)
     }
 
-    private fun refreshDevices() = runCatching { refreshDevicesUseCase.execute() }
+    private suspend fun refreshDevices() = runCatching { refreshDevicesUseCase.execute() }
 }

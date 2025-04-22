@@ -26,18 +26,17 @@ import androidx.annotation.BoolRes
 import androidx.core.content.edit
 import com.squareup.seismic.ShakeDetector
 import de.spiritcroc.matrixsdk.StaticScSdkHelper
-import im.vector.app.R
 import im.vector.app.core.di.DefaultPreferences
 import im.vector.app.core.resources.BuildMeta
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.features.VectorFeatures
-import im.vector.app.features.disclaimer.SHARED_PREF_KEY
-import im.vector.app.features.home.room.detail.timeline.helper.MatrixItemColorProvider
 import im.vector.app.features.home.ShortcutsHandler
+import im.vector.app.features.home.room.detail.timeline.helper.MatrixItemColorProvider
 import im.vector.app.features.homeserver.ServerUrlsRepository
 import im.vector.app.features.themes.BubbleThemeUtils
 import im.vector.app.features.themes.ThemeUtils
 import im.vector.lib.core.utils.timer.Clock
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.extensions.tryOrNull
 import org.matrix.android.sdk.api.session.room.model.RoomSummary
 import org.matrix.android.sdk.internal.settings.DefaultLightweightSettingsStorage
@@ -61,7 +60,7 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_CHANGE_PASSWORD_PREFERENCE_KEY = "SETTINGS_CHANGE_PASSWORD_PREFERENCE_KEY"
         const val SETTINGS_VERSION_PREFERENCE_KEY = "SETTINGS_VERSION_PREFERENCE_KEY"
         const val SETTINGS_SDK_VERSION_PREFERENCE_KEY = "SETTINGS_SDK_VERSION_PREFERENCE_KEY"
-        const val SETTINGS_OLM_VERSION_PREFERENCE_KEY = "SETTINGS_OLM_VERSION_PREFERENCE_KEY"
+        const val SETTINGS_CRYPTO_VERSION_PREFERENCE_KEY = "SETTINGS_CRYPTO_VERSION_PREFERENCE_KEY"
         const val SETTINGS_LOGGED_IN_PREFERENCE_KEY = "SETTINGS_LOGGED_IN_PREFERENCE_KEY"
         const val SETTINGS_HOME_SERVER_PREFERENCE_KEY = "SETTINGS_HOME_SERVER_PREFERENCE_KEY"
         const val SETTINGS_IDENTITY_SERVER_PREFERENCE_KEY = "SETTINGS_IDENTITY_SERVER_PREFERENCE_KEY"
@@ -195,6 +194,7 @@ class VectorPreferences @Inject constructor(
 
         // Calls
         const val SETTINGS_CALL_PREVENT_ACCIDENTAL_CALL_KEY = "SETTINGS_CALL_PREVENT_ACCIDENTAL_CALL_KEY"
+        const val SETTINGS_CALL_USE_FALLBACK_CALL_ASSIST_SERVER_KEY = "SETTINGS_CALL_USE_FALLBACK_CALL_ASSIST_SERVER_KEY"
         const val SETTINGS_CALL_RINGTONE_USE_RIOT_PREFERENCE_KEY = "SETTINGS_CALL_RINGTONE_USE_RIOT_PREFERENCE_KEY"
         const val SETTINGS_CALL_RINGTONE_URI_PREFERENCE_KEY = "SETTINGS_CALL_RINGTONE_URI_PREFERENCE_KEY"
 
@@ -216,6 +216,7 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_PREF_SPACE_CATEGORY = "SETTINGS_PREF_SPACE_CATEGORY"
 
         private const val SETTINGS_DEVELOPER_MODE_PREFERENCE_KEY = "SETTINGS_DEVELOPER_MODE_PREFERENCE_KEY"
+        const val SETTINGS_DEVELOPER_MODE_KEY_REQUEST_AUDIT_KEY = "SETTINGS_DEVELOPER_MODE_KEY_REQUEST_AUDIT_KEY"
         private const val SETTINGS_LABS_SHOW_HIDDEN_EVENTS_PREFERENCE_KEY = "SETTINGS_LABS_SHOW_HIDDEN_EVENTS_PREFERENCE_KEY"
         private const val SETTINGS_LABS_ENABLE_SWIPE_TO_REPLY = "SETTINGS_LABS_ENABLE_SWIPE_TO_REPLY"
         private const val SETTINGS_DEVELOPER_MODE_FAIL_FAST_PREFERENCE_KEY = "SETTINGS_DEVELOPER_MODE_FAIL_FAST_PREFERENCE_KEY"
@@ -271,6 +272,7 @@ class VectorPreferences @Inject constructor(
         private const val SETTINGS_JUMP_TO_BOTTOM_ON_SEND = "SETTINGS_JUMP_TO_BOTTOM_ON_SEND"
         private const val SETTINGS_SPACE_MEMBERS_IN_SPACE_ROOMS = "SETTINGS_SPACE_MEMBERS_IN_SPACE_ROOMS"
         private const val SETTINGS_ENABLE_SPACE_PAGER = "SETTINGS_ENABLE_SPACE_PAGER"
+        private const val SETTINGS_SPACE_PAGER_BAR_PREFER_SPACE = "SETTINGS_SPACE_PAGER_BAR_PREFER_SPACE"
         private const val SETTINGS_NOTIF_ONLY_ALERT_ONCE = "SETTINGS_NOTIF_ONLY_ALERT_ONCE"
         private const val SETTINGS_HIDE_CALL_BUTTONS = "SETTINGS_HIDE_CALL_BUTTONS"
         private const val SETTINGS_READ_RECEIPT_FOLLOWS_READ_MARKER = "SETTINGS_READ_RECEIPT_FOLLOWS_READ_MARKER"
@@ -282,6 +284,7 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_ROOM_SORT_ORDER_NULL = "SETTINGS_ROOM_SORT_ORDER_NULL"
         const val SETTINGS_ROOM_SORT_ORDER_NON_NULL = "SETTINGS_ROOM_SORT_ORDER_NON_NULL"
         private const val SETTINGS_ENABLE_MEMBER_NAME_CLICK = "SETTINGS_ENABLE_MEMBER_NAME_CLICK"
+        private const val SETTINGS_CLEAR_HIGHLIGHT_ON_SCROLL = "SETTINGS_CLEAR_HIGHLIGHT_ON_SCROLL"
 
         private const val DID_ASK_TO_ENABLE_SESSION_PUSH = "DID_ASK_TO_ENABLE_SESSION_PUSH"
 
@@ -315,6 +318,8 @@ class VectorPreferences @Inject constructor(
         const val TAKE_PHOTO_VIDEO_MODE_PHOTO = 1
         const val TAKE_PHOTO_VIDEO_MODE_VIDEO = 2
 
+        const val HAD_EXISTING_LEGACY_DATA = "HAD_EXISTING_LEGACY_DATA"
+        const val IS_ON_RUST_CRYPTO = "IS_ON_RUST_CRYPTO"
         // Background sync modes
 
         // some preferences keys must be kept after a logout
@@ -427,9 +432,6 @@ class VectorPreferences @Inject constructor(
 
         // theme
         keysToKeep.add(ThemeUtils.APPLICATION_THEME_KEY)
-
-        // Disclaimer dialog
-        keysToKeep.add(SHARED_PREF_KEY)
 
         // get all the existing keys
         val keys = defaultPrefs.all.keys
@@ -646,7 +648,7 @@ class VectorPreferences @Inject constructor(
                 if (value.startsWith("file://")) {
                     // it should never happen
                     // else android.os.FileUriExposedException will be triggered.
-                    // see https://github.com/vector-im/riot-android/issues/1725
+                    // see https://github.com/element-hq/riot-android/issues/1725
                     return
                 }
             }
@@ -670,7 +672,7 @@ class VectorPreferences @Inject constructor(
 
         var uri: Uri? = null
 
-        // https://github.com/vector-im/riot-android/issues/1725
+        // https://github.com/element-hq/riot-android/issues/1725
         if (null != url && !url.startsWith("file://")) {
             try {
                 uri = Uri.parse(url)
@@ -827,10 +829,10 @@ class VectorPreferences @Inject constructor(
      */
     fun getSelectedMediasSavingPeriodString(): String {
         return when (getSelectedMediasSavingPeriod()) {
-            MEDIA_SAVING_3_DAYS -> stringProvider.getString(R.string.media_saving_period_3_days)
-            MEDIA_SAVING_1_WEEK -> stringProvider.getString(R.string.media_saving_period_1_week)
-            MEDIA_SAVING_1_MONTH -> stringProvider.getString(R.string.media_saving_period_1_month)
-            MEDIA_SAVING_FOREVER -> stringProvider.getString(R.string.media_saving_period_forever)
+            MEDIA_SAVING_3_DAYS -> stringProvider.getString(CommonStrings.media_saving_period_3_days)
+            MEDIA_SAVING_1_WEEK -> stringProvider.getString(CommonStrings.media_saving_period_1_week)
+            MEDIA_SAVING_1_MONTH -> stringProvider.getString(CommonStrings.media_saving_period_1_month)
+            MEDIA_SAVING_FOREVER -> stringProvider.getString(CommonStrings.media_saving_period_forever)
             else -> "?"
         }
     }
@@ -868,7 +870,7 @@ class VectorPreferences @Inject constructor(
      * @return true if the text formatting is enabled
      */
     fun isTextFormattingEnabled(): Boolean =
-        defaultPrefs.getBoolean(SETTINGS_ENABLE_RICH_TEXT_FORMATTING_KEY, true)
+            defaultPrefs.getBoolean(SETTINGS_ENABLE_RICH_TEXT_FORMATTING_KEY, true)
 
     /**
      * Update whether text formatting is enabled within the rich text editor.
@@ -876,15 +878,22 @@ class VectorPreferences @Inject constructor(
      * @param isEnabled true to enable the text formatting
      */
     fun setTextFormattingEnabled(isEnabled: Boolean) =
-        defaultPrefs.edit {
-            putBoolean(SETTINGS_ENABLE_RICH_TEXT_FORMATTING_KEY, isEnabled)
-        }
+            defaultPrefs.edit {
+                putBoolean(SETTINGS_ENABLE_RICH_TEXT_FORMATTING_KEY, isEnabled)
+            }
 
     /**
      * Tells if a confirmation dialog should be displayed before staring a call.
      */
     fun preventAccidentalCall(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_CALL_PREVENT_ACCIDENTAL_CALL_KEY, true)
+    }
+
+    /**
+     * Tells if turn.matrix should be used during calls as a fallback
+     */
+    fun useFallbackTurnServer(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_CALL_USE_FALLBACK_CALL_ASSIST_SERVER_KEY, false)
     }
 
     /**
@@ -1052,7 +1061,7 @@ class VectorPreferences @Inject constructor(
      */
     /* SC: use BubbleThemeUtils instead
     fun useMessageBubblesLayout(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_INTERFACE_BUBBLE_KEY, getDefault(R.bool.settings_interface_bubble_default))
+        return defaultPrefs.getBoolean(SETTINGS_INTERFACE_BUBBLE_KEY, getDefault(im.vector.app.config.R.bool.settings_interface_bubble_default))
     }
      */
     fun useElementMessageBubblesLayout(): Boolean {
@@ -1067,7 +1076,7 @@ class VectorPreferences @Inject constructor(
     fun userAlwaysAppearsOffline(): Boolean {
         return defaultPrefs.getBoolean(
                 SETTINGS_PRESENCE_USER_ALWAYS_APPEARS_OFFLINE,
-                getDefault(R.bool.settings_presence_user_always_appears_offline_default)
+                getDefault(im.vector.app.config.R.bool.settings_presence_user_always_appears_offline_default)
         )
     }
 
@@ -1124,7 +1133,7 @@ class VectorPreferences @Inject constructor(
 
     // SC addition
     private fun roomUnreadKind(key: String): Int {
-        val default = RoomSummary.UNREAD_KIND_CONTENT
+        val default = RoomSummary.UNREAD_KIND_ORIGINAL_CONTENT
         val kind = defaultPrefs.getString(key, default.toString())
         return try {
             Integer.parseInt(kind!!)
@@ -1171,14 +1180,16 @@ class VectorPreferences @Inject constructor(
     }
 
     // SC addition
-    fun needsSimplifiedModePrompt(): Boolean {
-        return false // !defaultPrefs.contains(SETTINGS_SIMPLIFIED_MODE)
+    fun simplifiedMode(): Boolean {
+        return false
     }
+    fun needsSimplifiedModePrompt(): Boolean {
+        return false
+    }
+    //TODO: remove this
+    @Suppress("UNUSED_PARAMETER")
     fun setSimplifiedMode(simplified: Boolean) {
-        defaultPrefs
-                .edit()
-                .putBoolean(SETTINGS_SIMPLIFIED_MODE, simplified)
-                .apply()
+        // no-op
     }
 
     // SC addition
@@ -1241,6 +1252,11 @@ class VectorPreferences @Inject constructor(
     }
 
     // SC addition
+    fun preferSpecificSpacePagerSpace(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_SPACE_PAGER_BAR_PREFER_SPACE, false)
+    }
+
+    // SC addition
     fun onlyAlertOnce(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_NOTIF_ONLY_ALERT_ONCE, false)
     }
@@ -1275,6 +1291,11 @@ class VectorPreferences @Inject constructor(
         return defaultPrefs.getBoolean(SETTINGS_ENABLE_MEMBER_NAME_CLICK, true)
     }
 
+    // SC addition
+    fun clearHighlightOnScroll(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_CLEAR_HIGHLIGHT_ON_SCROLL, false)
+    }
+
 
     /**
      * I likely do more fresh installs of the app than anyone else, so a shortcut to change some of the default settings to
@@ -1303,6 +1324,8 @@ class VectorPreferences @Inject constructor(
                 .putBoolean(SETTINGS_FLOATING_DATE, true)
                 .putBoolean(SETTINGS_FOLLOW_SYSTEM_LOCALE, true)
                 .putBoolean(SETTINGS_ENABLE_MEMBER_NAME_CLICK, false)
+                .putBoolean(SETTINGS_CLEAR_HIGHLIGHT_ON_SCROLL, true)
+                .putBoolean(SETTINGS_SPACE_PAGER_BAR_PREFER_SPACE, true)
                 .apply()
     }
 
@@ -1410,6 +1433,12 @@ class VectorPreferences @Inject constructor(
         return defaultPrefs.getBoolean(SETTINGS_LABS_AUTO_REPORT_UISI, false)
     }
 
+    fun setLabsAutoReportUISI(enabled: Boolean) {
+        return defaultPrefs.edit {
+            putBoolean(SETTINGS_LABS_AUTO_REPORT_UISI, enabled)
+        }
+    }
+
     fun prefSpacesShowAllRoomInHome(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_PREF_SPACE_SHOW_ALL_ROOM_IN_HOME, true)
     }
@@ -1445,7 +1474,7 @@ class VectorPreferences @Inject constructor(
      * Indicates whether or not thread messages are enabled.
      */
     fun areThreadMessagesEnabled(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_LABS_ENABLE_THREAD_MESSAGES, getDefault(R.bool.settings_labs_thread_messages_default))
+        return defaultPrefs.getBoolean(SETTINGS_LABS_ENABLE_THREAD_MESSAGES, getDefault(im.vector.app.config.R.bool.settings_labs_thread_messages_default))
     }
 
     /**
@@ -1540,7 +1569,7 @@ class VectorPreferences @Inject constructor(
      */
     fun isNewAppLayoutEnabled(): Boolean {
         return vectorFeatures.isNewAppLayoutFeatureEnabled() &&
-                defaultPrefs.getBoolean(SETTINGS_LABS_NEW_APP_LAYOUT_KEY, getDefault(R.bool.settings_labs_new_app_layout_default))
+                defaultPrefs.getBoolean(SETTINGS_LABS_NEW_APP_LAYOUT_KEY, getDefault(im.vector.app.config.R.bool.settings_labs_new_app_layout_default))
     }
 
     fun setNewAppLayoutEnabled(enabled: Boolean) {
@@ -1551,38 +1580,55 @@ class VectorPreferences @Inject constructor(
      * Indicates whether or not deferred DMs are enabled.
      */
     fun isDeferredDmEnabled(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_LABS_DEFERRED_DM_KEY, getDefault(R.bool.settings_labs_deferred_dm_default))
+        return defaultPrefs.getBoolean(SETTINGS_LABS_DEFERRED_DM_KEY, getDefault(im.vector.app.config.R.bool.settings_labs_deferred_dm_default))
     }
 
     /**
      * Indicates whether or not new session manager screens are enabled.
      */
     fun isNewSessionManagerEnabled(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_LABS_NEW_SESSION_MANAGER_KEY, getDefault(R.bool.settings_labs_new_session_manager_default))
+        return defaultPrefs.getBoolean(SETTINGS_LABS_NEW_SESSION_MANAGER_KEY, getDefault(im.vector.app.config.R.bool.settings_labs_new_session_manager_default))
     }
 
     /**
      * Indicates whether or not client info recording is enabled.
      */
     fun isClientInfoRecordingEnabled(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_LABS_CLIENT_INFO_RECORDING_KEY, getDefault(R.bool.settings_labs_client_info_recording_default))
+        return defaultPrefs.getBoolean(
+                SETTINGS_LABS_CLIENT_INFO_RECORDING_KEY,
+                getDefault(
+                        im.vector.app.config.R.bool.settings_labs_client_info_recording_default
+                )
+        )
     }
 
     fun showLiveSenderInfo(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_TIMELINE_SHOW_LIVE_SENDER_INFO, getDefault(R.bool.settings_timeline_show_live_sender_info_default))
+        return defaultPrefs.getBoolean(
+                SETTINGS_TIMELINE_SHOW_LIVE_SENDER_INFO,
+                getDefault(im.vector.app.config.R.bool.settings_timeline_show_live_sender_info_default)
+        )
     }
 
     fun isRichTextEditorEnabled(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_LABS_RICH_TEXT_EDITOR_KEY, getDefault(R.bool.settings_labs_rich_text_editor_default))
+        return defaultPrefs.getBoolean(
+                SETTINGS_LABS_RICH_TEXT_EDITOR_KEY,
+                getDefault(im.vector.app.config.R.bool.settings_labs_rich_text_editor_default)
+        )
     }
 
     fun isVoiceBroadcastEnabled(): Boolean {
         return vectorFeatures.isVoiceBroadcastEnabled() &&
-                defaultPrefs.getBoolean(SETTINGS_LABS_VOICE_BROADCAST_KEY, getDefault(R.bool.settings_labs_enable_voice_broadcast_default))
+                defaultPrefs.getBoolean(
+                        SETTINGS_LABS_VOICE_BROADCAST_KEY,
+                        getDefault(im.vector.app.config.R.bool.settings_labs_enable_voice_broadcast_default)
+                )
     }
 
     fun showIpAddressInSessionManagerScreens(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_SESSION_MANAGER_SHOW_IP_ADDRESS, getDefault(R.bool.settings_session_manager_show_ip_address))
+        return defaultPrefs.getBoolean(
+                SETTINGS_SESSION_MANAGER_SHOW_IP_ADDRESS,
+                getDefault(im.vector.app.config.R.bool.settings_session_manager_show_ip_address)
+        )
     }
 
     fun setIpAddressVisibilityInDeviceManagerScreens(isVisible: Boolean) {
@@ -1611,4 +1657,23 @@ class VectorPreferences @Inject constructor(
         }
     }
 
+    fun hadExistingLegacyData(): Boolean {
+        return defaultPrefs.getBoolean(HAD_EXISTING_LEGACY_DATA, false)
+    }
+
+    fun setHadExistingLegacyData(had: Boolean) {
+        defaultPrefs.edit {
+            putBoolean(HAD_EXISTING_LEGACY_DATA, had)
+        }
+    }
+
+    fun isOnRustCrypto(): Boolean {
+        return defaultPrefs.getBoolean(IS_ON_RUST_CRYPTO, false)
+    }
+
+    fun setIsOnRustCrypto(boolean: Boolean) {
+        defaultPrefs.edit {
+            putBoolean(IS_ON_RUST_CRYPTO, boolean)
+        }
+    }
 }

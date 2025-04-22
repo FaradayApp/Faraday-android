@@ -1,24 +1,16 @@
 #!/usr/bin/env python3
 #
-# Copyright 2022 New Vector Ltd
+# Copyright 2022-2024 New Vector Ltd.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+# Please see LICENSE files in the repository root for full details.
 #
 
 import argparse
-import hashlib
 import json
 import os
+# Run `pip3 install re` if not installed yet
+import re
 # Run `pip3 install requests` if not installed yet
 import requests
 
@@ -65,22 +57,20 @@ if args.verbose:
     print(args)
 
 # Split the artifact URL to get information
-# Ex: https://github.com/vector-im/element-android/suites/9293388174/artifacts/435942121
+# Ex: https://github.com/element-hq/element-android/actions/runs/7460386865/artifacts/1156548729
 artifactUrl = args.artifactUrl
-if not artifactUrl.startswith('https://github.com/'):
-    print("❌ Invalid parameter --artifactUrl %s. Must start with 'https://github.com/'" % artifactUrl)
-    exit(1)
-if "/artifacts/" not in artifactUrl:
-    print("❌ Invalid parameter --artifactUrl %s. Must contain '/artifacts/'" % artifactUrl)
-    exit(1)
-artifactItems = artifactUrl.split("/")
-if len(artifactItems) != 9:
-    print("❌ Invalid parameter --artifactUrl %s. Please check the format." % (artifactUrl))
+
+url_regex = r"https://github.com/(.+?)/(.+?)/actions/runs/.+?/artifacts/(.+)"
+result = re.search(url_regex, artifactUrl)
+
+if result is None:
+    print(
+        "❌ Invalid parameter --artifactUrl '%s'. Please check the format.\nIt should be something like: %s" %
+        (artifactUrl, 'https://github.com/element-hq/element-android/actions/runs/7460386865/artifacts/1156548729')
+    )
     exit(1)
 
-gitHubRepoOwner = artifactItems[3]
-gitHubRepo = artifactItems[4]
-artifactId = artifactItems[8]
+(gitHubRepoOwner, gitHubRepo, artifactId) = result.groups()
 
 if args.verbose:
     print("gitHubRepoOwner: %s, gitHubRepo: %s, artifactId: %s" % (gitHubRepoOwner, gitHubRepo, artifactId))

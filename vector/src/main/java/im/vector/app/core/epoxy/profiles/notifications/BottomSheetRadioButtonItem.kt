@@ -18,7 +18,6 @@ package im.vector.app.core.epoxy.profiles.notifications
 
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.annotation.AttrRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
@@ -29,7 +28,7 @@ import im.vector.app.core.epoxy.ClickListener
 import im.vector.app.core.epoxy.VectorEpoxyHolder
 import im.vector.app.core.epoxy.VectorEpoxyModel
 import im.vector.app.core.epoxy.onClick
-import im.vector.app.features.themes.ThemeUtils
+import im.vector.lib.strings.CommonStrings
 
 /**
  * SC: copy of RadioButtonItem, but with extra icon + different layout
@@ -65,10 +64,10 @@ abstract class BottomSheetRadioButtonItem : VectorEpoxyModel<BottomSheetRadioBut
 
         if (selected) {
             holder.radioImage.setImageDrawable(ContextCompat.getDrawable(holder.view.context, R.drawable.ic_radio_on))
-            holder.radioImage.contentDescription = holder.view.context.getString(R.string.a11y_checked)
+            holder.radioImage.contentDescription = holder.view.context.getString(CommonStrings.a11y_checked)
         } else {
             holder.radioImage.setImageDrawable(ContextCompat.getDrawable(holder.view.context, R.drawable.ic_radio_off))
-            holder.radioImage.contentDescription = holder.view.context.getString(R.string.a11y_unchecked)
+            holder.radioImage.contentDescription = holder.view.context.getString(CommonStrings.a11y_unchecked)
         }
 
         holder.icon.setImageResource(iconRes ?: 0)

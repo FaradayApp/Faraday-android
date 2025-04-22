@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.onboarding.ftueauth
@@ -23,18 +14,18 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.hideKeyboard
 import im.vector.app.core.extensions.hidePassword
-import im.vector.app.core.extensions.isEmail
 import im.vector.app.core.extensions.toReducedUrl
 import im.vector.app.databinding.FragmentLoginResetPasswordBinding
 import im.vector.app.features.onboarding.OnboardingAction
 import im.vector.app.features.onboarding.OnboardingViewState
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import org.matrix.android.sdk.api.extensions.isEmail
 import reactivecircus.flowbinding.android.widget.textChanges
 
 /**
@@ -61,7 +52,7 @@ class FtueAuthResetPasswordFragment :
     }
 
     private fun setupUi(state: OnboardingViewState) {
-        views.resetPasswordTitle.text = getString(R.string.login_reset_password_on, state.selectedHomeserver.userFacingUrl.toReducedUrl())
+        views.resetPasswordTitle.text = getString(CommonStrings.login_reset_password_on, state.selectedHomeserver.userFacingUrl.toReducedUrl())
     }
 
     private fun setupSubmitButton() {
@@ -87,12 +78,12 @@ class FtueAuthResetPasswordFragment :
             showWarning = false
             // Display a warning as Riot-Web does first
             MaterialAlertDialogBuilder(requireActivity())
-                    .setTitle(R.string.login_reset_password_warning_title)
-                    .setMessage(R.string.login_reset_password_warning_content)
-                    .setPositiveButton(R.string.login_reset_password_warning_submit) { _, _ ->
+                    .setTitle(CommonStrings.login_reset_password_warning_title)
+                    .setMessage(CommonStrings.login_reset_password_warning_content)
+                    .setPositiveButton(CommonStrings.login_reset_password_warning_submit) { _, _ ->
                         doSubmit()
                     }
-                    .setNegativeButton(R.string.action_cancel, null)
+                    .setNegativeButton(CommonStrings.action_cancel, null)
                     .show()
         } else {
             doSubmit()

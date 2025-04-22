@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.detail.composer
@@ -49,6 +40,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import de.spiritcroc.util.ThumbnailGenerationVideoDownloadDecider
 import im.vector.app.R
 import im.vector.app.core.error.fatalError
+import im.vector.app.core.extensions.orEmpty
 import im.vector.app.core.extensions.registerStartForActivityResult
 import im.vector.app.core.extensions.showKeyboard
 import im.vector.app.core.glide.GlideApp
@@ -77,7 +69,7 @@ import im.vector.app.features.attachments.preview.AttachmentsPreviewArgs
 import im.vector.app.features.attachments.toGroupedContentAttachmentData
 import im.vector.app.features.command.Command
 import im.vector.app.features.command.ParsedCommand
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.home.room.detail.AutoCompleter
 import im.vector.app.features.home.room.detail.RoomDetailAction
 import im.vector.app.features.home.room.detail.RoomDetailAction.VoiceBroadcastAction
@@ -85,6 +77,7 @@ import im.vector.app.features.home.room.detail.TimelineViewModel
 import im.vector.app.features.home.room.detail.composer.link.SetLinkFragment
 import im.vector.app.features.home.room.detail.composer.link.SetLinkSharedAction
 import im.vector.app.features.home.room.detail.composer.link.SetLinkSharedActionViewModel
+import im.vector.app.features.home.room.detail.composer.mentions.PillDisplayHandler
 import im.vector.app.features.home.room.detail.composer.voice.VoiceMessageRecorderView
 import im.vector.app.features.home.room.detail.timeline.action.MessageSharedActionViewModel
 import im.vector.app.features.home.room.detail.upgrade.MigrateRoomBottomSheet
@@ -95,6 +88,7 @@ import im.vector.app.features.settings.VectorPreferences
 import im.vector.app.features.share.SharedData
 import im.vector.app.features.themes.ThemeUtils
 import im.vector.app.features.voice.VoiceFailure
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
@@ -104,7 +98,7 @@ import kotlinx.coroutines.flow.onEach
 import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.session.content.ContentAttachmentData
 import org.matrix.android.sdk.api.session.events.model.RelationType
-import org.matrix.android.sdk.api.session.events.model.isThread
+import org.matrix.android.sdk.api.session.permalinks.PermalinkService
 import org.matrix.android.sdk.api.session.room.model.message.MessageStickerContent
 import org.matrix.android.sdk.api.session.room.model.relation.RelationDefaultContent
 import org.matrix.android.sdk.api.session.room.model.relation.ReplyToContent
@@ -132,11 +126,12 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
     @Inject lateinit var session: Session
     @Inject lateinit var errorTracker: ErrorTracker
 
+    private val permalinkService: PermalinkService
+        get() = session.permalinkService()
+
     private val roomId: String get() = withState(timelineViewModel) { it.roomId }
 
-    private val autoCompleter: AutoCompleter by lazy {
-        autoCompleterFactory.create(roomId, isThreadTimeLine())
-    }
+    private val autoCompleters: MutableMap<EditText, AutoCompleter> = hashMapOf()
 
     private val emojiPopup: EmojiPopup by lifecycleAwareLazy {
         createEmojiPopup()
@@ -228,10 +223,10 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
                 return@onEach
             }
             when (mode) {
-                is SendMode.Regular -> renderRegularMode(mode.text.toString())
-                is SendMode.Edit -> renderSpecialMode(MessageComposerMode.Edit(mode.timelineEvent, mode.text.toString()))
-                is SendMode.Quote -> renderSpecialMode(MessageComposerMode.Quote(mode.timelineEvent, mode.text.toString()))
-                is SendMode.Reply -> renderSpecialMode(MessageComposerMode.Reply(mode.timelineEvent, mode.text.toString()))
+                is SendMode.Regular -> renderRegularMode(mode.text)
+                is SendMode.Edit -> renderSpecialMode(MessageComposerMode.Edit(mode.timelineEvent, mode.text))
+                is SendMode.Quote -> renderSpecialMode(MessageComposerMode.Quote(mode.timelineEvent, mode.text))
+                is SendMode.Reply -> renderSpecialMode(MessageComposerMode.Reply(mode.timelineEvent, mode.text))
                 is SendMode.Voice -> renderVoiceMessageMode(mode.text)
             }
         }
@@ -275,7 +270,7 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
                 it.isRecordingVoiceBroadcast && !requireActivity().isChangingConfigurations -> timelineViewModel.handle(VoiceBroadcastAction.Recording.Pause)
                 else -> {
                     timelineViewModel.handle(VoiceBroadcastAction.Listening.Pause)
-                    messageComposerViewModel.handle(MessageComposerAction.OnEntersBackground(composer.text.toString()))
+                    messageComposerViewModel.handle(MessageComposerAction.OnEntersBackground(composer.formattedText ?: composer.text.orEmpty().toString()))
                 }
             }
         }
@@ -284,9 +279,8 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
     override fun onDestroyView() {
         super.onDestroyView()
 
-        if (!isRichTextEditorEnabled) {
-            autoCompleter.clear()
-        }
+        autoCompleters.values.forEach(AutoCompleter::clear)
+        autoCompleters.clear()
         messageComposerViewModel.endAllVoiceActions()
     }
 
@@ -297,7 +291,12 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
 
         (composer as? View)?.isVisible = messageComposerState.isComposerVisible
         composer.sendButton.isInvisible = !messageComposerState.isSendButtonVisible
-        (composer as? RichTextComposerLayout)?.isTextFormattingEnabled = attachmentState.isTextFormattingEnabled
+        (composer as? RichTextComposerLayout)?.also {
+            val isTextFormattingEnabled = attachmentState.isTextFormattingEnabled
+            it.isTextFormattingEnabled = isTextFormattingEnabled
+            autoCompleters[it.richTextEditText]?.setEnabled(isTextFormattingEnabled)
+            autoCompleters[it.plainTextEditText]?.setEnabled(!isTextFormattingEnabled)
+        }
     }
 
     private fun setupBottomSheet() {
@@ -336,10 +335,13 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
 
     private fun setupComposer() {
         val composerEditText = composer.editText
-        composerEditText.setHint(R.string.room_message_placeholder)
+        composerEditText.setHint(CommonStrings.room_message_placeholder)
 
-        if (!isRichTextEditorEnabled) {
-            autoCompleter.setup(composerEditText, composer)
+        (composer as? RichTextComposerLayout)?.let {
+            initAutoCompleter(it.richTextEditText)
+            initAutoCompleter(it.plainTextEditText)
+        } ?: run {
+            initAutoCompleter(composer.editText)
         }
 
         observerUserTyping()
@@ -450,7 +452,7 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
             }
 
             override fun onTextChanged(text: CharSequence) {
-                messageComposerViewModel.handle(MessageComposerAction.OnTextChanged(text))
+                messageComposerViewModel.handle(MessageComposerAction.OnTextChanged(composer.formattedText ?: text))
             }
 
             override fun onFullScreenModeChanged() = withState(messageComposerViewModel) { state ->
@@ -461,6 +463,21 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
                 SetLinkFragment.show(isTextSupported, initialLink, childFragmentManager)
             }
         }
+        (composer as? RichTextComposerLayout)?.pillDisplayHandler = PillDisplayHandler(
+                roomId = roomId,
+                getRoom = timelineViewModel::getRoom,
+                getMember = timelineViewModel::getMember,
+        ) { matrixItem: MatrixItem ->
+            PillImageSpan(glideRequests, avatarRenderer, requireContext(), matrixItem)
+        }
+    }
+
+    private fun initAutoCompleter(editText: EditText) {
+        if (autoCompleters.containsKey(editText)) return
+
+        autoCompleters[editText] =
+                autoCompleterFactory.create(roomId, isThreadTimeLine())
+                        .also { it.setup(editText, composer) }
     }
 
     private fun sendTextMessage(text: CharSequence, formattedText: String? = null) {
@@ -490,18 +507,18 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
             fatalError("Should not happen as we're generating a File based share Intent", vectorPreferences.failFast())
         })
         if (!isHandled) {
-            Toast.makeText(requireContext(), R.string.error_handling_incoming_share, Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), CommonStrings.error_handling_incoming_share, Toast.LENGTH_SHORT).show()
         }
         return isHandled
     }
 
     private fun renderRegularMode(content: CharSequence) {
-        autoCompleter.exitSpecialMode()
+        autoCompleters.values.forEach(AutoCompleter::exitSpecialMode)
         composer.renderComposerMode(MessageComposerMode.Normal(content), timelineViewModel)
     }
 
     private fun renderSpecialMode(mode: MessageComposerMode.Special) {
-        autoCompleter.enterSpecialMode()
+        autoCompleters.values.forEach(AutoCompleter::enterSpecialMode)
         composer.renderComposerMode(mode, timelineViewModel)
     }
 
@@ -531,7 +548,7 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
     }
 
     private fun handleSendButtonVisibilityChanged(event: MessageComposerViewEvents.AnimateSendButtonVisibility) {
-        val sendButtonColor = ThemeUtils.getColor(views.composerLayout.context, if (event.isActive) R.attr.colorAccent else R.attr.vctr_content_tertiary)
+        val sendButtonColor = ThemeUtils.getColor(views.composerLayout.context, if (event.isActive) com.google.android.material.R.attr.colorAccent else im.vector.lib.ui.styles.R.attr.vctr_content_tertiary)
         views.composerLayout.sendButton.imageTintList = ColorStateList.valueOf(sendButtonColor)
         if (event.isVisible) {
             if (views.composerLayout.sendButton.isVisible) {
@@ -555,16 +572,16 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
     private fun createEmojiPopup(): EmojiPopup {
         return EmojiPopup(
                 rootView = views.root,
-                keyboardAnimationStyle = R.style.emoji_fade_animation_style,
+                keyboardAnimationStyle = com.vanniktech.emoji.R.style.emoji_fade_animation_style,
                 onEmojiPopupShownListener = {
                     composer.emojiButton?.apply {
-                        contentDescription = getString(R.string.a11y_close_emoji_picker)
+                        contentDescription = getString(CommonStrings.a11y_close_emoji_picker)
                         setImageResource(R.drawable.ic_keyboard)
                     }
                 },
                 onEmojiPopupDismissListener = lifecycleAwareDismissAction {
                     composer.emojiButton?.apply {
-                        contentDescription = getString(R.string.a11y_open_emoji_picker)
+                        contentDescription = getString(CommonStrings.a11y_open_emoji_picker)
                         setImageResource(R.drawable.ic_insert_emoji)
                     }
                 },
@@ -597,8 +614,8 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
 
     private fun displayErrorVoiceBroadcastInProgress() {
         MaterialAlertDialogBuilder(requireActivity())
-                .setTitle(R.string.error_voice_message_broadcast_in_progress)
-                .setMessage(getString(R.string.error_voice_message_broadcast_in_progress_message))
+                .setTitle(CommonStrings.error_voice_message_broadcast_in_progress)
+                .setMessage(getString(CommonStrings.error_voice_message_broadcast_in_progress_message))
                 .setPositiveButton(android.R.string.ok, null)
                 .show()
     }
@@ -621,12 +638,12 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
 
     private fun promptUnignoreUser(command: ParsedCommand.UnignoreUser) {
         MaterialAlertDialogBuilder(requireActivity())
-                .setTitle(R.string.room_participants_action_unignore_title)
-                .setMessage(getString(R.string.settings_unignore_user, command.userId))
-                .setPositiveButton(R.string.unignore) { _, _ ->
+                .setTitle(CommonStrings.room_participants_action_unignore_title)
+                .setMessage(getString(CommonStrings.settings_unignore_user, command.userId))
+                .setPositiveButton(CommonStrings.unignore) { _, _ ->
                     messageComposerViewModel.handle(MessageComposerAction.SlashCommandConfirmed(command))
                 }
-                .setNegativeButton(R.string.action_cancel, null)
+                .setNegativeButton(CommonStrings.action_cancel, null)
                 .show()
     }
 
@@ -636,10 +653,10 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
                 showLoading(null)
             }
             is MessageComposerViewEvents.SlashCommandError -> {
-                displayCommandError(getString(R.string.command_problem_with_parameters, sendMessageResult.command.command))
+                displayCommandError(getString(CommonStrings.command_problem_with_parameters, sendMessageResult.command.command))
             }
             is MessageComposerViewEvents.SlashCommandUnknown -> {
-                displayCommandError(getString(R.string.unrecognized_command, sendMessageResult.command))
+                displayCommandError(getString(CommonStrings.unrecognized_command, sendMessageResult.command))
             }
             is MessageComposerViewEvents.SlashCommandResultOk -> {
                 handleSlashCommandResultOk(sendMessageResult.parsedCommand)
@@ -649,10 +666,10 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
                 displayCommandError(errorFormatter.toHumanReadable(sendMessageResult.throwable))
             }
             is MessageComposerViewEvents.SlashCommandNotImplemented -> {
-                displayCommandError(getString(R.string.not_implemented))
+                displayCommandError(getString(CommonStrings.not_implemented))
             }
             is MessageComposerViewEvents.SlashCommandNotSupportedInThreads -> {
-                displayCommandError(getString(R.string.command_not_supported_in_threads, sendMessageResult.command.command))
+                displayCommandError(getString(CommonStrings.command_not_supported_in_threads, sendMessageResult.command.command))
             }
         }
 
@@ -667,7 +684,7 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
                 navigator.openDevTools(requireContext(), roomId)
             }
             is ParsedCommand.SetMarkdown -> {
-                showSnackWithMessage(getString(if (parsedCommand.enable) R.string.markdown_has_been_enabled else R.string.markdown_has_been_disabled))
+                showSnackWithMessage(getString(if (parsedCommand.enable) CommonStrings.markdown_has_been_enabled else CommonStrings.markdown_has_been_disabled))
             }
             else -> Unit
         }
@@ -675,9 +692,9 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
 
     private fun displayCommandError(message: String) {
         MaterialAlertDialogBuilder(requireActivity())
-                .setTitle(R.string.command_error)
+                .setTitle(CommonStrings.command_error)
                 .setMessage(message)
-                .setPositiveButton(R.string.ok, null)
+                .setPositiveButton(CommonStrings.ok, null)
                 .show()
     }
 
@@ -737,7 +754,7 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
             }
         } else {
             if (deniedPermanently) {
-                activity?.onPermissionDeniedDialog(R.string.denied_permission_generic)
+                activity?.onPermissionDeniedDialog(CommonStrings.denied_permission_generic)
             }
             cleanUpAfterPermissionNotGranted()
         }
@@ -839,31 +856,38 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
             composer.editText.setSelection(Command.EMOTE.command.length + 1)
         } else {
             val roomMember = timelineViewModel.getMember(userId)
-            val displayName = sanitizeDisplayName(roomMember?.displayName ?: userId)
-            val pill = buildSpannedString {
-                append(displayName)
-                setSpan(
-                        PillImageSpan(
-                                glideRequests,
-                                avatarRenderer,
-                                requireContext(),
-                                MatrixItem.UserItem(userId, displayName, roomMember?.avatarUrl)
-                        )
-                                .also { it.bind(composer.editText) },
-                        0,
-                        displayName.length,
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                append(if (startToCompose) ": " else " ")
-            }
-            if (startToCompose) {
-                if (displayName.startsWith("/")) {
+            if ((composer as? RichTextComposerLayout)?.isTextFormattingEnabled == true) {
+                // Rich text editor is enabled so we need to use its APIs
+                permalinkService.createPermalink(userId)?.let { url ->
+                    (composer as RichTextComposerLayout).insertMention(url, userId)
+                    composer.editText.append(" ")
+                }
+            } else {
+                val displayName = sanitizeDisplayName(roomMember?.displayName ?: userId)
+                val pill = buildSpannedString {
+                    append(displayName)
+                    setSpan(
+                            PillImageSpan(
+                                    glideRequests,
+                                    avatarRenderer,
+                                    requireContext(),
+                                    MatrixItem.UserItem(userId, displayName, roomMember?.avatarUrl),
+                            )
+                                    .also { it.bind(composer.editText) },
+                            0,
+                            displayName.length,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    append(if (false && startToCompose) ": " else " ")
+                }
+                if (startToCompose && displayName.startsWith("/")) {
                     // Ensure displayName will not be interpreted as a Slash command
                     composer.editText.append("\\")
                 }
-                composer.editText.append(pill)
-            } else {
-                composer.editText.text?.insert(composer.editText.selectionStart, pill)
+                // Always use EditText.getText().insert for adding pills as TextView.append doesn't appear
+                // to upgrade to BufferType.Spannable as hinted at in the docs:
+                // https://developer.android.com/reference/android/widget/TextView#append(java.lang.CharSequence)
+                composer.editText.text.insert(composer.editText.selectionStart, pill)
             }
         }
         focusComposerAndShowKeyboard()

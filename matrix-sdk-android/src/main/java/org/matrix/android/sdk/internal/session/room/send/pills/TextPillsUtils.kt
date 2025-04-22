@@ -21,7 +21,6 @@ import org.matrix.android.sdk.api.session.permalinks.PermalinkService
 import org.matrix.android.sdk.api.session.room.model.RoomEmoteContent.Companion.USAGE_STICKER
 import org.matrix.android.sdk.api.session.room.send.MatrixItemSpan
 import org.matrix.android.sdk.api.util.MatrixItem
-import org.matrix.android.sdk.internal.session.displayname.DisplayNameResolver
 import java.util.Collections
 import javax.inject.Inject
 
@@ -31,7 +30,6 @@ import javax.inject.Inject
  */
 internal class TextPillsUtils @Inject constructor(
         private val mentionLinkSpecComparator: MentionLinkSpecComparator,
-        private val displayNameResolver: DisplayNameResolver,
         private val permalinkService: PermalinkService
 ) {
 
@@ -76,10 +74,10 @@ internal class TextPillsUtils @Inject constructor(
                 if (urlSpan.matrixItem is MatrixItem.EmoteItem) {
                     // Note we use the same template for both HTML and MARKDOWN conversion. We do this since markdown inline images are not mighty enough
                     // for custom emotes (i.e., that would drop the data-mx-emoticon tag, which we want to keep). But we can use inline html in markdown.
-                    val imgHtml = "<img data-mx-emoticon height=\"18\" src=\"${urlSpan.matrixItem.avatarUrl}\" title=\":${urlSpan.matrixItem.displayName}:\" alt=\":${urlSpan.matrixItem.displayName}:\">"
+                    val imgHtml = "<img data-mx-emoticon height=\"32\" src=\"${urlSpan.matrixItem.avatarUrl}\" title=\":${urlSpan.matrixItem.displayName}:\" alt=\":${urlSpan.matrixItem.displayName}:\">"
                     append(imgHtml)
                 } else {
-                    append(String.format(template, urlSpan.matrixItem.id, displayNameResolver.getBestName(urlSpan.matrixItem)))
+                    append(String.format(template, urlSpan.matrixItem.id, urlSpan.matrixItem.id))
                 }
                 currIndex = end
             }

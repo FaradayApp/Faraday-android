@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.html;
@@ -32,6 +23,7 @@ import io.noties.markwon.core.CoreProps;
 import io.noties.markwon.html.HtmlTag;
 import io.noties.markwon.html.MarkwonHtmlRenderer;
 import io.noties.markwon.html.TagHandler;
+import timber.log.Timber;
 
 /**
  * Copied from https://github.com/noties/Markwon/blob/master/markwon-html/src/main/java/io/noties/markwon/html/tag/ListHandler.java#L44
@@ -63,8 +55,17 @@ public class ListHandlerWithInitialStart extends TagHandler {
         final RenderProps renderProps = visitor.renderProps();
         final SpanFactory spanFactory = configuration.spansFactory().get(ListItem.class);
 
-        // Modified line
-        int number = Integer.parseInt(block.attributes().containsKey(START_KEY) ? block.attributes().get(START_KEY) : "1");
+        // Modified part start
+        int number;
+        try {
+            number = Integer.parseInt(block.attributes().containsKey(START_KEY) ? block.attributes().get(START_KEY) : "1");
+        } catch (Exception e) {
+            // On repeated render, we get `java.lang.NumberFormatException: For input string: ""`
+            // See also https://github.com/SchildiChat/SchildiChat-android/issues/206
+            //Timber.v(e, "Failed to read list start");
+            number = 1;
+        }
+        // Modified part end
 
         final int bulletLevel = currentBulletListLevel(block);
 

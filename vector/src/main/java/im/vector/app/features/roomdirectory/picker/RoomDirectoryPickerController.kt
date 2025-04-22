@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.roomdirectory.picker
@@ -41,6 +32,7 @@ import im.vector.app.features.discovery.settingsInformationItem
 import im.vector.app.features.form.formEditTextItem
 import im.vector.app.features.roomdirectory.RoomDirectoryData
 import im.vector.app.features.roomdirectory.RoomDirectoryServer
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.failure.Failure
 import javax.inject.Inject
 import javax.net.ssl.HttpsURLConnection
@@ -96,8 +88,8 @@ class RoomDirectoryPickerController @Inject constructor(
             }
             settingsInformationItem {
                 id("form_notice")
-                message(host.stringProvider.getString(R.string.directory_add_a_new_server_prompt))
-                textColor(host.colorProvider.getColor(R.color.vector_info_color))
+                message(host.stringProvider.getString(CommonStrings.directory_add_a_new_server_prompt))
+                textColor(host.colorProvider.getColor(im.vector.lib.ui.styles.R.color.vector_info_color))
             }
             verticalMarginItem {
                 id("form_space_2")
@@ -118,7 +110,7 @@ class RoomDirectoryPickerController @Inject constructor(
                         return false
                     }
                 })
-                hint(host.stringProvider.getString(R.string.directory_server_placeholder))
+                hint(host.stringProvider.getString(CommonStrings.directory_server_placeholder))
                 inputType(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI)
                 onTextChange { text ->
                     host.callback?.onEnterServerChange(text)
@@ -137,7 +129,7 @@ class RoomDirectoryPickerController @Inject constructor(
                 Uninitialized,
                 is Fail -> settingsContinueCancelItem {
                     id("continueCancel")
-                    continueText(host.stringProvider.getString(R.string.ok))
+                    continueText(host.stringProvider.getString(CommonStrings.ok))
                     canContinue(data.enteredServer.isNotEmpty())
                     continueOnClick { host.callback?.onSubmitServer() }
                     cancelOnClick { host.callback?.onCancelEnterServer() }
@@ -150,8 +142,8 @@ class RoomDirectoryPickerController @Inject constructor(
         } else {
             genericButtonItem {
                 id("add")
-                text(host.stringProvider.getString(R.string.directory_add_a_new_server))
-                textColor(host.colorProvider.getColorFromAttribute(R.attr.colorPrimary))
+                text(host.stringProvider.getString(CommonStrings.directory_add_a_new_server))
+                textColor(host.colorProvider.getColorFromAttribute(com.google.android.material.R.attr.colorPrimary))
                 buttonClickAction {
                     host.callback?.onStartEnterServer()
                 }
@@ -162,7 +154,7 @@ class RoomDirectoryPickerController @Inject constructor(
     private fun getErrorMessage(error: Throwable): String {
         return if (error is Failure.ServerError &&
                 error.httpCode == HttpsURLConnection.HTTP_INTERNAL_ERROR /* 500 */) {
-            stringProvider.getString(R.string.directory_add_a_new_server_error)
+            stringProvider.getString(CommonStrings.directory_add_a_new_server_error)
         } else {
             errorFormatter.toHumanReadable(error)
         }
@@ -183,7 +175,7 @@ class RoomDirectoryPickerController @Inject constructor(
             removeListener { host.callback?.onRemoveServer(roomDirectoryServer) }
 
             if (roomDirectoryServer.isUserServer) {
-                serverDescription(host.stringProvider.getString(R.string.directory_your_server))
+                serverDescription(host.stringProvider.getString(CommonStrings.directory_your_server))
             }
         }
 
@@ -192,14 +184,14 @@ class RoomDirectoryPickerController @Inject constructor(
                 id("server_${roomDirectoryServer}_proto_$roomDirectoryData")
                 directoryName(
                         if (roomDirectoryData.includeAllNetworks) {
-                            host.stringProvider.getString(R.string.directory_server_all_rooms_on_server, roomDirectoryServer.serverName)
+                            host.stringProvider.getString(CommonStrings.directory_server_all_rooms_on_server, roomDirectoryServer.serverName)
                         } else {
                             roomDirectoryData.displayName
                         }
                 )
                 if (roomDirectoryData.displayName == RoomDirectoryData.MATRIX_PROTOCOL_NAME && !roomDirectoryData.includeAllNetworks) {
                     directoryDescription(
-                            host.stringProvider.getString(R.string.directory_server_native_rooms, roomDirectoryServer.serverName)
+                            host.stringProvider.getString(CommonStrings.directory_server_native_rooms, roomDirectoryServer.serverName)
                     )
                 }
                 directoryAvatarUrl(roomDirectoryData.avatarUrl)

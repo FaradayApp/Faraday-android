@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.core.ui.views
@@ -24,6 +15,7 @@ import androidx.core.view.isVisible
 import im.vector.app.R
 import im.vector.app.databinding.ViewKeysBackupBannerBinding
 import im.vector.app.features.workers.signout.BannerState
+import im.vector.lib.strings.CommonStrings
 import timber.log.Timber
 
 /**
@@ -113,9 +105,9 @@ class KeysBackupBanner @JvmOverloads constructor(
         } else {
             isVisible = true
 
-            views.viewKeysBackupBannerText1.setText(R.string.secure_backup_banner_setup_line1)
+            views.viewKeysBackupBannerText1.setText(CommonStrings.secure_backup_banner_setup_line1)
             views.viewKeysBackupBannerText2.isVisible = true
-            views.viewKeysBackupBannerText2.setText(R.string.secure_backup_banner_setup_line2)
+            views.viewKeysBackupBannerText2.setText(CommonStrings.secure_backup_banner_setup_line2)
             views.viewKeysBackupBannerCloseGroup.isVisible = true
         }
     }
@@ -126,9 +118,9 @@ class KeysBackupBanner @JvmOverloads constructor(
         } else {
             isVisible = true
 
-            views.viewKeysBackupBannerText1.setText(R.string.keys_backup_banner_recover_line1)
+            views.viewKeysBackupBannerText1.setText(CommonStrings.keys_backup_banner_recover_line1)
             views.viewKeysBackupBannerText2.isVisible = true
-            views.viewKeysBackupBannerText2.setText(R.string.keys_backup_banner_recover_line2)
+            views.viewKeysBackupBannerText2.setText(CommonStrings.keys_backup_banner_recover_line2)
             views.viewKeysBackupBannerCloseGroup.isVisible = true
         }
     }
@@ -139,9 +131,9 @@ class KeysBackupBanner @JvmOverloads constructor(
         } else {
             isVisible = true
 
-            views.viewKeysBackupBannerText1.setText(R.string.keys_backup_banner_update_line1)
+            views.viewKeysBackupBannerText1.setText(CommonStrings.keys_backup_banner_update_line1)
             views.viewKeysBackupBannerText2.isVisible = true
-            views.viewKeysBackupBannerText2.setText(R.string.keys_backup_banner_update_line2)
+            views.viewKeysBackupBannerText2.setText(CommonStrings.keys_backup_banner_update_line2)
             views.viewKeysBackupBannerCloseGroup.isVisible = true
         }
     }
@@ -150,9 +142,9 @@ class KeysBackupBanner @JvmOverloads constructor(
         isVisible = false
         /*
         isVisible = true
-        views.viewKeysBackupBannerText1.setText(R.string.secure_backup_banner_setup_line1)
+        views.viewKeysBackupBannerText1.setText(CommonStrings.secure_backup_banner_setup_line1)
         views.viewKeysBackupBannerText2.isVisible = true
-        views.viewKeysBackupBannerText2.setText(R.string.keys_backup_banner_in_progress)
+        views.viewKeysBackupBannerText2.setText(CommonStrings.keys_backup_banner_in_progress)
         views.viewKeysBackupBannerLoading.isVisible = true
          */
     }

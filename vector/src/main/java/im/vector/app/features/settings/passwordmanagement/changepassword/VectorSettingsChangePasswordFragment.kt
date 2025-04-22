@@ -32,6 +32,7 @@ import im.vector.app.core.preference.ButtonPreference
 import im.vector.app.core.preference.TextInputPreference
 import im.vector.app.features.settings.VectorPreferences
 import im.vector.app.features.settings.VectorSettingsBaseFragment
+import im.vector.lib.strings.CommonStrings
 
 @AndroidEntryPoint
 class VectorSettingsChangePasswordFragment :
@@ -40,7 +41,7 @@ class VectorSettingsChangePasswordFragment :
     private val viewModel: VectorSettingsChangePasswordViewModel by fragmentViewModel()
 
     override val preferenceXmlRes = R.xml.vector_settings_change_password
-    override var titleRes = R.string.settings_reset_password
+    override var titleRes = CommonStrings.settings_reset_password
 
     override fun setDivider(divider: Drawable?) {
         super.setDivider(ColorDrawable(Color.TRANSPARENT))
@@ -97,7 +98,7 @@ class VectorSettingsChangePasswordFragment :
         viewModel.observeViewEvents { event ->
             when (event) {
                 is VectorSettingsChangePasswordViewEvents.OnPasswordReset -> {
-                    Toast.makeText(activity, R.string.login_reset_password_success_notice, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, CommonStrings.login_reset_password_success_notice, Toast.LENGTH_SHORT).show()
                 }
 
                 is VectorSettingsChangePasswordViewEvents.ShowError -> {
@@ -123,19 +124,19 @@ class VectorSettingsChangePasswordFragment :
     private fun checkFieldsAreValid(): Boolean {
         var allFieldsAreValid = true
         if (oldPasswordPreference?.editTextView?.text?.isEmpty() == true) {
-            oldPasswordPreference?.textInputLayout?.error = getString(R.string.error_empty_field_old_password)
+            oldPasswordPreference?.textInputLayout?.error = getString(CommonStrings.error_empty_field_old_password)
             allFieldsAreValid = false
         }
         if (newPasswordPreference?.editTextView?.text?.isEmpty() == true) {
-            newPasswordPreference?.textInputLayout?.error = getString(R.string.error_empty_field_new_password)
+            newPasswordPreference?.textInputLayout?.error = getString(CommonStrings.error_empty_field_new_password)
             allFieldsAreValid = false
         }
         if (repeatPasswordPreference?.editTextView?.text?.isEmpty() == true) {
-            repeatPasswordPreference?.textInputLayout?.error = getString(R.string.error_empty_field_repeat_new_password)
+            repeatPasswordPreference?.textInputLayout?.error = getString(CommonStrings.error_empty_field_repeat_new_password)
             allFieldsAreValid = false
         }
         if (repeatPasswordPreference?.editTextView?.text.toString() != newPasswordPreference?.editTextView?.text.toString()) {
-            repeatPasswordPreference?.textInputLayout?.error = getString(R.string.error_passwords_do_not_match)
+            repeatPasswordPreference?.textInputLayout?.error = getString(CommonStrings.error_passwords_do_not_match)
             allFieldsAreValid = false
         }
         return allFieldsAreValid

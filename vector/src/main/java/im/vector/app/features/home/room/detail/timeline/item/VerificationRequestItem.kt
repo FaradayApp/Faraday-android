@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.home.room.detail.timeline.item
 
@@ -31,11 +22,12 @@ import com.airbnb.epoxy.EpoxyModelClass
 import im.vector.app.R
 import im.vector.app.core.epoxy.ClickListener
 import im.vector.app.core.epoxy.onClick
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.home.room.detail.RoomDetailAction
 import im.vector.app.features.home.room.detail.timeline.MessageColorProvider
 import im.vector.app.features.home.room.detail.timeline.TimelineEventController
 import im.vector.lib.core.utils.timer.Clock
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.session.crypto.verification.VerificationService
 import org.matrix.android.sdk.api.session.crypto.verification.VerificationState
 
@@ -65,9 +57,9 @@ abstract class VerificationRequestItem : AbsBaseMessageItem<VerificationRequestI
         }
 
         holder.titleView.text = if (attributes.informationData.sentByMe) {
-            holder.view.context.getString(R.string.verification_sent)
+            holder.view.context.getString(CommonStrings.verification_sent)
         } else {
-            holder.view.context.getString(R.string.verification_request)
+            holder.view.context.getString(CommonStrings.verification_request)
         }
 
         holder.descriptionView.text = if (!attributes.informationData.sentByMe) {
@@ -86,25 +78,25 @@ abstract class VerificationRequestItem : AbsBaseMessageItem<VerificationRequestI
             VerificationState.CANCELED_BY_OTHER -> {
                 holder.buttonBar.isVisible = false
                 holder.statusTextView.text = holder.view.context
-                        .getString(R.string.verification_request_other_cancelled, attributes.informationData.memberName)
+                        .getString(CommonStrings.verification_request_other_cancelled, attributes.informationData.memberName)
                 holder.statusTextView.isVisible = true
             }
             VerificationState.CANCELED_BY_ME -> {
                 holder.buttonBar.isVisible = false
-                holder.statusTextView.text = holder.view.context.getString(R.string.verification_request_you_cancelled)
+                holder.statusTextView.text = holder.view.context.getString(CommonStrings.verification_request_you_cancelled)
                 holder.statusTextView.isVisible = true
             }
             VerificationState.WAITING -> {
                 holder.buttonBar.isVisible = false
-                holder.statusTextView.text = holder.view.context.getString(R.string.verification_request_waiting)
+                holder.statusTextView.text = holder.view.context.getString(CommonStrings.verification_request_waiting)
                 holder.statusTextView.isVisible = true
             }
             VerificationState.DONE -> {
                 holder.buttonBar.isVisible = false
                 holder.statusTextView.text = if (attributes.informationData.sentByMe) {
-                    holder.view.context.getString(R.string.verification_request_other_accepted, attributes.otherUserName)
+                    holder.view.context.getString(CommonStrings.verification_request_other_accepted, attributes.otherUserName)
                 } else {
-                    holder.view.context.getString(R.string.verification_request_you_accepted)
+                    holder.view.context.getString(CommonStrings.verification_request_you_accepted)
                 }
                 holder.statusTextView.isVisible = true
             }

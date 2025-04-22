@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:foreground="?attr/selectableItemBackground"
@@ -19,27 +20,47 @@
         android:layout_marginEnd="8dp"
         android:gravity="center"
         android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/itemSimpleReactionInfoKey"
         style="@style/Widget.Vector.TextView.HeadlineMedium"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:gravity="center"
         android:lines="1"
         android:textColor="?vctr_content_primary"
+        android:ellipsize="end"
+        app:layout_constraintStart_toEndOf="@id/itemSimpleReactionInfoImage"
+        app:layout_constraintEnd_toStartOf="@id/itemSimpleReactionInfoMemberName"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintWidth_max="wrap"
+        app:layout_constraintWidth_percent="0.5"
         tools:text="@sample/reactions.json/data/reaction" />
 
     <TextView
         android:id="@+id/itemSimpleReactionInfoMemberName"
         style="@style/BottomSheetItemTextMain"
+        android:layout_width="0dp"
+        android:ellipsize="end"
+        android:lines="1"
+        app:layout_constraintStart_toEndOf="@id/itemSimpleReactionInfoKey"
+        app:layout_constraintEnd_toStartOf="@id/itemSimpleReactionInfoTime"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         tools:text="@sample/users.json/data/displayName" />
 
     <TextView
         android:id="@+id/itemSimpleReactionInfoTime"
         style="@style/BottomSheetItemTime"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         tools:text="10:44" />
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.autocomplete.emoji
@@ -28,6 +19,7 @@ import im.vector.app.features.autocomplete.member.AutocompleteEmojiDataItem
 import im.vector.app.features.reactions.data.EmojiDataSource
 import im.vector.app.features.reactions.data.EmojiItem
 import im.vector.app.features.settings.VectorPreferences
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -105,18 +97,25 @@ class AutocompleteEmojiPresenter @AssistedInject constructor(
         lastQuery = query
         coroutineScope.launch {
             // Plain emojis
+            val fullStandardEmojis: List<EmojiItem>
             val data = if (query.isNullOrBlank()) {
                 // Return common emojis
-                emojiDataSource.getQuickReactions()
+                fullStandardEmojis = emojiDataSource.getQuickReactions()
+                fullStandardEmojis
             } else {
-                emojiDataSource.filterWith(query.toString())
-            }.toAutocompleteItems()
+                fullStandardEmojis = emojiDataSource.filterWith(query.toString())
+                fullStandardEmojis.maybeLimit(AutocompleteEmojiController.STANDARD_EMOJI_MAX, AutocompleteEmojiController.STANDARD_EMOJI_ID, null)
+            }.toAutocompleteItems().toMutableList()
+
+            if (fullStandardEmojis.size > data.size) {
+                 data += listOf(AutocompleteEmojiDataItem.Expand(AutocompleteEmojiController.STANDARD_EMOJI_ID, null, fullStandardEmojis.size - data.size))
+            }
 
             // Custom emotes: This room's emotes
             val currentRoomEmotes = room.getAllEmojiItems(query)
             val allEmoteData = currentRoomEmotes.toAutocompleteItems().let {
                 if (it.isNotEmpty()) {
-                    listOf(AutocompleteEmojiDataItem.Header(roomId, context.getString(R.string.custom_emotes_this_room))) + it
+                    listOf(AutocompleteEmojiDataItem.Header(roomId, context.getString(CommonStrings.custom_emotes_this_room))) + it
                 } else {
                     emptyList()
                 }
@@ -138,7 +137,7 @@ class AutocompleteEmojiPresenter @AssistedInject constructor(
                     emoteData += listOf(
                             AutocompleteEmojiDataItem.Header(
                                     AutocompleteEmojiController.ACCOUNT_DATA_EMOTE_ID,
-                                    context.getString(R.string.custom_emotes_account_data)
+                                    context.getString(CommonStrings.custom_emotes_account_data)
                             )
                     )
                     emoteData += userPack.toAutocompleteItems()
@@ -181,13 +180,13 @@ class AutocompleteEmojiPresenter @AssistedInject constructor(
                                                 packRoomId,
                                                 if (packName != null) {
                                                     context.getString(
-                                                            R.string.custom_emotes_named_other_room,
+                                                            CommonStrings.custom_emotes_named_other_room,
                                                             packName,
                                                             packRoomName
                                                     )
                                                 } else {
                                                     context.getString(
-                                                            R.string.custom_emotes_other_room,
+                                                            CommonStrings.custom_emotes_other_room,
                                                             packRoomName
                                                     )
                                                 }
@@ -203,12 +202,7 @@ class AutocompleteEmojiPresenter @AssistedInject constructor(
                 }
             }
 
-            val dataHeader = if (data.isNotEmpty() && emoteData.isNotEmpty()) {
-                listOf(AutocompleteEmojiDataItem.Header("de.spiritcroc.riotx.STANDARD_EMOJI_HEADER", context.getString(R.string.standard_emojis)))
-            } else {
-                emptyList()
-            }
-            controller.setData(emoteData + dataHeader + data)
+            controller.setData(data + emoteData)
         }
     }
 

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.core.epoxy.profiles.notifications
@@ -24,6 +15,7 @@ import im.vector.app.core.epoxy.ClickListener
 import im.vector.app.core.epoxy.VectorEpoxyHolder
 import im.vector.app.core.epoxy.VectorEpoxyModel
 import im.vector.app.core.extensions.setTextWithColoredPart
+import im.vector.lib.strings.CommonStrings
 
 @EpoxyModelClass
 abstract class NotificationSettingsFooterItem : VectorEpoxyModel<NotificationSettingsFooterItem.Holder>(R.layout.item_notifications_footer) {
@@ -36,14 +28,14 @@ abstract class NotificationSettingsFooterItem : VectorEpoxyModel<NotificationSet
 
     override fun bind(holder: Holder) {
         super.bind(holder)
-        val accountSettingsString = holder.view.context.getString(R.string.room_settings_room_notifications_account_settings)
+        val accountSettingsString = holder.view.context.getString(CommonStrings.room_settings_room_notifications_account_settings)
         val manageNotificationsString = holder.view.context.getString(
-                R.string.room_settings_room_notifications_manage_notifications,
+                CommonStrings.room_settings_room_notifications_manage_notifications,
                 accountSettingsString
         )
         val manageNotificationsBuilder = StringBuilder(manageNotificationsString)
         if (encrypted) {
-            val encryptionNotice = holder.view.context.getString(R.string.room_settings_room_notifications_encryption_notice)
+            val encryptionNotice = holder.view.context.getString(CommonStrings.room_settings_room_notifications_encryption_notice)
             manageNotificationsBuilder.appendLine().append(encryptionNotice)
         }
 

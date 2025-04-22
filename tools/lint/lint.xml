@@ -11,13 +11,13 @@
     <issue id="TypographyEllipsis" severity="error" />
     <issue id="ImpliedQuantity" severity="warning" />
     <issue id="MissingQuantity" severity="warning" />
-    <issue id="UnusedQuantity" severity="error" />
+    <issue id="UnusedQuantity" severity="warning" />
     <issue id="IconXmlAndPng" severity="error" />
     <issue id="IconDipSize" severity="error" />
     <issue id="IconDuplicatesConfig" severity="error" />
     <issue id="IconDuplicates" severity="error" />
     <issue id="IconExpectedSize" severity="error" />
-    <issue id="LocaleFolder" severity="error" />
+    <issue id="LocaleFolder" severity="ignore" />
 
     <!-- AlwaysShowAction is considered as an error to force ignoring the issue when detected -->
     <issue id="AlwaysShowAction" severity="error" />
@@ -115,4 +115,7 @@
 
     <!-- DI -->
     <issue id="JvmStaticProvidesInObjectDetector" severity="error" />
+
+    <!-- SC -->
+    <issue id="ExtraTranslation" severity="ignore" />
 </lint>

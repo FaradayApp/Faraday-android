@@ -16,7 +16,7 @@
 package org.matrix.android.sdk.internal.session.room.relation
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.map
 import com.zhuinden.monarchy.Monarchy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -115,7 +115,7 @@ internal class DefaultRelationService @AssistedInject constructor(
     override fun editReply(
             replyToEdit: TimelineEvent,
             originalTimelineEvent: TimelineEvent,
-            newBodyText: String,
+            newBodyText: CharSequence,
             newFormattedBodyText: String?,
             compatibilityBodyText: String
     ): Cancelable {
@@ -163,7 +163,7 @@ internal class DefaultRelationService @AssistedInject constructor(
                 { EventAnnotationsSummaryEntity.where(it, roomId, eventId) },
                 { it.asDomain() }
         )
-        return Transformations.map(liveData) { results ->
+        return liveData.map { results ->
             results.firstOrNull().toOptional()
         }
     }

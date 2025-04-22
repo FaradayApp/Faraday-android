@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home
@@ -25,7 +16,6 @@ import androidx.core.content.edit
 import androidx.core.content.getSystemService
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
-import im.vector.app.R
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.di.DefaultPreferences
 import im.vector.app.core.dispatchers.CoroutineDispatchers
@@ -34,6 +24,7 @@ import im.vector.app.features.MainActivity
 import im.vector.app.features.home.room.detail.RoomDetailActivity
 import im.vector.app.features.pin.PinCodeStore
 import im.vector.app.features.pin.PinCodeStoreListener
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.flowOn
@@ -131,7 +122,7 @@ class ShortcutsHandler @Inject constructor(
                     ShortcutManagerCompat.disableShortcuts(
                             context,
                             deadShortcutIds,
-                            stringProvider.getString(R.string.shortcut_disabled_reason_room_left)
+                            stringProvider.getString(CommonStrings.shortcut_disabled_reason_room_left)
                     )
                 }
             }
@@ -139,19 +130,19 @@ class ShortcutsHandler @Inject constructor(
     }
 
     private fun createShortcuts(rooms: List<RoomSummary>) {
-        if (hasPinCode.get()) {
-            // No shortcut in this case (privacy)
-            ShortcutManagerCompat.removeAllDynamicShortcuts(context)
-        } else {
-            val shortcuts = rooms
-                    .take(maxShortcutCountPerActivity)
-                    .mapIndexed { index, room ->
-                        shortcutCreator.create(room, index)
-                    }
+        ShortcutManagerCompat.removeAllDynamicShortcuts(context)
 
-            shortcuts.forEach { shortcut ->
-                ShortcutManagerCompat.pushDynamicShortcut(context, shortcut)
-            }
+        // No shortcut in this case (privacy)
+        if (hasPinCode.get()) return
+
+        val shortcuts = rooms
+                .take(maxShortcutCountPerActivity)
+                .mapIndexed { index, room ->
+                    shortcutCreator.create(room, index)
+                }
+
+        shortcuts.forEach { shortcut ->
+            ShortcutManagerCompat.pushDynamicShortcut(context, shortcut)
         }
     }
 
@@ -178,7 +169,7 @@ class ShortcutsHandler @Inject constructor(
                             ShortcutManagerCompat.disableShortcuts(
                                     context,
                                     shortcutIdsToDisable,
-                                    stringProvider.getString(R.string.shortcut_disabled_reason_sign_out)
+                                    stringProvider.getString(CommonStrings.shortcut_disabled_reason_sign_out)
                             )
                         }
             }

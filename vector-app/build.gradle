@@ -33,13 +33,13 @@ knit {
 
 // Note: 2 digits max for each value
 ext.versionMajor = 1
-ext.versionMinor = 5
+ext.versionMinor = 6
 // Note: even values are reserved for regular release, odd values for hotfix release.
 // When creating a hotfix, you should decrease the value, since the current value
 // is the value for the next regular release.
-ext.versionPatch = 30
+ext.versionPatch = 36
 
-ext.scVersion = 65
+ext.scVersion = 86
 
 static def getGitTimestamp() {
     def cmd = 'git show -s --format=%ct'
@@ -67,6 +67,25 @@ def getVersionCode() {
     }
 }
 
+def getNightlyUniversalApkPath() {
+    def taskNames = gradle.getStartParameter().taskNames.toString()
+    if(taskNames.contains("Nightly")) {
+        return "vector-app/build/outputs/apk/gplay/nightly/vector-gplay-universal-nightly.apk"
+    } else {
+        return ""
+    }
+}
+
+def getFirebaseAppId() {
+//    def taskNames = gradle.getStartParameter().taskNames.toString()
+//    if(taskNames.contains("RustCryptoNightly")) {
+//        return "1:912726360885:android:94fb99347eaa36d100427c"
+//    } else if (taskNames.contains("KotlinCryptoNightly")) {
+        return "1:912726360885:android:efd8545af52a9f9300427c"
+//    } else {
+//        return ""
+//    }
+}
 static def gitRevision() {
     def cmd = "git rev-parse --short=8 HEAD"
     return cmd.execute().text.trim()
@@ -135,8 +154,8 @@ android {
         renderscriptTargetApi 24
         renderscriptSupportModeEnabled true
 
-        versionCode 40101120
-        versionName "1.6.29.sc65"
+        versionCode 40101050
+        versionName "1.6.36.sc86"
 
         // Generate a random app task affinity
         manifestPlaceholders = [appTaskAffinitySuffix: "H_${gitRevision()}"]
@@ -176,7 +195,9 @@ android {
 
         applicationVariants.all { variant ->
             // assign different version code for each output
-            def baseVariantVersion = variant.versionCode * 10
+            // SC: Compared do upstream, we do not multiply by ten,
+            // compare https://gitlab.com/fdroid/fdroiddata/-/commit/3a615a9b85960cf2a165e78436870290a8f3d9e5#note_1502091143
+            def baseVariantVersion = variant.versionCode
             variant.outputs.each { output ->
                 def baseAbiVersionCode = project.ext.abiVersionCodes.get(output.getFilter(OutputFile.ABI))
                 // Known limitation: it does not modify the value in the BuildConfig.java generated file
@@ -232,7 +253,7 @@ android {
             resValue "color", "launcher_background", "#0DBD8B"
 
             if (project.hasProperty("coverage")) {
-                testCoverageEnabled = coverage == "true"
+                testCoverageEnabled = project.coverage == "true"
             }
         }
 
@@ -240,7 +261,8 @@ android {
             resValue "string", "app_name", "Faraday"
             resValue "color", "launcher_background", "#0DBD8B"
             postprocessing {
-                removeUnusedCode true
+                // FIXME Set to true.
+                removeUnusedCode false
                 removeUnusedResources true
                 // We do not activate obfuscation as it makes it hard then to read crash reports, and it's a bit useless on an open source project :)
                 obfuscate false
@@ -259,7 +281,8 @@ android {
             resValue "color", "launcher_background", "#07007E"
             // We need to copy paste this block, this is not done automatically by `initWith release`
             postprocessing {
-                removeUnusedCode true
+                // FIXME Set to true.
+                removeUnusedCode false
                 removeUnusedResources true
                 // We do not activate obfuscation as it makes it hard then to read crash reports, and it's a bit useless on an open source project :)
                 obfuscate false
@@ -290,7 +313,7 @@ android {
         }
     }
 
-    flavorDimensions "store"
+    flavorDimensions = ["store"]
 
     productFlavors {
         gplay {
@@ -300,7 +323,7 @@ android {
             }
 
             dimension "store"
-            versionName "1.6.29.sc65"
+            versionName "1.6.36.sc86"
             buildConfigField "String", "SHORT_FLAVOR_DESCRIPTION", "\"G\""
             buildConfigField "String", "FLAVOR_DESCRIPTION", "\"GooglePlay\""
         }
@@ -312,9 +335,20 @@ android {
             buildConfigField "String", "FLAVOR_DESCRIPTION", "\"FDroid\""
             isDefault = true
         }
+
     }
 
-    lintOptions {
+    variantFilter { variant ->
+        def names = variant.flavors*.name
+        def buildType = variant.buildType.name
+        // There is no nightly for fdroid
+        if (names.contains("fdroid") && buildType == "nightly") {
+            // Gradle ignores any variants that satisfy the conditions above.
+            setIgnore(true)
+        }
+    }
+
+    lint {
         lintConfig file("../tools/lint/lint.xml")
 
         checkDependencies true
@@ -327,7 +361,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = versions.jvmTarget
         freeCompilerArgs += [
                 "-opt-in=kotlin.RequiresOptIn",
                 // Fixes false positive "This is an internal Mavericks API. It is not intended for external use."
@@ -342,14 +376,21 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
+    }
+
+    packaging {
+        pickFirsts.add("META-INF/LICENSE.md")
+        pickFirsts.add("META-INF/LICENSE-notice.md")
+        pickFirsts.add("MANIFEST.MF")
     }
 }
-
 
 dependencies {
     implementation project(':vector')
     implementation project(':vector-config')
     implementation project(':library:core-utils')
+    implementation project(':library:ui-strings')
     debugImplementation project(':library:external:span')
     debugImplementation project(':library:ui-styles')
     implementation libs.dagger.hilt
@@ -364,9 +405,9 @@ dependencies {
         exclude group: 'com.facebook.fbjni', module: 'fbjni'
     }
     debugImplementation 'com.facebook.soloader:soloader:0.10.5'
-    debugImplementation "com.kgurgul.flipper:flipper-realm-android:2.2.0"
+    debugImplementation "com.kgurgul.flipper:flipper-realm-android:2.3.0"
 
-    gplayImplementation "com.google.android.gms:play-services-location:21.0.1"
+    gplayImplementation "com.google.android.gms:play-services-location:21.3.0"
     // UnifiedPush gplay flavor only
     gplayImplementation platform(libs.google.firebaseBom)
     gplayImplementation(libs.google.messaging) {
@@ -382,7 +423,7 @@ dependencies {
     //nightlyImplementation libs.google.appdistribution
 
     // OSS License, gplay flavor only
-    gplayImplementation 'com.google.android.gms:play-services-oss-licenses:17.0.0'
+    gplayImplementation 'com.google.android.gms:play-services-oss-licenses:17.1.0'
     kapt libs.dagger.hiltCompiler
     ksp libs.airbnb.epoxyProcessor
 
@@ -407,7 +448,7 @@ dependencies {
     androidTestImplementation libs.mockk.mockkAndroid
     androidTestUtil libs.androidx.orchestrator
     androidTestImplementation libs.androidx.fragmentTesting
-    androidTestImplementation "org.jetbrains.kotlin:kotlin-reflect:1.8.10"
+    androidTestImplementation "org.jetbrains.kotlin:kotlin-reflect:1.8.21"
     debugImplementation libs.androidx.fragmentTestingManifest
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
 
@@ -418,4 +459,3 @@ dependencies {
 
     implementation 'net.i2p:i2p:2.2.1'
 }
-

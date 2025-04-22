@@ -50,8 +50,8 @@ class ScMessageBubbleWrapView @JvmOverloads constructor(context: Context, attrs:
 
     init {
         inflate(context, R.layout.view_message_bubble_sc, this)
-        context.withStyledAttributes(attrs, R.styleable.MessageBubble) {
-            isIncoming = getBoolean(R.styleable.MessageBubble_incoming_style, false)
+        context.withStyledAttributes(attrs, im.vector.lib.ui.styles.R.styleable.MessageBubble) {
+            isIncoming = getBoolean(im.vector.lib.ui.styles.R.styleable.MessageBubble_incoming_style, false)
         }
     }
 
@@ -229,7 +229,7 @@ class ScMessageBubbleWrapView @JvmOverloads constructor(context: Context, attrs:
         renderStubMessageLayout(messageLayout, views.viewStubContainer.root)
 
         // Padding for views that align with the bubble (should be roughly the bubble tail width)
-        val bubbleStartAlignWidth = views.informationBottom.resources.getDimensionPixelSize(R.dimen.sc_bubble_tail_size)
+        val bubbleStartAlignWidth = views.informationBottom.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.sc_bubble_tail_size)
         if (messageLayout.reverseBubble) {
             // Align reactions container to bubble
             views.informationBottom.setPaddingRelative(
@@ -274,10 +274,10 @@ class ScMessageBubbleWrapView @JvmOverloads constructor(context: Context, attrs:
             val shortPadding: Int
             bubbleView.setBackgroundResource(messageLayout.bubbleDrawable)
             if (!messageLayout.isPseudoBubble) {
-                longPadding = bubbleView.resources.getDimensionPixelSize(R.dimen.sc_bubble_inner_padding_long_side)
-                shortPadding = bubbleView.resources.getDimensionPixelSize(R.dimen.sc_bubble_inner_padding_short_side)
+                longPadding = bubbleView.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.sc_bubble_inner_padding_long_side)
+                shortPadding = bubbleView.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.sc_bubble_inner_padding_short_side)
             } else {
-                longPadding = bubbleView.resources.getDimensionPixelSize(R.dimen.sc_bubble_tail_size)
+                longPadding = bubbleView.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.sc_bubble_tail_size)
                 shortPadding = 0//if (attributes.informationData.showInformation && !hideSenderInformation()) { 8 } else { 0 }
             }
             if (messageLayout.reverseBubble != defaultRtl) {
@@ -326,8 +326,8 @@ class ScMessageBubbleWrapView @JvmOverloads constructor(context: Context, attrs:
                 val endOf = if (defaultRtl) RelativeLayout.LEFT_OF else RelativeLayout.RIGHT_OF
 
                 val footerLayoutParams = views.bubbleFootView.layoutParams as RelativeLayout.LayoutParams
-                var footerMarginStartDp = views.bubbleFootView.resources.getDimensionPixelSize(R.dimen.sc_footer_margin_start)
-                var footerMarginEndDp = views.bubbleFootView.resources.getDimensionPixelSize(R.dimen.sc_footer_margin_end)
+                var footerMarginStartDp = views.bubbleFootView.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.sc_footer_margin_start)
+                var footerMarginEndDp = views.bubbleFootView.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.sc_footer_margin_end)
                 if (bubbleDependentView.allowFooterOverlay(holder, this)) {
                     footerLayoutParams.addRule(RelativeLayout.ALIGN_BOTTOM, R.id.viewStubContainer)
                     footerLayoutParams.addRule(alignEnd, R.id.viewStubContainer)
@@ -369,8 +369,8 @@ class ScMessageBubbleWrapView @JvmOverloads constructor(context: Context, attrs:
                             footerLayoutParams.removeRule(startOf)
                             footerLayoutParams.removeRule(RelativeLayout.BELOW)
                             // Reverse margins
-                            footerMarginStartDp = views.bubbleFootView.resources.getDimensionPixelSize(R.dimen.sc_footer_reverse_margin_start)
-                            footerMarginEndDp = views.bubbleFootView.resources.getDimensionPixelSize(R.dimen.sc_footer_reverse_margin_end)
+                            footerMarginStartDp = views.bubbleFootView.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.sc_footer_reverse_margin_start)
+                            footerMarginEndDp = views.bubbleFootView.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.sc_footer_reverse_margin_end)
                         }
                         else                                         -> /* footer on the right / at the end */ {
                             footerLayoutParams.addRule(endOf, R.id.viewStubContainer)
@@ -447,25 +447,25 @@ class ScMessageBubbleWrapView @JvmOverloads constructor(context: Context, attrs:
 
     private fun styleFooterOverlay(messageLayout: TimelineMessageLayout.ScBubble) {
         views.bubbleFootView.setBackgroundResource(messageLayout.bubbleAppearance.timestampOverlay)
-        tintFooter(ThemeUtils.getColor(views.bubbleFootView.context, R.attr.timestamp_overlay_fg))
-        val padding = views.bubbleFootView.resources.getDimensionPixelSize(R.dimen.sc_footer_overlay_padding)
+        tintFooter(ThemeUtils.getColor(views.bubbleFootView.context, im.vector.lib.ui.styles.R.attr.timestamp_overlay_fg))
+        val padding = views.bubbleFootView.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.sc_footer_overlay_padding)
         views.bubbleFootView.setPaddingRelative(
                 padding,
                 padding,
                 // compensate from inner view padding on the other side
-                padding + views.bubbleFootView.resources.getDimensionPixelSize(R.dimen.sc_footer_padding_compensation),
+                padding + views.bubbleFootView.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.sc_footer_padding_compensation),
                 padding
         )
     }
 
     private fun removeFooterOverlayStyle() {
         views.bubbleFootView.background = null
-        tintFooter(ThemeUtils.getColor(views.bubbleFootView.context, R.attr.vctr_content_secondary))
+        tintFooter(ThemeUtils.getColor(views.bubbleFootView.context, im.vector.lib.ui.styles.R.attr.vctr_content_secondary))
         views.bubbleFootView.setPaddingRelative(
                 0,
-                views.bubbleFootView.resources.getDimensionPixelSize(R.dimen.sc_footer_noverlay_padding_top),
+                views.bubbleFootView.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.sc_footer_noverlay_padding_top),
                 0,
-                views.bubbleFootView.resources.getDimensionPixelSize(R.dimen.sc_footer_noverlay_padding_bottom)
+                views.bubbleFootView.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.sc_footer_noverlay_padding_bottom)
         )
     }
 

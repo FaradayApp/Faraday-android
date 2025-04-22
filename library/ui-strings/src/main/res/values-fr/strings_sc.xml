@@ -104,4 +104,12 @@
     <string name="bubble_tail_summary">Inclure la queue de la bulle pour le premier message d\'un expéditeur</string>
     <string name="room_list_quick_actions_open_at_bottom">Ouvrir dans les messages récents</string>
     <string name="settings_apply_sc_default_settings_dialog_summary">Si vous continuez, ceci interfèrera avec les paramètres de votre appli !</string>
+    <string name="action_send_as_sticker">Envoyer comme sticker</string>
+    <string name="settings_labs_timeline">Chronologie</string>
+    <string name="home_layout_preferences_sort_unread">Non-lu</string>
+    <string name="settings_upstream_labs">Fonctionnalités de Element</string>
+    <string name="settings_follow_system_locale">Suivre la langue système</string>
+    <string name="standard_emojis">Emojis standards</string>
+    <string name="setting_sc_accent_color">Couleur d\'accompagnement</string>
+    <string name="settings_read_receipt_follows_read_marker">Ne marquer les chats comme lus que s\'ils sont entièrement lus</string>
 </resources>

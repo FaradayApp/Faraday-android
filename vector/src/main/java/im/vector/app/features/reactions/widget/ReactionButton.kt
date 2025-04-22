@@ -1,17 +1,8 @@
 /*
- * Copyright 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.reactions.widget
 
@@ -41,7 +32,7 @@ class ReactionButton @JvmOverloads constructor(
         context: Context,
         attrs: AttributeSet? = null,
         defStyleAttr: Int = 0,
-        defStyleRes: Int = R.style.TimelineReactionView
+        defStyleRes: Int = im.vector.lib.ui.styles.R.style.TimelineReactionView
 ) :
         LinearLayout(context, attrs, defStyleAttr, defStyleRes), View.OnClickListener, View.OnLongClickListener {
 
@@ -88,14 +79,14 @@ class ReactionButton @JvmOverloads constructor(
         layoutDirection = View.LAYOUT_DIRECTION_LOCALE
         views = ReactionButtonBinding.bind(this)
         views.reactionCount.text = TextUtils.formatCountToShortDecimal(reactionCount)
-        context.withStyledAttributes(attrs, R.styleable.ReactionButton, defStyleAttr) {
+        context.withStyledAttributes(attrs, im.vector.lib.ui.styles.R.styleable.ReactionButton, defStyleAttr) {
             onDrawable = ContextCompat.getDrawable(context, R.drawable.reaction_rounded_rect_shape)
             offDrawable = ContextCompat.getDrawable(context, R.drawable.reaction_rounded_rect_shape_off)
-            getString(R.styleable.ReactionButton_emoji)?.let {
+            getString(im.vector.lib.ui.styles.R.styleable.ReactionButton_emoji)?.let {
                 reactionString = it
             }
-            reactionCount = getInt(R.styleable.ReactionButton_reaction_count, 0)
-            val status = getBoolean(R.styleable.ReactionButton_toggled, false)
+            reactionCount = getInt(im.vector.lib.ui.styles.R.styleable.ReactionButton_reaction_count, 0)
+            val status = getBoolean(im.vector.lib.ui.styles.R.styleable.ReactionButton_toggled, false)
             setChecked(status)
         }
 

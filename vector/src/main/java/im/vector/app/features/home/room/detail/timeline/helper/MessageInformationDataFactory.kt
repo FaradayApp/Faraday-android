@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.detail.timeline.helper
@@ -32,6 +23,7 @@ import im.vector.app.features.settings.VectorPreferences
 import im.vector.app.features.themes.BubbleThemeUtils
 import org.matrix.android.sdk.api.extensions.orFalse
 import org.matrix.android.sdk.api.session.Session
+import org.matrix.android.sdk.api.session.crypto.model.MessageVerificationState
 import org.matrix.android.sdk.api.session.crypto.verification.VerificationState
 import org.matrix.android.sdk.api.session.events.model.Event
 import org.matrix.android.sdk.api.session.events.model.EventType
@@ -90,8 +82,9 @@ class MessageInformationDataFactory @Inject constructor(
             }
         }
 
-        val e2eDecoration = getE2EDecoration(roomSummary, params.lastEdit ?: event.root)
-        val senderId = getSenderId(event)
+        val e2eDecoration = getE2EDecorationV2(roomSummary, params.lastEdit ?: event.root)
+        // this is claimed data or not depending on the e2e decoration
+        val senderId = event.senderInfo.userId
 
         // Sometimes, member information is not available at this point yet, so let's completely rely on the DM flag for now.
         // Since this can change while processing multiple messages in the same chat, we want to stick to information that is always available,
@@ -175,10 +168,10 @@ class MessageInformationDataFactory @Inject constructor(
         )
     }
 
-    private fun getSenderId(event: TimelineEvent) = if (event.isEncrypted()) {
-        event.root.senderId ?: event.root.toValidDecryptedEvent()?.let {
-            session.cryptoService().deviceWithIdentityKey(it.cryptoSenderKey, it.algorithm)?.userId
-        }.orEmpty()
+    private suspend fun getSenderId(event: TimelineEvent) = if (event.isEncrypted()) {
+        event.root.toValidDecryptedEvent()?.let {
+            session.cryptoService().deviceWithIdentityKey(event.senderInfo.userId, it.cryptoSenderKey, it.algorithm)?.userId
+        } ?: event.root.senderId.orEmpty()
     } else {
         event.root.senderId.orEmpty()
     }
@@ -200,7 +193,47 @@ class MessageInformationDataFactory @Inject constructor(
         }
     }
 
-    private fun getE2EDecoration(roomSummary: RoomSummary?, event: Event): E2EDecoration {
+    private fun getE2EDecorationV2(roomSummary: RoomSummary?, event: Event): E2EDecoration {
+        if (roomSummary?.isEncrypted != true) {
+            // No decoration for clear room
+            // Questionable? what if the event is E2E?
+            return E2EDecoration.NONE
+        }
+        if (event.sendState != SendState.SYNCED) {
+            // we don't display e2e decoration if event not synced back
+            return E2EDecoration.NONE
+        }
+
+        return when (event.mxDecryptionResult?.verificationState) {
+            MessageVerificationState.VERIFIED -> E2EDecoration.NONE
+            MessageVerificationState.SIGNED_DEVICE_OF_UNVERIFIED_USER -> E2EDecoration.NONE
+            MessageVerificationState.UN_SIGNED_DEVICE_OF_VERIFIED_USER -> E2EDecoration.WARN_SENT_BY_UNVERIFIED
+            // We neither verified this user so not interesting in that warning?
+            MessageVerificationState.UN_SIGNED_DEVICE ->  E2EDecoration.NONE
+            MessageVerificationState.UNKNOWN_DEVICE -> E2EDecoration.WARN_SENT_BY_DELETED_SESSION
+            MessageVerificationState.UNSAFE_SOURCE -> E2EDecoration.WARN_UNSAFE_KEY
+            null -> {
+                // No verification state.
+                // So could be a clear event, or a legacy decryption, or an UTD event
+                if (!event.isEncrypted()) {
+                    e2EDecorationForClearEventInE2ERoom(event, roomSummary)
+                } else if (event.mxDecryptionResult != null) {
+                    // No verification state, so could be a migrated old decryption?
+                    if (event.mxDecryptionResult?.isSafe == true) {
+                        // for past legacy decryption let's not decorate
+                        E2EDecoration.NONE
+                    } else {
+                        E2EDecoration.WARN_UNSAFE_KEY
+                    }
+                } else {
+                    // Undecrypted event
+                    E2EDecoration.NONE
+                }
+            }
+        }
+    }
+
+    private suspend fun getE2EDecoration(roomSummary: RoomSummary?, event: Event): E2EDecoration {
         if (roomSummary?.isEncrypted != true) {
             // No decoration for clear room
             // Questionable? what if the event is E2E?
@@ -223,6 +256,7 @@ class MessageInformationDataFactory @Inject constructor(
                     val sendingDevice = event.getSenderKey()
                             ?.let {
                                 session.cryptoService().deviceWithIdentityKey(
+                                        event.senderId.orEmpty(),
                                         it,
                                         event.content?.get("algorithm") as? String ?: ""
                                 )

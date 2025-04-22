@@ -1,0 +1,4 @@
+- Update codebase to Element v1.6.5
+- Add warning about proprietary scalar integration manager above the setting
+- Fix some crashes and rendering issues
+- Allow fdroid to build split ABI

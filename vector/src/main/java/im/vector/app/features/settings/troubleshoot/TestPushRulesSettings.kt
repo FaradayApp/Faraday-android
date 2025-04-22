@@ -1,24 +1,15 @@
 /*
- * Copyright 2018 New Vector Ltd
+ * Copyright 2018-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.settings.troubleshoot
 
-import im.vector.app.R
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.features.notifications.toNotificationAction
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.session.pushrules.RuleIds
 import org.matrix.android.sdk.api.session.pushrules.getActions
 import javax.inject.Inject
@@ -27,7 +18,7 @@ class TestPushRulesSettings @Inject constructor(
         private val activeSessionHolder: ActiveSessionHolder,
         private val stringProvider: StringProvider
 ) :
-        TroubleshootTest(R.string.settings_troubleshoot_test_bing_settings_title) {
+        TroubleshootTest(CommonStrings.settings_troubleshoot_test_bing_settings_title) {
 
     private val testedRules =
             listOf(
@@ -59,9 +50,9 @@ class TestPushRulesSettings @Inject constructor(
         }
 
         if (oneOrMoreRuleIsOff) {
-            description = stringProvider.getString(R.string.settings_troubleshoot_test_bing_settings_failed)
+            description = stringProvider.getString(CommonStrings.settings_troubleshoot_test_bing_settings_failed)
             // TODO
-//                quickFix = object : TroubleshootQuickFix(R.string.settings_troubleshoot_test_bing_settings_quickfix) {
+//                quickFix = object : TroubleshootQuickFix(CommonStrings.settings_troubleshoot_test_bing_settings_quickfix) {
 //                    override fun doFix() {
 //                        val activity = fragment.activity
 //                        if (activity is VectorSettingsFragmentInteractionListener) {
@@ -73,7 +64,7 @@ class TestPushRulesSettings @Inject constructor(
             status = TestStatus.FAILED
         } else {
             description = if (oneOrMoreRuleAreSilent) {
-                stringProvider.getString(R.string.settings_troubleshoot_test_bing_settings_success_with_warn)
+                stringProvider.getString(CommonStrings.settings_troubleshoot_test_bing_settings_success_with_warn)
             } else {
                 null
             }

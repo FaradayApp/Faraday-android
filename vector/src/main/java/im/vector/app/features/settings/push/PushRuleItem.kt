@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings.push
@@ -30,6 +21,7 @@ import im.vector.app.core.epoxy.VectorEpoxyHolder
 import im.vector.app.core.epoxy.VectorEpoxyModel
 import im.vector.app.features.notifications.toNotificationAction
 import im.vector.app.features.themes.ThemeUtils
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.session.pushrules.getActions
 import org.matrix.android.sdk.api.session.pushrules.rest.PushRule
 
@@ -48,7 +40,7 @@ abstract class PushRuleItem : VectorEpoxyModel<PushRuleItem.Holder>(R.layout.ite
             holder.view.setBackgroundColor(Color.TRANSPARENT)
             holder.ruleId.text = pushRule.ruleId
         } else {
-            holder.view.setBackgroundColor(ThemeUtils.getColor(context, R.attr.vctr_header_background))
+            holder.view.setBackgroundColor(ThemeUtils.getColor(context, im.vector.lib.ui.styles.R.attr.vctr_header_background))
             holder.ruleId.text = "[Disabled] ${pushRule.ruleId}"
         }
         val actions = pushRule.getActions()
@@ -60,13 +52,13 @@ abstract class PushRuleItem : VectorEpoxyModel<PushRuleItem.Holder>(R.layout.ite
 
             if (notifAction.shouldNotify && !notifAction.soundName.isNullOrBlank()) {
                 holder.actionIcon.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_action_notify_noisy))
-                holder.actionIcon.contentDescription = context.getString(R.string.a11y_rule_notify_noisy)
+                holder.actionIcon.contentDescription = context.getString(CommonStrings.a11y_rule_notify_noisy)
             } else if (notifAction.shouldNotify) {
                 holder.actionIcon.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_action_notify_silent))
-                holder.actionIcon.contentDescription = context.getString(R.string.a11y_rule_notify_silent)
+                holder.actionIcon.contentDescription = context.getString(CommonStrings.a11y_rule_notify_silent)
             } else {
                 holder.actionIcon.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_action_dont_notify))
-                holder.actionIcon.contentDescription = context.getString(R.string.a11y_rule_notify_off)
+                holder.actionIcon.contentDescription = context.getString(CommonStrings.a11y_rule_notify_off)
             }
 
             val description = StringBuffer()

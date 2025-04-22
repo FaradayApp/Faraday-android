@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.home.room.list.actions
 
@@ -23,13 +14,13 @@ import im.vector.app.core.epoxy.bottomSheetDividerItem
 import im.vector.app.core.epoxy.bottomsheet.bottomSheetActionItem
 import im.vector.app.core.epoxy.bottomsheet.bottomSheetRoomPreviewItem
 import im.vector.app.core.epoxy.profiles.notifications.bottomSheetRadioButtonItem
-import im.vector.app.core.epoxy.profiles.notifications.radioButtonItem
 import im.vector.app.core.resources.ColorProvider
 import im.vector.app.core.resources.StringProvider
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.roomprofile.notifications.notificationOptions
 import im.vector.app.features.roomprofile.notifications.notificationStateMapped
 import im.vector.app.features.settings.VectorPreferences
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.session.room.notification.RoomNotificationState
 import org.matrix.android.sdk.api.util.toMatrixItem
 import javax.inject.Inject
@@ -110,10 +101,10 @@ class RoomListQuickActionsEpoxyController @Inject constructor(
 
     @StringRes
     private fun titleForNotificationState(notificationState: RoomNotificationState): Int? = when (notificationState) {
-        RoomNotificationState.ALL_MESSAGES       -> R.string.room_settings_default // SC addition to allow this again
-        RoomNotificationState.ALL_MESSAGES_NOISY -> R.string.room_settings_all_messages
-        RoomNotificationState.MENTIONS_ONLY -> R.string.room_settings_mention_and_keyword_only
-        RoomNotificationState.MUTE -> R.string.room_settings_none
+        RoomNotificationState.ALL_MESSAGES       -> CommonStrings.room_settings_default // SC addition to allow this again
+        RoomNotificationState.ALL_MESSAGES_NOISY -> CommonStrings.room_settings_all_messages
+        RoomNotificationState.MENTIONS_ONLY -> CommonStrings.room_settings_mention_and_keyword_only
+        RoomNotificationState.MUTE -> CommonStrings.room_settings_none
         else -> null
     }
 

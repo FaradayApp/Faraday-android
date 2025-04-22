@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.location.live.map
@@ -72,6 +63,7 @@ class UserLiveLocationViewStateMapperTest {
     @Test
     fun `given a summary with invalid data then result is null`() = runTest {
         val summary1 = LiveLocationShareAggregatedSummary(
+                roomId = null,
                 userId = null,
                 isActive = true,
                 endOfLiveTimestampMillis = null,
@@ -98,17 +90,19 @@ class UserLiveLocationViewStateMapperTest {
                 unstableTimestampMillis = A_LOCATION_TIMESTAMP
         )
         val summary = LiveLocationShareAggregatedSummary(
+                roomId = null,
                 userId = A_USER_ID,
                 isActive = A_IS_ACTIVE,
                 endOfLiveTimestampMillis = A_END_OF_LIVE_TIMESTAMP,
                 lastLocationDataContent = locationDataContent,
         )
-        locationPinProvider.givenCreateForUserId(A_USER_ID, pinDrawable)
+        val matrixItem = MatrixItem.UserItem(id = A_USER_ID, displayName = A_USER_DISPLAY_NAME, avatarUrl = "")
+        locationPinProvider.givenCreateForMatrixItem(matrixItem, pinDrawable)
 
         val viewState = userLiveLocationViewStateMapper.map(summary)
 
         val expectedViewState = UserLiveLocationViewState(
-                matrixItem = MatrixItem.UserItem(id = A_USER_ID, displayName = A_USER_DISPLAY_NAME, avatarUrl = ""),
+                matrixItem = matrixItem,
                 pinDrawable = pinDrawable,
                 locationData = LocationData(
                         latitude = A_LATITUDE,

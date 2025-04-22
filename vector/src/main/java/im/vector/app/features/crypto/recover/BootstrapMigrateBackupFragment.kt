@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.crypto.recover
@@ -31,7 +22,6 @@ import androidx.lifecycle.lifecycleScope
 import com.airbnb.mvrx.parentFragmentViewModel
 import com.airbnb.mvrx.withState
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.hideKeyboard
 import im.vector.app.core.extensions.registerStartForActivityResult
 import im.vector.app.core.platform.VectorBaseFragment
@@ -40,6 +30,7 @@ import im.vector.app.core.utils.colorizeMatchingText
 import im.vector.app.core.utils.startImportTextFromFileIntent
 import im.vector.app.databinding.FragmentBootstrapMigrateBackupBinding
 import im.vector.lib.core.utils.flow.throttleFirst
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.matrix.android.sdk.api.extensions.tryOrNull
@@ -97,10 +88,10 @@ class BootstrapMigrateBackupFragment :
 
         val secret = views.bootstrapMigrateEditText.text?.toString()
         if (secret.isNullOrEmpty()) {
-            val errRes = if (isEnteringKey) R.string.recovery_key_empty_error_message else R.string.passphrase_empty_error_message
+            val errRes = if (isEnteringKey) CommonStrings.recovery_key_empty_error_message else CommonStrings.passphrase_empty_error_message
             views.bootstrapRecoveryKeyEnterTil.error = getString(errRes)
         } else if (isEnteringKey && !isValidRecoveryKey(secret)) {
-            views.bootstrapRecoveryKeyEnterTil.error = getString(R.string.bootstrap_invalid_recovery_key)
+            views.bootstrapRecoveryKeyEnterTil.error = getString(CommonStrings.bootstrap_invalid_recovery_key)
         } else {
             view?.hideKeyboard()
             if (isEnteringKey) {
@@ -119,8 +110,8 @@ class BootstrapMigrateBackupFragment :
         if (isEnteringKey) {
             views.bootstrapMigrateEditText.inputType = TYPE_CLASS_TEXT or TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or TYPE_TEXT_FLAG_MULTI_LINE
 
-            val recKey = getString(R.string.bootstrap_migration_backup_recovery_key)
-            views.bootstrapDescriptionText.text = getString(R.string.enter_account_password, recKey)
+            val recKey = getString(CommonStrings.bootstrap_migration_backup_recovery_key)
+            views.bootstrapDescriptionText.text = getString(CommonStrings.enter_account_password, recKey)
 
             views.bootstrapMigrateEditText.hint = recKey
 
@@ -128,19 +119,20 @@ class BootstrapMigrateBackupFragment :
             views.bootstrapMigrateForgotPassphrase.isVisible = false
             views.bootstrapMigrateUseFile.isVisible = true
         } else {
-            views.bootstrapDescriptionText.text = getString(R.string.bootstrap_migration_enter_backup_password)
+            views.bootstrapDescriptionText.text = getString(CommonStrings.bootstrap_migration_enter_backup_password)
 
-            views.bootstrapMigrateEditText.hint = getString(R.string.passphrase_enter_passphrase)
+            views.bootstrapMigrateEditText.hint = getString(CommonStrings.passphrase_enter_passphrase)
 
             views.bootstrapMigrateForgotPassphrase.isVisible = true
 
-            val recKey = getString(R.string.bootstrap_migration_use_recovery_key)
-            views.bootstrapMigrateForgotPassphrase.text = getString(R.string.bootstrap_migration_with_passphrase_helper_with_link, recKey)
+            val recKey = getString(CommonStrings.bootstrap_migration_use_recovery_key)
+            views.bootstrapMigrateForgotPassphrase.text = getString(CommonStrings.bootstrap_migration_with_passphrase_helper_with_link, recKey)
                     .toSpannable()
                     .colorizeMatchingText(recKey, colorProvider.getColorFromAttribute(android.R.attr.textColorLink))
 
             views.bootstrapMigrateUseFile.isVisible = false
         }
+        views.bootstrapDescriptionText.giveAccessibilityFocusOnce()
     }
 
     private val importFileStartForActivityResult = registerStartForActivityResult { activityResult ->

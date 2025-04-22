@@ -1,21 +1,11 @@
 /*
- * Copyright 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.settings.devices
 
-import com.airbnb.mvrx.Loading
 import com.airbnb.mvrx.MavericksViewModelFactory
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -26,6 +16,7 @@ import im.vector.app.core.platform.EmptyAction
 import im.vector.app.core.platform.EmptyViewEvents
 import im.vector.app.core.platform.VectorViewModel
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.session.crypto.model.DeviceInfo
 import org.matrix.android.sdk.flow.flow
@@ -44,14 +35,7 @@ class DeviceVerificationInfoBottomSheetViewModel @AssistedInject constructor(
     by hiltMavericksViewModelFactory()
 
     init {
-
-        setState {
-            copy(
-                    hasAccountCrossSigning = session.cryptoService().crossSigningService().isCrossSigningInitialized(),
-                    accountCrossSigningIsTrusted = session.cryptoService().crossSigningService().isCrossSigningVerified(),
-                    isRecoverySetup = session.sharedSecretStorageService().isRecoverySetup()
-            )
-        }
+        initState()
         session.flow().liveCrossSigningInfo(session.myUserId)
                 .execute {
                     copy(
@@ -79,10 +63,6 @@ class DeviceVerificationInfoBottomSheetViewModel @AssistedInject constructor(
                     )
                 }
 
-        setState {
-            copy(deviceInfo = Loading())
-        }
-
         session.flow().liveMyDevicesInfo()
                 .map { devices ->
                     devices.firstOrNull { it.deviceId == initialState.deviceId } ?: DeviceInfo(deviceId = initialState.deviceId)
@@ -90,6 +70,21 @@ class DeviceVerificationInfoBottomSheetViewModel @AssistedInject constructor(
                 .execute {
                     copy(deviceInfo = it)
                 }
+    }
+
+    private fun initState() {
+        viewModelScope.launch {
+            val hasAccountCrossSigning = session.cryptoService().crossSigningService().isCrossSigningInitialized()
+            val accountCrossSigningIsTrusted = session.cryptoService().crossSigningService().isCrossSigningVerified()
+            val isRecoverySetup = session.sharedSecretStorageService().isRecoverySetup()
+            setState {
+                copy(
+                        hasAccountCrossSigning = hasAccountCrossSigning,
+                        accountCrossSigningIsTrusted = accountCrossSigningIsTrusted,
+                        isRecoverySetup = isRecoverySetup
+                )
+            }
+        }
     }
 
     override fun handle(action: EmptyAction) {

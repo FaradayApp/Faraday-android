@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.notifications
@@ -21,13 +12,13 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.RemoteInput
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.features.analytics.AnalyticsTracker
 import im.vector.app.features.analytics.extensions.toAnalyticsJoinedRoom
 import im.vector.app.features.analytics.plan.JoinedRoom
 import im.vector.app.features.session.coroutineScope
 import im.vector.lib.core.utils.timer.Clock
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.launch
 import org.matrix.android.sdk.api.extensions.tryOrNull
 import org.matrix.android.sdk.api.session.Session
@@ -151,9 +142,11 @@ class NotificationBroadcastReceiver : BroadcastReceiver() {
                 noisy = false,
                 timestamp = clock.epochMillis(),
                 senderName = session.roomService().getRoomMember(session.myUserId, room.roomId)?.displayName
-                        ?: context?.getString(R.string.notification_sender_me),
+                        ?: context?.getString(CommonStrings.notification_sender_me),
                 senderId = session.myUserId,
                 body = message,
+                caption = null,
+                filename = null,
                 imageUriString = null,
                 roomId = room.roomId,
                 threadId = threadId,
@@ -203,7 +196,7 @@ class NotificationBroadcastReceiver : BroadcastReceiver() {
                         false,
                         clock.epochMillis(),
                         session.myUser?.displayname
-                                ?: context?.getString(R.string.notification_sender_me),
+                                ?: context?.getString(CommonStrings.notification_sender_me),
                         session.myUserId,
                         message,
                         roomId,

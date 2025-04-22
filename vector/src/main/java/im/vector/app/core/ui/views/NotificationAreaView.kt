@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.core.ui.views
@@ -31,6 +22,7 @@ import im.vector.app.core.utils.DimensionConverter
 import im.vector.app.core.utils.SafeBetterLinkMovementMethod
 import im.vector.app.databinding.ViewNotificationAreaBinding
 import im.vector.app.features.themes.ThemeUtils
+import im.vector.lib.strings.CommonStrings
 import me.gujun.android.span.span
 import me.saket.bettermovementmethod.BetterLinkMovementMethod
 import org.matrix.android.sdk.api.failure.MatrixError
@@ -101,19 +93,19 @@ class NotificationAreaView @JvmOverloads constructor(
         views.roomNotificationIcon.setImageDrawable(null)
         val message = span {
             italic {
-                +resources.getString(R.string.room_do_not_have_permission_to_post)
+                +resources.getString(CommonStrings.room_do_not_have_permission_to_post)
             }
         }
         views.roomNotificationMessage.text = message
-        views.roomNotificationMessage.setTextColor(ThemeUtils.getColor(context, R.attr.vctr_content_secondary))
+        views.roomNotificationMessage.setTextColor(ThemeUtils.getColor(context, im.vector.lib.ui.styles.R.attr.vctr_content_secondary))
     }
 
     private fun renderUnsupportedAlgorithm(e2eState: State.UnsupportedAlgorithm) {
         visibility = View.VISIBLE
         views.roomNotificationIcon.setImageResource(R.drawable.ic_warning_badge)
         val text = if (e2eState.canRestore) {
-            R.string.room_unsupported_e2e_algorithm_as_admin
-        } else R.string.room_unsupported_e2e_algorithm
+            CommonStrings.room_unsupported_e2e_algorithm_as_admin
+        } else CommonStrings.room_unsupported_e2e_algorithm
         val message = span {
             italic {
                 +resources.getString(text)
@@ -123,7 +115,7 @@ class NotificationAreaView @JvmOverloads constructor(
             delegate?.onMisconfiguredEncryptionClicked()
         }
         views.roomNotificationMessage.text = message
-        views.roomNotificationMessage.setTextColor(ThemeUtils.getColor(context, R.attr.vctr_content_secondary))
+        views.roomNotificationMessage.setTextColor(ThemeUtils.getColor(context, im.vector.lib.ui.styles.R.attr.vctr_content_secondary))
     }
 
     private fun renderResourceLimitExceededError(state: State.ResourceLimitExceededError) {
@@ -132,10 +124,10 @@ class NotificationAreaView @JvmOverloads constructor(
         val formatterMode: ResourceLimitErrorFormatter.Mode
         val backgroundColor: Int
         if (state.isSoft) {
-            backgroundColor = R.color.soft_resource_limit_exceeded
+            backgroundColor = im.vector.lib.ui.styles.R.color.soft_resource_limit_exceeded
             formatterMode = ResourceLimitErrorFormatter.Mode.Soft
         } else {
-            backgroundColor = R.color.hard_resource_limit_exceeded
+            backgroundColor = im.vector.lib.ui.styles.R.color.hard_resource_limit_exceeded
             formatterMode = ResourceLimitErrorFormatter.Mode.Hard
         }
         val message = resourceLimitErrorFormatter.format(state.matrixError, formatterMode, clickable = true)
@@ -150,9 +142,9 @@ class NotificationAreaView @JvmOverloads constructor(
         visibility = View.VISIBLE
         views.roomNotificationIcon.setImageResource(R.drawable.ic_warning_badge)
         val message = span {
-            +resources.getString(R.string.room_tombstone_versioned_description)
+            +resources.getString(CommonStrings.room_tombstone_versioned_description)
             +"\n"
-            span(resources.getString(R.string.room_tombstone_continuation_link)) {
+            span(resources.getString(CommonStrings.room_tombstone_continuation_link)) {
                 textDecorationLine = "underline"
                 onClick = { delegate?.onTombstoneEventClicked() }
             }

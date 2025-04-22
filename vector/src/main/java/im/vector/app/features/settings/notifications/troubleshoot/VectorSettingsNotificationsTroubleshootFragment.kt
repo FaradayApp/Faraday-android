@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.settings.notifications.troubleshoot
 
@@ -30,7 +21,6 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.transition.TransitionManager
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.cleanup
 import im.vector.app.core.extensions.registerStartForActivityResult
 import im.vector.app.core.platform.VectorBaseFragment
@@ -43,6 +33,7 @@ import im.vector.app.features.rageshake.BugReporter
 import im.vector.app.features.settings.VectorSettingsFragmentInteractionListener
 import im.vector.app.features.settings.troubleshoot.NotificationTroubleshootTestManager
 import im.vector.app.features.settings.troubleshoot.TroubleshootTest
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.extensions.orFalse
 import org.matrix.android.sdk.api.extensions.tryOrNull
 import javax.inject.Inject
@@ -84,14 +75,14 @@ class VectorSettingsNotificationsTroubleshootFragment :
     }
 
     private fun startUI() {
-        views.toubleshootSummDescription.text = getString(R.string.settings_troubleshoot_diagnostic_running_status, 0, 0)
+        views.toubleshootSummDescription.text = getString(CommonStrings.settings_troubleshoot_diagnostic_running_status, 0, 0)
         testManager = testManagerFactory.create(this)
         testManager?.statusListener = { troubleshootTestManager ->
             if (isAdded) {
                 TransitionManager.beginDelayedTransition(views.troubleshootBottomView)
                 when (troubleshootTestManager.diagStatus) {
                     TroubleshootTest.TestStatus.NOT_STARTED -> {
-                        views.toubleshootSummDescription.text = ""
+                        views.toubleshootSummDescription.text = null
                         views.troubleshootSummButton.visibility = View.GONE
                         views.troubleshootRunButton.visibility = View.VISIBLE
                     }
@@ -100,7 +91,7 @@ class VectorSettingsNotificationsTroubleshootFragment :
                         val size = troubleshootTestManager.testListSize
                         val currentTestIndex = troubleshootTestManager.currentTestIndex
                         views.toubleshootSummDescription.text = getString(
-                                R.string.settings_troubleshoot_diagnostic_running_status,
+                                CommonStrings.settings_troubleshoot_diagnostic_running_status,
                                 currentTestIndex,
                                 size
                         )
@@ -111,15 +102,15 @@ class VectorSettingsNotificationsTroubleshootFragment :
                         // check if there are quick fixes
                         val hasQuickFix = testManager?.hasQuickFix().orFalse()
                         if (hasQuickFix) {
-                            views.toubleshootSummDescription.text = getString(R.string.settings_troubleshoot_diagnostic_failure_status_with_quickfix)
+                            views.toubleshootSummDescription.text = getString(CommonStrings.settings_troubleshoot_diagnostic_failure_status_with_quickfix)
                         } else {
-                            views.toubleshootSummDescription.text = getString(R.string.settings_troubleshoot_diagnostic_failure_status_no_quickfix)
+                            views.toubleshootSummDescription.text = getString(CommonStrings.settings_troubleshoot_diagnostic_failure_status_no_quickfix)
                         }
                         views.troubleshootSummButton.visibility = View.VISIBLE
                         views.troubleshootRunButton.visibility = View.VISIBLE
                     }
                     TroubleshootTest.TestStatus.SUCCESS -> {
-                        views.toubleshootSummDescription.text = getString(R.string.settings_troubleshoot_diagnostic_success_status)
+                        views.toubleshootSummDescription.text = getString(CommonStrings.settings_troubleshoot_diagnostic_success_status)
                         views.troubleshootSummButton.visibility = View.VISIBLE
                         views.troubleshootRunButton.visibility = View.VISIBLE
                     }
@@ -162,7 +153,7 @@ class VectorSettingsNotificationsTroubleshootFragment :
 
     override fun onResume() {
         super.onResume()
-        (activity as? AppCompatActivity)?.supportActionBar?.setTitle(R.string.settings_notification_troubleshoot)
+        (activity as? AppCompatActivity)?.supportActionBar?.setTitle(CommonStrings.settings_notification_troubleshoot)
 
         tryOrNull("Unable to register the receiver") {
             LocalBroadcastManager.getInstance(requireContext())

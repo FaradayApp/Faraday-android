@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home
@@ -25,6 +16,7 @@ import dagger.assisted.AssistedInject
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.di.MavericksAssistedViewModelFactory
 import im.vector.app.core.di.hiltMavericksViewModelFactory
+import im.vector.app.core.dispatchers.CoroutineDispatchers
 import im.vector.app.core.platform.VectorViewModel
 import im.vector.app.core.pushers.EnsureFcmTokenIsRetrievedUseCase
 import im.vector.app.core.pushers.PushersManager
@@ -64,15 +56,12 @@ import org.matrix.android.sdk.api.auth.registration.nextUncompletedStage
 import org.matrix.android.sdk.api.extensions.tryOrNull
 import org.matrix.android.sdk.api.raw.RawService
 import org.matrix.android.sdk.api.session.crypto.crosssigning.CrossSigningService
-import org.matrix.android.sdk.api.session.crypto.model.CryptoDeviceInfo
-import org.matrix.android.sdk.api.session.crypto.model.MXUsersDevicesMap
 import org.matrix.android.sdk.api.session.getUserOrDefault
 import org.matrix.android.sdk.api.session.pushrules.RuleIds
 import org.matrix.android.sdk.api.session.room.model.Membership
 import org.matrix.android.sdk.api.session.room.roomSummaryQueryParams
 import org.matrix.android.sdk.api.session.sync.SyncRequestState
 import org.matrix.android.sdk.api.settings.LightweightSettingsStorage
-import org.matrix.android.sdk.api.util.awaitCallback
 import org.matrix.android.sdk.api.util.toMatrixItem
 import org.matrix.android.sdk.flow.flow
 import timber.log.Timber
@@ -97,6 +86,7 @@ class HomeActivityViewModel @AssistedInject constructor(
         private val unregisterUnifiedPushUseCase: UnregisterUnifiedPushUseCase,
         private val ensureFcmTokenIsRetrievedUseCase: EnsureFcmTokenIsRetrievedUseCase,
         private val ensureSessionSyncingUseCase: EnsureSessionSyncingUseCase,
+        private val coroutineDispatchers: CoroutineDispatchers,
 ) : VectorViewModel<HomeActivityViewState, HomeActivityViewActions, HomeActivityViewEvents>(initialState) {
 
     @AssistedFactory
@@ -119,11 +109,14 @@ class HomeActivityViewModel @AssistedInject constructor(
 
     private fun initialize() {
         if (isInitialized) return
+        Timber.tag("SC_NP_DBG").i("Initialize homeActivity ${System.identityHashCode(this)}")
         isInitialized = true
         // Ensure Session is syncing
         ensureSessionSyncingUseCase.execute()
         registerUnifiedPushIfNeeded()
-        cleanupFiles()
+        viewModelScope.launch(coroutineDispatchers.io) {
+            cleanupFiles()
+        }
         observeInitialSync()
         checkSessionPushIsOn()
         observeCrossSigningReset()
@@ -197,9 +190,11 @@ class HomeActivityViewModel @AssistedInject constructor(
         if (analyticsConfig.isEnabled) {
             analyticsStore.didAskUserConsentFlow
                     .onEach { didAskUser ->
+                        Timber.v("DidAskUserConsent: $didAskUser")
                         if (!didAskUser) {
                             _viewEvents.post(HomeActivityViewEvents.ShowAnalyticsOptIn)
                         } else {
+                            Timber.tag("SC_NP_DBG").i("didAskUser -> ask for notif permission")
                             _viewEvents.post(HomeActivityViewEvents.ShowNotificationDialog)
                         }
                     }
@@ -223,6 +218,7 @@ class HomeActivityViewModel @AssistedInject constructor(
                 }
             }
         } else {
+            Timber.tag("SC_NP_DBG").i("no analytics -> ask for notif permission")
             _viewEvents.post(HomeActivityViewEvents.ShowNotificationDialog)
         }
     }
@@ -377,8 +373,10 @@ class HomeActivityViewModel @AssistedInject constructor(
         if (isSecureBackupRequired) {
             // If 4S is forced, force verification
             // for stability cancel all pending verifications?
-            session.cryptoService().verificationService().getExistingVerificationRequests(session.myUserId).forEach {
-                session.cryptoService().verificationService().cancelVerificationRequest(it)
+            viewModelScope.launch {
+                session.cryptoService().verificationService().getExistingVerificationRequests(session.myUserId).forEach {
+                    session.cryptoService().verificationService().cancelVerificationRequest(it)
+                }
             }
             _viewEvents.post(HomeActivityViewEvents.ForceVerification(false))
         } else {
@@ -437,9 +435,7 @@ class HomeActivityViewModel @AssistedInject constructor(
             }
 
             tryOrNull("## MaybeVerifyOrBootstrapCrossSigning: Failed to download keys") {
-                awaitCallback<MXUsersDevicesMap<CryptoDeviceInfo>> {
-                    session.cryptoService().downloadKeys(listOf(session.myUserId), true, it)
-                }
+                session.cryptoService().downloadKeysIfNeeded(listOf(session.myUserId), true)
             }
 
             // From there we are up to date with server
@@ -469,8 +465,7 @@ class HomeActivityViewModel @AssistedInject constructor(
                                 _viewEvents.post(
                                         HomeActivityViewEvents.CurrentSessionNotVerified(
                                                 session.getUserOrDefault(session.myUserId).toMatrixItem(),
-                                                // Always send request instead of waiting for an incoming as per recent EW changes
-                                                false
+                                                vectorPreferences.isOnRustCrypto() && vectorPreferences.hadExistingLegacyData()
                                         )
                                 )
                             } else {
@@ -549,14 +544,11 @@ class HomeActivityViewModel @AssistedInject constructor(
 private suspend fun CrossSigningService.awaitCrossSigninInitialization(
         block: Continuation<UIABaseAuth>.(response: RegistrationFlowResponse, errCode: String?) -> Unit
 ) {
-    awaitCallback<Unit> {
         initializeCrossSigning(
                 object : UserInteractiveAuthInterceptor {
                     override fun performStage(flowResponse: RegistrationFlowResponse, errCode: String?, promise: Continuation<UIABaseAuth>) {
                         promise.block(flowResponse, errCode)
                     }
-                },
-                callback = it
+                }
         )
-    }
 }

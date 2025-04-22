@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.location
@@ -37,6 +28,7 @@ import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 import com.mapbox.mapboxsdk.style.layers.Property
 import im.vector.app.R
 import im.vector.app.core.utils.DimensionConverter
+import im.vector.lib.strings.CommonStrings
 import timber.log.Timber
 
 private const val USER_PIN_ID = "user-pin-id"
@@ -67,7 +59,7 @@ class MapTilerMapView @JvmOverloads constructor(
     init {
         context.obtainStyledAttributes(
                 attrs,
-                R.styleable.MapTilerMapView,
+                im.vector.lib.ui.styles.R.styleable.MapTilerMapView,
                 0,
                 0
         ).use {
@@ -77,7 +69,7 @@ class MapTilerMapView @JvmOverloads constructor(
     }
 
     private fun setLocateButtonVisibility(typedArray: TypedArray) {
-        showLocationButton = typedArray.getBoolean(R.styleable.MapTilerMapView_showLocateButton, false)
+        showLocationButton = typedArray.getBoolean(im.vector.lib.ui.styles.R.styleable.MapTilerMapView_showLocateButton, false)
     }
 
     override fun onDestroy() {
@@ -126,11 +118,13 @@ class MapTilerMapView @JvmOverloads constructor(
     private fun createLocateButton(): ImageView =
             ImageView(context).apply {
                 setImageDrawable(ContextCompat.getDrawable(context, R.drawable.btn_locate))
-                contentDescription = context.getString(R.string.a11y_location_share_locate_button)
+                contentDescription = context.getString(CommonStrings.a11y_location_share_locate_button)
                 layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
                 updateLayoutParams<MarginLayoutParams> {
-                    val marginHorizontal = context.resources.getDimensionPixelOffset(R.dimen.location_sharing_locate_button_margin_horizontal)
-                    val marginVertical = context.resources.getDimensionPixelOffset(R.dimen.location_sharing_locate_button_margin_vertical)
+                    val marginHorizontal =
+                            context.resources.getDimensionPixelOffset(im.vector.lib.ui.styles.R.dimen.location_sharing_locate_button_margin_horizontal)
+                    val marginVertical =
+                            context.resources.getDimensionPixelOffset(im.vector.lib.ui.styles.R.dimen.location_sharing_locate_button_margin_vertical)
                     setMargins(marginHorizontal, marginVertical, marginHorizontal, marginVertical)
                 }
                 updateLayoutParams<LayoutParams> {
@@ -141,7 +135,7 @@ class MapTilerMapView @JvmOverloads constructor(
     private fun adjustCompassButton(map: MapboxMap) {
         locateButton.post {
             val marginTop = locateButton.height + locateButton.marginTop + locateButton.marginBottom
-            val marginRight = context.resources.getDimensionPixelOffset(R.dimen.location_sharing_compass_button_margin_horizontal)
+            val marginRight = context.resources.getDimensionPixelOffset(im.vector.lib.ui.styles.R.dimen.location_sharing_compass_button_margin_horizontal)
             map.uiSettings.setCompassMargins(0, marginTop, marginRight, 0)
         }
     }

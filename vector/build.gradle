@@ -69,7 +69,7 @@ android {
     buildTypes {
         debug {
             if (project.hasProperty("coverage")) {
-                testCoverageEnabled = coverage == "true"
+                testCoverageEnabled = project.properties["coverage"] == "true"
             }
         }
     }
@@ -80,7 +80,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = versions.jvmTarget
         freeCompilerArgs += [
                 "-opt-in=kotlin.RequiresOptIn",
                 // Fixes false positive "This is an internal Mavericks API. It is not intended for external use."
@@ -104,11 +104,24 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
+        compose true
     }
 
-    configurations {
-        all*.exclude group: 'androidx.annotation', module: 'annotation-jvm'
+    composeOptions {
+        kotlinCompilerExtensionVersion "1.5.14"
+        kotlinCompilerVersion "1.9.24"
     }
+
+    packaging {
+        pickFirsts.add("META-INF/LICENSE.md")
+        pickFirsts.add("META-INF/LICENSE-notice.md")
+        pickFirsts.add("MANIFEST.MF")
+    }
+
+//    configurations {
+//        all*.exclude group: 'androidx.annotation', module: 'annotation-jvm'
+//    }
 }
 
 dependencies {
@@ -118,13 +131,13 @@ dependencies {
     implementation project(":matrix-sdk-android-flow")
     implementation project(":library:external:jsonviewer")
     implementation project(":library:external:diff-match-patch")
+    implementation project(":library:external:textdrawable")
+    implementation project(":library:external:autocomplete")
     implementation project(":library:ui-strings")
     implementation project(":library:ui-styles")
     implementation project(":library:core-utils")
     implementation project(":library:attachment-viewer")
     implementation project(":library:multipicker")
-    implementation project(":library:external:textdrawable")
-    implementation project(":library:external:autocomplete")
 
     implementation libs.jetbrains.kotlinReflect
     implementation libs.jetbrains.coroutinesCore
@@ -140,11 +153,19 @@ dependencies {
     implementation libs.androidx.biometric
 
     api "org.threeten:threetenbp:1.4.0:no-tzdb"
-    api "com.gabrielittner.threetenbp:lazythreetenbp:0.14.0"
+    api "com.gabrielittner.threetenbp:lazythreetenbp:0.16.0"
 
     implementation libs.squareup.moshi
     implementation libs.squareup.moshiKt
     kapt libs.squareup.moshiKotlin
+
+    // Compose
+    implementation platform(libs.compose.composeBom)
+    implementation libs.compose.material3
+    implementation libs.compose.preview
+    implementation libs.compose.glide
+    implementation libs.compose.mavericks
+    implementation libs.compose.hilt
 
     // Lifecycle
     implementation libs.androidx.lifecycleLivedata
@@ -164,6 +185,9 @@ dependencies {
 
     // Debug
     api 'com.facebook.stetho:stetho:1.6.0'
+
+    // Analytics
+    api 'com.github.matrix-org:matrix-analytics-events:0.23.0'
 
     api libs.google.phonenumber
 
@@ -220,7 +244,6 @@ dependencies {
     implementation libs.github.bigImageViewer
     implementation libs.github.glideImageLoader
     implementation libs.github.glideImageViewFactory
-    implementation libs.github.glideWebpDecoder
 
     // implementation 'com.github.MikeOrtiz:TouchImageView:3.0.2'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
@@ -238,9 +261,7 @@ dependencies {
     kapt libs.dagger.hiltCompiler
 
     // Analytics
-    implementation('com.posthog.android:posthog:2.0.3') {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    }
+    implementation 'com.posthog:posthog-android:3.2.0'
     implementation libs.sentry.sentryAndroid
 
     // UnifiedPush
@@ -253,8 +274,7 @@ dependencies {
     // implementation 'org.webrtc:google-webrtc:1.0.+'
     implementation('com.facebook.react:react-native-webrtc:1.106.1-jitsi-12039821@aar')
     // Jitsi
-    // Note: version is 6.2.0, but built from the tag `android-sdk-6.2.2`.
-    api('org.jitsi.react:jitsi-meet-sdk:6.2.0') {
+    api('org.jitsi.react:jitsi-meet-sdk:10.2.0') {
         exclude group: 'com.google.firebase'
         exclude group: 'com.google.android.gms'
         exclude group: 'com.android.installreferrer'
@@ -263,13 +283,16 @@ dependencies {
         // The library exports a jetified artifact but doesn't remove the support library dependency
         // https://github.com/MatrixFrog/Android-ScalableVideoView/blob/master/gradle.properties#L1
         exclude group: 'com.android.support', module: 'appcompat-v7'
+
+        // transitive needed to pull in the react-native dependency
+        transitive = true
     }
 
     // QR-code
     // Stick to 3.3.3 because of https://github.com/zxing/zxing/issues/1170
     implementation 'com.google.zxing:core:3.3.3'
 
-    implementation (project(":library:external:barcodescanner:zxing"))
+    implementation project(":library:external:barcodescanner:zxing")
 
     // Emoji Keyboard
     api libs.vanniktech.emojiMaterial
@@ -283,6 +306,7 @@ dependencies {
     runtimeOnly(libs.jsonwebtoken.jjwtOrgjson) {
         exclude group: 'org.json', module: 'json' //provided by Android natively
     }
+    testImplementation(libs.jsonwebtoken.jjwtOrgjson)
     implementation 'commons-codec:commons-codec:1.15'
 
     // MapTiler
@@ -298,6 +322,7 @@ dependencies {
     testImplementation libs.tests.kluent
     testImplementation libs.mockk.mockk
     testImplementation libs.androidx.coreTesting
+    testImplementation libs.tests.robolectric
     // Plant Timber tree for test
     testImplementation libs.tests.timberJunitRule
     testImplementation libs.airbnb.mavericksTesting
@@ -309,7 +334,7 @@ dependencies {
     // Fix issue with Jitsi. Inspired from https://github.com/android/android-test/issues/861#issuecomment-872067868
     // Error was lots of `Duplicate class org.checkerframework.common.reflection.qual.MethodVal found in modules jetified-checker-3.1 (org.checkerframework:checker:3.1.1) and jetified-checker-qual-3.12.0 (org.checkerframework:checker-qual:3.12.0)
     //noinspection GradleDependency Cannot use latest 3.15.0 since it required min API 26.
-    implementation "org.checkerframework:checker:3.32.0"
+    implementation "org.checkerframework:checker:3.35.0"
 
     androidTestImplementation libs.androidx.testCore
     androidTestImplementation libs.androidx.testRunner
@@ -333,7 +358,7 @@ dependencies {
     androidTestUtil libs.androidx.orchestrator
     debugImplementation libs.androidx.fragmentTestingManifest
     androidTestImplementation libs.androidx.fragmentTesting
-    androidTestImplementation "org.jetbrains.kotlin:kotlin-reflect:1.8.10"
+    androidTestImplementation "org.jetbrains.kotlin:kotlin-reflect:1.8.21"
 
 
     // Onion Setup

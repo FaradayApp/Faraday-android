@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.list.home
@@ -26,16 +17,19 @@ import im.vector.app.features.home.room.list.RoomListListener
 import im.vector.app.features.home.room.list.RoomSummaryItemFactory
 import im.vector.app.features.home.room.list.RoomSummaryPlaceHolderItem_
 import im.vector.app.features.settings.FontScalePreferences
+import org.matrix.android.sdk.api.session.room.ResultBoundaries
 import org.matrix.android.sdk.api.session.room.members.ChangeMembershipState
 import org.matrix.android.sdk.api.session.room.model.RoomSummary
 import javax.inject.Inject
 
 class HomeFilteredRoomsController @Inject constructor(
         private val roomSummaryItemFactory: RoomSummaryItemFactory,
-        fontScalePreferences: FontScalePreferences
+        fontScalePreferences: FontScalePreferences,
+        roomSummaryRoomListDiffCallback: RoomSummaryRoomListDiffCallback,
 ) : PagedListEpoxyController<RoomSummary>(
         // Important it must match the PageList builder notify Looper
-        modelBuildingHandler = createUIHandler()
+        modelBuildingHandler = createUIHandler(),
+        itemDiffCallback = roomSummaryRoomListDiffCallback,
 ) {
 
     private var roomChangeMembershipStates: Map<String, ChangeMembershipState>? = null
@@ -50,6 +44,8 @@ class HomeFilteredRoomsController @Inject constructor(
     private var emptyStateData: StateView.State.Empty? = null
 
     private val shouldUseSingleLine: Boolean
+
+    var initialLoadOccurred = false
 
     init {
         val fontScale = fontScalePreferences.getResolvedFontScaleValue()
@@ -73,6 +69,15 @@ class HomeFilteredRoomsController @Inject constructor(
             }
         } else {
             super.addModels(models)
+        }
+    }
+
+    fun boundaryChange(boundary: ResultBoundaries) {
+        // Sometimes the room stays on empty state, need
+        val boundaryHasLoadedSomething = boundary.frontLoaded || boundary.zeroItemLoaded
+        if (initialLoadOccurred != boundaryHasLoadedSomething) {
+            initialLoadOccurred = boundaryHasLoadedSomething
+            requestForcedModelBuild()
         }
     }
 

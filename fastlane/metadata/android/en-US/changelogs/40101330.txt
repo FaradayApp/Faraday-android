@@ -1,0 +1,1 @@
+Fix app sometimes getting stuck in a restart loop when requesting notification permissions

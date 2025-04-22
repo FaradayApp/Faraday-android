@@ -1,28 +1,20 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.devtools
 
 import com.airbnb.epoxy.TypedEpoxyController
-import im.vector.app.R
 import im.vector.app.core.epoxy.noResultItem
 import im.vector.app.core.resources.ColorProvider
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.core.ui.list.genericItem
 import im.vector.lib.core.utils.epoxy.charsequence.toEpoxyCharSequence
+import im.vector.lib.strings.CommonPlurals
+import im.vector.lib.strings.CommonStrings
 import me.gujun.android.span.span
 import org.json.JSONObject
 import javax.inject.Inject
@@ -43,14 +35,14 @@ class RoomStateListController @Inject constructor(
                 if (stateEventsGroups.isEmpty()) {
                     noResultItem {
                         id("no state events")
-                        text(host.stringProvider.getString(R.string.no_result_placeholder))
+                        text(host.stringProvider.getString(CommonStrings.no_result_placeholder))
                     }
                 } else {
                     stateEventsGroups.forEach { entry ->
                         genericItem {
                             id(entry.key)
                             title(entry.key.toEpoxyCharSequence())
-                            description(host.stringProvider.getQuantityString(R.plurals.entries, entry.value.size, entry.value.size).toEpoxyCharSequence())
+                            description(host.stringProvider.getQuantityString(CommonPlurals.entries, entry.value.size, entry.value.size).toEpoxyCharSequence())
                             itemClickAction {
                                 host.interactionListener?.processAction(RoomDevToolAction.ShowStateEventType(entry.key))
                             }
@@ -63,7 +55,7 @@ class RoomStateListController @Inject constructor(
                 if (stateEvents.isEmpty()) {
                     noResultItem {
                         id("no state events")
-                        text(host.stringProvider.getString(R.string.no_result_placeholder))
+                        text(host.stringProvider.getString(CommonStrings.no_result_placeholder))
                     }
                 } else {
                     stateEvents.forEach { stateEvent ->
@@ -79,13 +71,13 @@ class RoomStateListController @Inject constructor(
                             title(span {
                                 +"Type: "
                                 span {
-                                    textColor = host.colorProvider.getColorFromAttribute(R.attr.vctr_content_secondary)
+                                    textColor = host.colorProvider.getColorFromAttribute(im.vector.lib.ui.styles.R.attr.vctr_content_secondary)
                                     text = "\"${stateEvent.type}\""
                                     textStyle = "normal"
                                 }
                                 +"\nState Key: "
                                 span {
-                                    textColor = host.colorProvider.getColorFromAttribute(R.attr.vctr_content_secondary)
+                                    textColor = host.colorProvider.getColorFromAttribute(im.vector.lib.ui.styles.R.attr.vctr_content_secondary)
                                     text = stateEvent.stateKey.let { "\"$it\"" }
                                     textStyle = "normal"
                                 }

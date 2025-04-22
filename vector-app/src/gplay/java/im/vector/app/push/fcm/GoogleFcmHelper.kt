@@ -1,17 +1,8 @@
 /*
- * Copyright 2018 New Vector Ltd
+ * Copyright 2018-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.push.fcm
 
@@ -23,11 +14,14 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.qualifiers.ApplicationContext
-import im.vector.app.R
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.di.DefaultPreferences
+import im.vector.app.core.dispatchers.CoroutineDispatchers
 import im.vector.app.core.pushers.FcmHelper
 import im.vector.app.core.pushers.PushersManager
+import im.vector.lib.strings.CommonStrings
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -38,7 +32,12 @@ import javax.inject.Inject
 class GoogleFcmHelper @Inject constructor(
         @ApplicationContext private val context: Context,
         @DefaultPreferences private val sharedPrefs: SharedPreferences,
+        appScope: CoroutineScope,
+        private val coroutineDispatchers: CoroutineDispatchers
 ) : FcmHelper {
+
+    private val scope = CoroutineScope(appScope.coroutineContext + coroutineDispatchers.io)
+
     companion object {
         private const val PREFS_KEY_FCM_TOKEN = "FCM_TOKEN"
     }
@@ -64,7 +63,9 @@ class GoogleFcmHelper @Inject constructor(
                         .addOnSuccessListener { token ->
                             storeFcmToken(token)
                             if (registerPusher) {
-                                pushersManager.enqueueRegisterPusherWithFcmKey(token)
+                                scope.launch {
+                                    pushersManager.enqueueRegisterPusherWithFcmKey(token)
+                                }
                             }
                         }
                         .addOnFailureListener { e ->
@@ -74,7 +75,7 @@ class GoogleFcmHelper @Inject constructor(
                 Timber.e(e, "## ensureFcmTokenIsRetrieved() : failed")
             }
         } else {
-            Toast.makeText(context, R.string.no_valid_google_play_services_apk, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, CommonStrings.no_valid_google_play_services_apk, Toast.LENGTH_SHORT).show()
             Timber.e("No valid Google Play Services found. Cannot use FCM.")
         }
     }

@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.detail.timeline.item
@@ -99,7 +90,7 @@ abstract class MessageFileItem : AbsMessageItem<MessageFileItem.Holder>() {
                 || attributes.informationData.messageLayout is TimelineMessageLayout.ScBubble) {
             Color.TRANSPARENT
         } else {
-            ThemeUtils.getColor(holder.view.context, R.attr.sc_message_bg_incoming)
+            ThemeUtils.getColor(holder.view.context, im.vector.lib.ui.styles.R.attr.sc_message_bg_incoming)
         }
         holder.mainLayout.backgroundTintList = ColorStateList.valueOf(backgroundTint)
         holder.filenameView.onClick(attributes.itemClickListener)
@@ -118,11 +109,11 @@ abstract class MessageFileItem : AbsMessageItem<MessageFileItem.Holder>() {
     override fun getViewStubMinimumWidth(holder: Holder): Int {
         // Guess text width for name and time
         // On first call, holder.fileImageView.width is not initialized yet
-        val imageWidth = holder.fileImageView.resources.getDimensionPixelSize(R.dimen.file_icon_size)
+        val imageWidth = holder.fileImageView.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.file_icon_size)
         val minimumWidthWithText =
                 ceil(guessTextWidth(holder.filenameView, filename)).toInt() +
                         imageWidth +
-                        holder.filenameView.resources.getDimensionPixelSize(R.dimen.sc_bubble_guess_minimum_width_padding)
+                        holder.filenameView.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.sc_bubble_guess_minimum_width_padding)
         val absoluteMinimumWidth = imageWidth*3
         return max(absoluteMinimumWidth, minimumWidthWithText)
     }

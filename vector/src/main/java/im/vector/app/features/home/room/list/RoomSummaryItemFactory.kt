@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.list
@@ -19,13 +10,12 @@ package im.vector.app.features.home.room.list
 import com.airbnb.mvrx.Async
 import com.airbnb.mvrx.Fail
 import com.airbnb.mvrx.Loading
-import im.vector.app.R
 import im.vector.app.core.date.DateFormatKind
 import im.vector.app.core.date.VectorDateFormatter
 import im.vector.app.core.epoxy.VectorEpoxyModel
 import im.vector.app.core.error.ErrorFormatter
 import im.vector.app.core.resources.StringProvider
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.home.RoomListDisplayMode
 import im.vector.app.features.home.room.detail.timeline.format.DisplayableEventFormatter
 import im.vector.app.features.home.room.list.usecase.GetLatestPreviewableEventUseCase
@@ -33,6 +23,8 @@ import im.vector.app.features.home.room.typing.TypingHelper
 import im.vector.app.features.voicebroadcast.isLive
 import im.vector.app.features.voicebroadcast.model.asVoiceBroadcastEvent
 import im.vector.lib.core.utils.epoxy.charsequence.toEpoxyCharSequence
+import im.vector.lib.strings.CommonPlurals
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.extensions.orFalse
 import org.matrix.android.sdk.api.session.room.members.ChangeMembershipState
 import org.matrix.android.sdk.api.session.room.model.Membership
@@ -83,12 +75,12 @@ class RoomSummaryItemFactory @Inject constructor(
                 .topic(spaceChildInfo.topic)
                 .errorLabel(
                         error?.let {
-                            stringProvider.getString(R.string.error_failed_to_join_room, errorFormatter.toHumanReadable(it))
+                            stringProvider.getString(CommonStrings.error_failed_to_join_room, errorFormatter.toHumanReadable(it))
                         }
                 )
                 .buttonLabel(
-                        if (error != null) stringProvider.getString(R.string.global_retry)
-                        else stringProvider.getString(R.string.action_join)
+                        if (error != null) stringProvider.getString(CommonStrings.global_retry)
+                        else stringProvider.getString(CommonStrings.action_join)
                 )
                 .loading(suggestedRoomJoiningStates[spaceChildInfo.childRoomId] is Loading)
                 .memberCount(spaceChildInfo.activeMemberCount ?: 0)
@@ -105,7 +97,7 @@ class RoomSummaryItemFactory @Inject constructor(
             roomSummary.inviterId
         } else {
             roomSummary.inviterId?.let {
-                stringProvider.getString(R.string.invited_by, it)
+                stringProvider.getString(CommonStrings.invited_by, it)
             }
         }
 
@@ -235,8 +227,8 @@ class RoomSummaryItemFactory @Inject constructor(
         when (val size = directParentNames.size) {
             0 -> null
             1 -> directParentNames.first()
-            2 -> stringProvider.getString(R.string.search_space_two_parents, directParentNames[0], directParentNames[1])
-            else -> stringProvider.getQuantityString(R.plurals.search_space_multiple_parents, size - 1, directParentNames[0], size - 1)
+            2 -> stringProvider.getString(CommonStrings.search_space_two_parents, directParentNames[0], directParentNames[1])
+            else -> stringProvider.getQuantityString(CommonPlurals.search_space_multiple_parents, size - 1, directParentNames[0], size - 1)
         }
     }
 }

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.notifications
@@ -19,8 +10,9 @@ package im.vector.app.features.notifications
 import android.graphics.Bitmap
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
-import im.vector.app.R
 import im.vector.app.core.resources.StringProvider
+import im.vector.lib.strings.CommonPlurals
+import im.vector.lib.strings.CommonStrings
 import me.gujun.android.span.Span
 import me.gujun.android.span.span
 import timber.log.Timber
@@ -49,9 +41,9 @@ class RoomGroupMessageCreator @Inject constructor(
         }
 
         val tickerText = if (roomIsGroup) {
-            stringProvider.getString(R.string.notification_ticker_text_group, roomName, events.last().senderName, events.last().description)
+            stringProvider.getString(CommonStrings.notification_ticker_text_group, roomName, events.last().senderName, events.last().description)
         } else {
-            stringProvider.getString(R.string.notification_ticker_text_dm, events.last().senderName, events.last().description)
+            stringProvider.getString(CommonStrings.notification_ticker_text_dm, events.last().senderName, events.last().description)
         }
 
         val largeBitmap = getRoomBitmap(events)
@@ -102,14 +94,19 @@ class RoomGroupMessageCreator @Inject constructor(
                         .build()
             }
             when {
-                event.isSmartReplyError() -> addMessage(stringProvider.getString(R.string.notification_inline_reply_failed), event.timestamp, senderPerson)
+                event.isSmartReplyError() -> addMessage(stringProvider.getString(CommonStrings.notification_inline_reply_failed), event.timestamp, senderPerson)
                 else -> {
-                    val message = NotificationCompat.MessagingStyle.Message(event.body, event.timestamp, senderPerson).also { message ->
+                    val body = event.filename.takeIf { event.imageUri != null } ?: event.body
+                    val message = NotificationCompat.MessagingStyle.Message(body, event.timestamp, senderPerson).also { message ->
                         event.imageUri?.let {
                             message.setData("image/", it)
                         }
                     }
                     addMessage(message)
+                    if (event.imageUri != null && !event.caption.isNullOrEmpty()) {
+                        val captionMessage = NotificationCompat.MessagingStyle.Message(event.caption, event.timestamp, senderPerson)
+                        addMessage(captionMessage)
+                    }
                 }
             }
         }
@@ -121,7 +118,7 @@ class RoomGroupMessageCreator @Inject constructor(
                 1 -> createFirstMessageSummaryLine(events.first(), roomName, roomIsDirect)
                 else -> {
                     stringProvider.getQuantityString(
-                            R.plurals.notification_compat_summary_line_for_room,
+                            CommonPlurals.notification_compat_summary_line_for_room,
                             events.size,
                             roomName,
                             events.size

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.detail.widget
@@ -23,7 +14,6 @@ import android.view.ViewGroup
 import com.airbnb.mvrx.parentFragmentViewModel
 import com.airbnb.mvrx.withState
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.cleanup
 import im.vector.app.core.extensions.configureWith
 import im.vector.app.core.platform.VectorBaseBottomSheetDialogFragment
@@ -33,6 +23,7 @@ import im.vector.app.features.home.room.detail.RoomDetailAction
 import im.vector.app.features.home.room.detail.RoomDetailViewState
 import im.vector.app.features.home.room.detail.TimelineViewModel
 import im.vector.app.features.navigation.Navigator
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.session.widgets.model.Widget
 import javax.inject.Inject
 
@@ -57,9 +48,9 @@ class RoomWidgetsBottomSheet :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         views.bottomSheetRecyclerView.configureWith(epoxyController, hasFixedSize = false)
-        views.bottomSheetTitle.text = getString(R.string.active_widgets_title)
+        views.bottomSheetTitle.text = getString(CommonStrings.active_widgets_title)
         views.bottomSheetTitle.textSize = 20f
-        views.bottomSheetTitle.setTextColor(colorProvider.getColorFromAttribute(R.attr.vctr_content_primary))
+        views.bottomSheetTitle.setTextColor(colorProvider.getColorFromAttribute(im.vector.lib.ui.styles.R.attr.vctr_content_primary))
         epoxyController.listener = this
         timelineViewModel.onAsync(RoomDetailViewState::activeRoomWidgets) {
             epoxyController.setData(it)

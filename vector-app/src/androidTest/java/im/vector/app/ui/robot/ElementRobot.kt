@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.ui.robot
@@ -49,6 +40,7 @@ import im.vector.app.ui.robot.settings.labs.LabFeature
 import im.vector.app.ui.robot.settings.labs.LabFeaturesPreferences
 import im.vector.app.ui.robot.space.SpaceRobot
 import im.vector.app.withIdlingResource
+import im.vector.lib.strings.CommonStrings
 import timber.log.Timber
 
 class ElementRobot(
@@ -100,7 +92,7 @@ class ElementRobot(
         openActionBarOverflowOrOptionsMenu(
                 ApplicationProvider.getApplicationContext()
         )
-        clickOn(R.string.home_layout_preferences)
+        clickOn(CommonStrings.home_layout_preferences)
         waitUntilDialogVisible(withId(R.id.home_layout_settings_recents))
 
         block(LayoutPreferencesRobot())
@@ -149,7 +141,7 @@ class ElementRobot(
             LabFeature.THREAD_MESSAGES -> {
                 settings(shouldGoBack = false) {
                     labs(shouldGoBack = false) {
-                        onView(withText(R.string.labs_enable_thread_messages))
+                        onView(withText(CommonStrings.labs_enable_thread_messages))
                                 .check(ViewAssertions.matches(isDisplayed()))
                                 .perform(ViewActions.closeSoftKeyboard(), click())
                     }
@@ -185,9 +177,9 @@ class ElementRobot(
             onView(withId((R.id.avatar)))
                     .perform(click())
             waitUntilActivityVisible<VectorSettingsActivity> {
-                clickOn(R.string.settings_general_title)
+                clickOn(CommonStrings.settings_general_title)
             }
-            clickOnPreference(R.string.action_sign_out)
+            clickOnPreference(CommonStrings.action_sign_out)
         } else {
             clickOn(R.id.groupToolbarAvatarImageView)
             clickOn(R.id.homeDrawerHeaderSignoutView)

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.call.webrtc
@@ -21,6 +12,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import im.vector.app.ActiveSessionDataSource
 import im.vector.app.core.pushers.UnifiedPushHelper
+import im.vector.app.core.resources.StringProvider
 import im.vector.app.core.services.CallAndroidService
 import im.vector.app.features.analytics.AnalyticsTracker
 import im.vector.app.features.analytics.plan.CallEnded
@@ -32,8 +24,11 @@ import im.vector.app.features.call.lookup.CallUserMapper
 import im.vector.app.features.call.utils.EglUtils
 import im.vector.app.features.call.vectorCallService
 import im.vector.app.features.session.coroutineScope
+import im.vector.app.features.settings.VectorPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.matrix.android.sdk.api.extensions.orFalse
 import org.matrix.android.sdk.api.extensions.tryOrNull
 import org.matrix.android.sdk.api.logger.LoggerTag
@@ -74,6 +69,8 @@ class WebRtcCallManager @Inject constructor(
         private val analyticsTracker: AnalyticsTracker,
         private val unifiedPushHelper: UnifiedPushHelper,
         private val voipConfig: VoipConfig,
+        private var vectorPreferences: VectorPreferences,
+        private val stringProvider: StringProvider,
 ) : CallListener,
         DefaultLifecycleObserver {
 
@@ -137,6 +134,7 @@ class WebRtcCallManager @Inject constructor(
     private val rootEglBase by lazy { EglUtils.rootEglBase }
 
     private var isInBackground: Boolean = true
+    private var syncStartedWhenInBackground: Boolean = false
 
     override fun onResume(owner: LifecycleOwner) {
         isInBackground = false
@@ -272,13 +270,15 @@ class WebRtcCallManager @Inject constructor(
             peerConnectionFactory = null
             audioManager.setMode(CallAudioManager.Mode.DEFAULT)
             // did we start background sync? so we should stop it
-            if (isInBackground) {
+            if (syncStartedWhenInBackground) {
                 if (!unifiedPushHelper.doesBackgroundSync()) {
+                    Timber.tag(loggerTag.value).v("Sync started when in background, stop it")
                     currentSession?.syncService()?.stopAnyBackgroundSync()
                 } else {
                     // for fdroid we should not stop, it should continue syncing
                     // maybe we should restore default timeout/delay though?
                 }
+                syncStartedWhenInBackground = false
             }
         }
     }
@@ -336,7 +336,9 @@ class WebRtcCallManager @Inject constructor(
                 },
                 sessionProvider = { currentSession },
                 onCallBecomeActive = this::onCallActive,
-                onCallEnded = this::onCallEnded
+                onCallEnded = this::onCallEnded,
+                vectorPreferences = vectorPreferences,
+                stringProvider = stringProvider
         )
         advertisedCalls.add(mxCall.callId)
         callsByCallId[mxCall.callId] = webRtcCall
@@ -381,9 +383,18 @@ class WebRtcCallManager @Inject constructor(
         if (isInBackground) {
             if (!unifiedPushHelper.doesBackgroundSync()) {
                 // only for push version as fdroid version is already doing it?
+                syncStartedWhenInBackground = true
                 currentSession?.syncService()?.startAutomaticBackgroundSync(30, 0)
             } else {
                 // Maybe increase sync freq? but how to set back to default values?
+            }
+        }
+
+        // ensure the incoming call will not ring forever
+        sessionScope?.launch {
+            delay(2 * 60 * 1000 /* 2 minutes */)
+            if (mxCall.state is CallState.LocalRinging) {
+                onCallEnded(mxCall.callId, EndCallReason.INVITE_TIMEOUT, rejected = false)
             }
         }
     }

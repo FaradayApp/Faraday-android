@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.media
@@ -20,7 +11,6 @@ import android.graphics.Color
 import android.net.Uri
 import com.yalantis.ucrop.UCrop
 import com.yalantis.ucrop.UCropActivity
-import im.vector.app.R
 import im.vector.app.core.resources.ColorProvider
 
 fun createUCropWithDefaultSettings(
@@ -39,16 +29,15 @@ fun createUCropWithDefaultSettings(
                                         /* tabAspectRatio = */ UCropActivity.SCALE
                                 )
                                 setToolbarTitle(toolbarTitle)
-                                // Disable freestyle crop, usability was not easy
-                                // setFreeStyleCropEnabled(true)
+                                setFreeStyleCropEnabled(true)
                                 // Color used for toolbar icon and text
                                 setToolbarColor(colorProvider.getColorFromAttribute(android.R.attr.colorBackground))
-                                setToolbarWidgetColor(colorProvider.getColorFromAttribute(R.attr.vctr_content_primary))
+                                setToolbarWidgetColor(colorProvider.getColorFromAttribute(im.vector.lib.ui.styles.R.attr.vctr_content_primary))
                                 // Background
                                 setRootViewBackgroundColor(colorProvider.getColorFromAttribute(android.R.attr.colorBackground))
                                 // Status bar color (pb in dark mode, icon of the status bar are dark)
-                                setStatusBarColor(colorProvider.getColor(R.color.android_status_bar_background_light))
-                                setActiveControlsWidgetColor(colorProvider.getColorFromAttribute(R.attr.colorPrimary))
+                                setStatusBarColor(colorProvider.getColor(im.vector.lib.ui.styles.R.color.android_status_bar_background_light))
+                                setActiveControlsWidgetColor(colorProvider.getColorFromAttribute(com.google.android.material.R.attr.colorPrimary))
                                 // Hide the logo (does not work)
                                 setLogoColor(Color.TRANSPARENT)
                             }

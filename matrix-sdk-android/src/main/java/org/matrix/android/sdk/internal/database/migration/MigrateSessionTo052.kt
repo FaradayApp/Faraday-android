@@ -17,6 +17,7 @@
 package org.matrix.android.sdk.internal.database.migration
 
 import io.realm.DynamicRealm
+import org.matrix.android.sdk.internal.database.model.EventEntityFields
 import org.matrix.android.sdk.internal.database.model.SyncEntity
 import org.matrix.android.sdk.internal.database.model.SyncEntityFields
 import org.matrix.android.sdk.internal.util.database.RealmMigrator
@@ -28,7 +29,9 @@ internal class MigrateSessionTo052(realm: DynamicRealm) : RealmMigrator(realm, 5
                 ?.removeField(SyncEntityFields.ID)
                 ?.addField(SyncEntityFields.USER_ID, String::class.java)
                 ?.addPrimaryKey(SyncEntityFields.USER_ID)
-
+                ?.addField(EventEntityFields.IS_VERIFICATION_STATE_DIRTY, Boolean::class.java)
+                ?.setNullable(EventEntityFields.IS_VERIFICATION_STATE_DIRTY, true)
         realm.delete("SyncEntity")
+
     }
 }

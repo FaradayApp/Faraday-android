@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings.ignored
@@ -26,12 +17,12 @@ import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.cleanup
 import im.vector.app.core.extensions.configureWith
 import im.vector.app.core.platform.VectorBaseFragment
 import im.vector.app.databinding.FragmentGenericRecyclerBinding
 import im.vector.app.features.analytics.plan.MobileScreen
+import im.vector.lib.strings.CommonStrings
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -55,7 +46,7 @@ class VectorSettingsIgnoredUsersFragment :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        views.waitingView.waitingStatusText.setText(R.string.please_wait)
+        views.waitingView.waitingStatusText.setText(CommonStrings.please_wait)
         views.waitingView.waitingStatusText.isVisible = true
         ignoredUsersController.callback = this
         views.genericRecyclerView.configureWith(ignoredUsersController)
@@ -77,17 +68,17 @@ class VectorSettingsIgnoredUsersFragment :
     override fun onResume() {
         super.onResume()
 
-        (activity as? AppCompatActivity)?.supportActionBar?.setTitle(R.string.settings_ignored_users)
+        (activity as? AppCompatActivity)?.supportActionBar?.setTitle(CommonStrings.settings_ignored_users)
     }
 
     override fun onUserIdClicked(userId: String) {
         MaterialAlertDialogBuilder(requireActivity())
-                .setTitle(R.string.room_participants_action_unignore_title)
-                .setMessage(getString(R.string.settings_unignore_user, userId))
-                .setPositiveButton(R.string.unignore) { _, _ ->
+                .setTitle(CommonStrings.room_participants_action_unignore_title)
+                .setMessage(getString(CommonStrings.settings_unignore_user, userId))
+                .setPositiveButton(CommonStrings.unignore) { _, _ ->
                     viewModel.handle(IgnoredUsersAction.UnIgnore(userId))
                 }
-                .setNegativeButton(R.string.action_cancel, null)
+                .setNegativeButton(CommonStrings.action_cancel, null)
                 .show()
     }
 

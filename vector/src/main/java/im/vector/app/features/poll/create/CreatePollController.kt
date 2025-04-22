@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.poll.create
@@ -28,6 +19,7 @@ import im.vector.app.core.ui.list.genericItem
 import im.vector.app.features.form.formEditTextItem
 import im.vector.app.features.form.formEditTextWithDeleteItem
 import im.vector.lib.core.utils.epoxy.charsequence.toEpoxyCharSequence
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.session.room.model.message.PollType
 import javax.inject.Inject
 
@@ -51,7 +43,7 @@ class CreatePollController @Inject constructor(
         genericItem {
             id("poll_type_title")
             style(ItemStyle.BIG_TEXT)
-            title(host.stringProvider.getString(R.string.poll_type_title).toEpoxyCharSequence())
+            title(host.stringProvider.getString(CommonStrings.poll_type_title).toEpoxyCharSequence())
         }
 
         pollTypeSelectionItem {
@@ -71,7 +63,7 @@ class CreatePollController @Inject constructor(
         genericItem {
             id("question_title")
             style(ItemStyle.BIG_TEXT)
-            title(host.stringProvider.getString(R.string.create_poll_question_title).toEpoxyCharSequence())
+            title(host.stringProvider.getString(CommonStrings.create_poll_question_title).toEpoxyCharSequence())
         }
 
         val questionImeAction = if (currentState.options.isEmpty()) EditorInfo.IME_ACTION_DONE else EditorInfo.IME_ACTION_NEXT
@@ -79,7 +71,7 @@ class CreatePollController @Inject constructor(
         formEditTextItem {
             id("question")
             value(currentState.question)
-            hint(host.stringProvider.getString(R.string.create_poll_question_hint))
+            hint(host.stringProvider.getString(CommonStrings.create_poll_question_hint))
             singleLine(true)
             imeOptions(questionImeAction)
             maxLength(340)
@@ -91,7 +83,7 @@ class CreatePollController @Inject constructor(
         genericItem {
             id("options_title")
             style(ItemStyle.BIG_TEXT)
-            title(host.stringProvider.getString(R.string.create_poll_options_title).toEpoxyCharSequence())
+            title(host.stringProvider.getString(CommonStrings.create_poll_options_title).toEpoxyCharSequence())
         }
 
         currentState.options.forEachIndexed { index, option ->
@@ -99,7 +91,7 @@ class CreatePollController @Inject constructor(
             formEditTextWithDeleteItem {
                 id("option_$index")
                 value(option)
-                hint(host.stringProvider.getString(R.string.create_poll_options_hint, (index + 1)))
+                hint(host.stringProvider.getString(CommonStrings.create_poll_options_hint, (index + 1)))
                 singleLine(true)
                 imeOptions(imeOptions)
                 maxLength(340)
@@ -115,8 +107,8 @@ class CreatePollController @Inject constructor(
         if (currentState.canAddMoreOptions) {
             genericButtonItem {
                 id("add_option")
-                text(host.stringProvider.getString(R.string.create_poll_add_option))
-                textColor(host.colorProvider.getColorFromAttribute(R.attr.colorAccent))
+                text(host.stringProvider.getString(CommonStrings.create_poll_add_option))
+                textColor(host.colorProvider.getColorFromAttribute(com.google.android.material.R.attr.colorAccent))
                 gravity(Gravity.START)
                 bold(true)
                 highlight(false)

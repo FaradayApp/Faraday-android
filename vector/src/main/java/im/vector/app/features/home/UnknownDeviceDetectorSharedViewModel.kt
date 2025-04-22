@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home
@@ -39,8 +30,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
-import org.matrix.android.sdk.api.NoOpMatrixCallback
-import org.matrix.android.sdk.api.extensions.orFalse
+import org.matrix.android.sdk.api.extensions.tryOrNull
 import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.session.crypto.model.DeviceInfo
 import org.matrix.android.sdk.api.session.getUserOrDefault
@@ -92,26 +82,38 @@ class UnknownDeviceDetectorSharedViewModel @AssistedInject constructor(
     }
 
     init {
-        val currentSessionTs = session.cryptoService().getCryptoDeviceInfo(session.myUserId)
-                .firstOrNull { it.deviceId == session.sessionParams.deviceId }
-                ?.firstTimeSeenLocalTs
-                ?: clock.epochMillis()
-        Timber.v("## Detector - Current Session first time seen $currentSessionTs")
 
         combine(
                 session.flow().liveUserCryptoDevices(session.myUserId),
                 session.flow().liveMyDevicesInfo(),
-                session.flow().liveCrossSigningPrivateKeys()
+                session.flow().liveCrossSigningPrivateKeys(),
         ) { cryptoList, infoList, pInfo ->
-            //                    Timber.v("## Detector trigger ${cryptoList.map { "${it.deviceId} ${it.trustLevel}" }}")
-//                    Timber.v("## Detector trigger canCrossSign ${pInfo.get().selfSigned != null}")
+            Timber.v("## Detector trigger ${cryptoList.map { "${it.deviceId} ${it.trustLevel}" }}")
+            Timber.v("## Detector trigger canCrossSign ${pInfo.get().selfSigned != null}")
 
             deleteUnusedClientInformation(infoList)
 
+            val currentSessionTs = session.cryptoService().getCryptoDeviceInfo(session.myUserId)
+                    .firstOrNull { it.deviceId == session.sessionParams.deviceId }
+                    ?.firstTimeSeenLocalTs
+                    ?: clock.epochMillis()
+            Timber.v("## Detector - Current Session first time seen $currentSessionTs")
+
             infoList
+                    .asSequence()
+                    .filter {
+                        // filter out own device
+                        session.sessionParams.deviceId != it.deviceId
+                    }
                     .filter { info ->
-                        // filter out verified sessions or those which do not support encryption (i.e. without crypto info)
-                        cryptoList.firstOrNull { info.deviceId == it.deviceId }?.isVerified?.not().orFalse()
+                        val matchingDeviceWithKeys = cryptoList.firstOrNull { it.deviceId == info.deviceId }
+                        if (matchingDeviceWithKeys == null) {
+                            // filter out verified sessions or those which do not support encryption (i.e. without crypto info)
+                            false
+                        } else {
+                            // Only report unverified
+                            !matchingDeviceWithKeys.isVerified
+                        }
                     }
                     // filter out ignored devices
                     .filter { shouldShowUnverifiedSessionsAlertUseCase.execute(it.deviceId) }
@@ -126,10 +128,11 @@ class UnknownDeviceDetectorSharedViewModel @AssistedInject constructor(
                                 pInfo.getOrNull()?.selfSigned != null // adding this to pass distinct when cross sign change
                         )
                     }
+                    .toList()
         }
                 .distinctUntilChanged()
                 .execute { async ->
-                    //                    Timber.v("## Detector trigger passed distinct")
+                    Timber.v("## Detector trigger passed distinct ${async.invoke()}")
                     copy(
                             myMatrixItem = session.getUserOrDefault(session.myUserId).toMatrixItem(),
                             unknownSessions = async
@@ -141,12 +144,14 @@ class UnknownDeviceDetectorSharedViewModel @AssistedInject constructor(
                 .sample(5_000)
                 .onEach {
                     // If we have a new crypto device change, we might want to trigger refresh of device info
-                    session.cryptoService().fetchDevicesList(NoOpMatrixCallback())
+                    tryOrNull { session.cryptoService().fetchDevicesList() }
                 }
                 .launchIn(viewModelScope)
 
         // trigger a refresh of lastSeen / last Ip
-        session.cryptoService().fetchDevicesList(NoOpMatrixCallback())
+        viewModelScope.launch {
+            tryOrNull { session.cryptoService().fetchDevicesList() }
+        }
     }
 
     private fun deleteUnusedClientInformation(deviceFullInfoList: List<DeviceInfo>) {

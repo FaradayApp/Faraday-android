@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.ui.robot.settings
@@ -19,31 +10,31 @@ package im.vector.app.ui.robot.settings
 import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import com.adevinta.android.barista.interaction.BaristaClickInteractions.clickOn
-import im.vector.app.R
 import im.vector.app.espresso.tools.clickOnPreference
 import im.vector.app.espresso.tools.waitUntilViewVisible
+import im.vector.lib.strings.CommonStrings
 
 class SettingsAdvancedRobot {
 
     fun crawl() {
-        clickOnPreference(R.string.settings_notifications_targets)
+        clickOnPreference(CommonStrings.settings_notifications_targets)
         pressBack()
 
-        clickOnPreference(R.string.settings_push_rules)
+        clickOnPreference(CommonStrings.settings_push_rules)
         pressBack()
     }
 
     fun toggleDeveloperMode() {
-        clickOn(R.string.settings_developer_mode_summary)
+        clickOn(CommonStrings.settings_developer_mode_summary)
     }
 
     fun crawlDeveloperOptions() {
-        clickOnPreference(R.string.settings_account_data)
+        clickOnPreference(CommonStrings.settings_account_data)
         waitUntilViewVisible(withText("m.push_rules"))
         clickOn("m.push_rules")
         pressBack()
         pressBack()
-        clickOnPreference(R.string.settings_key_requests)
+        clickOnPreference(CommonStrings.settings_key_requests)
         pressBack()
     }
 }

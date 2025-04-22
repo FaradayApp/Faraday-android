@@ -23,6 +23,6 @@ import com.squareup.moshi.JsonClass
 internal data class GetLoginResponse(
         @Json(name = "user_id") val userId: String,
         @Json(name = "access_token") val accessToken: String,
-        @Json(name = "home_server") val homeServer: String,
-        @Json(name = "device_id") val deviceId: String
+        @Json(name = "device_id") val deviceId: String,
+        @Json(name = "home_server") val homeServer: String? = null,
 )

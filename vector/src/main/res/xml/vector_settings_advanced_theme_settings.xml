@@ -16,6 +16,8 @@
             android:entries="@array/sc_accent_color_light_entries"
             android:entryValues="@array/sc_accent_color_light_values"
             android:defaultValue="green"
+            app:iconSpaceReserved="true"
+            app:allowDividerAbove="false"
             app:entryPreviews="@array/sc_accent_color_light_previews" />
 
         <de.spiritcroc.preference.ColorMatrixListPreference
@@ -25,6 +27,8 @@
             android:entries="@array/sc_accent_color_dark_entries"
             android:entryValues="@array/sc_accent_color_dark_values"
             android:defaultValue="green"
+            app:iconSpaceReserved="true"
+            app:allowDividerAbove="false"
             app:entryPreviews="@array/sc_accent_color_dark_previews" />
 
     </im.vector.app.core.preference.VectorPreferenceCategory>

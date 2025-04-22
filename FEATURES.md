@@ -7,7 +7,6 @@ Here you can find some extra features and changes compared to Element Android (w
 - SchildiChat light, dark and black themes with multiple choices for accent colors
 - Possibility to color usernames by power level, allowing for different settings depending on whether it's a public chat, a group chat or a direct chat
 - Possibility to select themes for both light and dark system mode individually
-- [UnifiedPush](https://unifiedpush.org/) support
 - "Easy mode" which disables public room functionality
 - Floating date
 - Setting for room previews: show all events, hide membership changes, hide membership changes and reactions (individual settings for direct chats and groups)
@@ -31,10 +30,11 @@ Here you can find some extra features and changes compared to Element Android (w
 - Setting to hide start call buttons from the room's toolbar
 - Render inline images / custom emojis in the timeline
 - Allow sending custom emotes (and partly stickers), if they have been set up with another compatible client ([MSC2545](https://github.com/matrix-org/matrix-spec-proposals/pull/2545))
-- Render image reactions
+- Render image reactions ([MSC3746](https://github.com/matrix-org/matrix-spec-proposals/pull/3746) / [MSC4027](https://github.com/matrix-org/matrix-spec-proposals/pull/4027))
 - Send freeform reactions
 - Render media captions ([MSC2530](https://github.com/matrix-org/matrix-spec-proposals/pull/2530))
 - Escape @room in the reply fallback to avoid unintentional room pings when replying
+- Render sticker body in room/thread preview
 
 - Branding (name, app icon, links)
 - Show a toast instead of a snackbar after copying text, in order to not block the input area right after copying
@@ -49,6 +49,7 @@ Here you can find some extra features and changes compared to Element Android (w
 - Emoji-only messages with increased size: also for messages that have spaces between emojis
 - Also fallback to other user's avatar for 2-person-rooms not marked as DM
 - Pass theme to stickerpicker (tested with maunium-stickerpicker)
+- Allow using the matrix.org TURN server as a fallback (until this feature is [merged](https://github.com/vector-im/element-android/pull/5781) into Element), contributed by [CicadaCinema](https://github.com/CicadaCinema)
 - ...
 - Sometimes bug fixes for issues in Element, when found during internal testing
 - Sometimes additional bugs ;)

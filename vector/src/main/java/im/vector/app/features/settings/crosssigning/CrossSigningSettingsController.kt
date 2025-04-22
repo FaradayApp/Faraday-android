@@ -1,17 +1,8 @@
 /*
- * Copyright 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.settings.crosssigning
 
@@ -25,6 +16,7 @@ import im.vector.app.core.ui.list.genericPositiveButtonItem
 import im.vector.app.core.ui.list.genericWithValueItem
 import im.vector.app.core.utils.DimensionConverter
 import im.vector.lib.core.utils.epoxy.charsequence.toEpoxyCharSequence
+import im.vector.lib.strings.CommonStrings
 import me.gujun.android.span.span
 import javax.inject.Inject
 
@@ -48,11 +40,11 @@ class CrossSigningSettingsController @Inject constructor(
                 genericItem {
                     id("can")
                     titleIconResourceId(R.drawable.ic_shield_trusted)
-                    title(host.stringProvider.getString(R.string.encryption_information_dg_xsigning_complete).toEpoxyCharSequence())
+                    title(host.stringProvider.getString(CommonStrings.encryption_information_dg_xsigning_complete).toEpoxyCharSequence())
                 }
                 genericButtonItem {
                     id("Reset")
-                    text(host.stringProvider.getString(R.string.reset_cross_signing))
+                    text(host.stringProvider.getString(CommonStrings.reset_cross_signing))
                     buttonClickAction {
                         host.interactionListener?.didTapInitializeCrossSigning()
                     }
@@ -62,11 +54,11 @@ class CrossSigningSettingsController @Inject constructor(
                 genericItem {
                     id("trusted")
                     titleIconResourceId(R.drawable.ic_shield_custom)
-                    title(host.stringProvider.getString(R.string.encryption_information_dg_xsigning_trusted).toEpoxyCharSequence())
+                    title(host.stringProvider.getString(CommonStrings.encryption_information_dg_xsigning_trusted).toEpoxyCharSequence())
                 }
                 genericButtonItem {
                     id("Reset")
-                    text(host.stringProvider.getString(R.string.reset_cross_signing))
+                    text(host.stringProvider.getString(CommonStrings.reset_cross_signing))
                     buttonClickAction {
                         host.interactionListener?.didTapInitializeCrossSigning()
                     }
@@ -76,11 +68,11 @@ class CrossSigningSettingsController @Inject constructor(
                 genericItem {
                     id("enable")
                     titleIconResourceId(R.drawable.ic_shield_black)
-                    title(host.stringProvider.getString(R.string.encryption_information_dg_xsigning_not_trusted).toEpoxyCharSequence())
+                    title(host.stringProvider.getString(CommonStrings.encryption_information_dg_xsigning_not_trusted).toEpoxyCharSequence())
                 }
                 genericButtonItem {
                     id("Reset")
-                    text(host.stringProvider.getString(R.string.reset_cross_signing))
+                    text(host.stringProvider.getString(CommonStrings.reset_cross_signing))
                     buttonClickAction {
                         host.interactionListener?.didTapInitializeCrossSigning()
                     }
@@ -89,12 +81,12 @@ class CrossSigningSettingsController @Inject constructor(
             else -> {
                 genericItem {
                     id("not")
-                    title(host.stringProvider.getString(R.string.encryption_information_dg_xsigning_disabled).toEpoxyCharSequence())
+                    title(host.stringProvider.getString(CommonStrings.encryption_information_dg_xsigning_disabled).toEpoxyCharSequence())
                 }
 
                 genericPositiveButtonItem {
                     id("Initialize")
-                    text(host.stringProvider.getString(R.string.initialize_cross_signing))
+                    text(host.stringProvider.getString(CommonStrings.initialize_cross_signing))
                     buttonClickAction {
                         host.interactionListener?.didTapInitializeCrossSigning()
                     }
@@ -113,7 +105,7 @@ class CrossSigningSettingsController @Inject constructor(
                             +"Master Key:\n"
                             span {
                                 text = it.unpaddedBase64PublicKey ?: ""
-                                textColor = host.colorProvider.getColorFromAttribute(R.attr.vctr_content_secondary)
+                                textColor = host.colorProvider.getColorFromAttribute(im.vector.lib.ui.styles.R.attr.vctr_content_secondary)
                                 textSize = host.dimensionConverter.spToPx(12)
                             }
                         }.toEpoxyCharSequence()
@@ -129,7 +121,7 @@ class CrossSigningSettingsController @Inject constructor(
                             +"User Key:\n"
                             span {
                                 text = it.unpaddedBase64PublicKey ?: ""
-                                textColor = host.colorProvider.getColorFromAttribute(R.attr.vctr_content_secondary)
+                                textColor = host.colorProvider.getColorFromAttribute(im.vector.lib.ui.styles.R.attr.vctr_content_secondary)
                                 textSize = host.dimensionConverter.spToPx(12)
                             }
                         }.toEpoxyCharSequence()
@@ -145,7 +137,7 @@ class CrossSigningSettingsController @Inject constructor(
                             +"Self Signed Key:\n"
                             span {
                                 text = it.unpaddedBase64PublicKey ?: ""
-                                textColor = host.colorProvider.getColorFromAttribute(R.attr.vctr_content_secondary)
+                                textColor = host.colorProvider.getColorFromAttribute(im.vector.lib.ui.styles.R.attr.vctr_content_secondary)
                                 textSize = host.dimensionConverter.spToPx(12)
                             }
                         }.toEpoxyCharSequence()

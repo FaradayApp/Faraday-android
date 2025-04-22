@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.navigation
@@ -26,6 +17,8 @@ import im.vector.app.test.fakes.FakeVectorFeatures
 import im.vector.app.test.fakes.FakeVectorPreferences
 import im.vector.app.test.fakes.FakeWidgetArgsBuilder
 import im.vector.app.test.fixtures.RoomSummaryFixture.aRoomSummary
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import org.junit.Test
 
 internal class DefaultNavigatorTest {
@@ -38,6 +31,7 @@ internal class DefaultNavigatorTest {
     private val features = FakeVectorFeatures()
     private val analyticsTracker = FakeAnalyticsTracker()
     private val debugNavigator = FakeDebugNavigator()
+    private val coroutineScope = CoroutineScope(SupervisorJob())
 
     private val navigator = DefaultNavigator(
             sessionHolder.instance,
@@ -46,6 +40,7 @@ internal class DefaultNavigatorTest {
             spaceStateHandler,
             supportedVerificationMethodsProvider.instance,
             features,
+            coroutineScope,
             analyticsTracker,
             debugNavigator,
     )

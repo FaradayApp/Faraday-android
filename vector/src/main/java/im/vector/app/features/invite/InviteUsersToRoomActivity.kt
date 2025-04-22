@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.invite
@@ -37,10 +28,12 @@ import im.vector.app.core.utils.onPermissionDeniedSnackbar
 import im.vector.app.core.utils.registerForPermissionsResult
 import im.vector.app.core.utils.toast
 import im.vector.app.features.contactsbook.ContactsBookFragment
+import im.vector.app.features.userdirectory.PendingSelection
 import im.vector.app.features.userdirectory.UserListFragment
 import im.vector.app.features.userdirectory.UserListFragmentArgs
 import im.vector.app.features.userdirectory.UserListSharedAction
 import im.vector.app.features.userdirectory.UserListSharedActionViewModel
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.parcelize.Parcelize
@@ -81,7 +74,7 @@ class InviteUsersToRoomActivity : SimpleFragmentActivity() {
                     views.container,
                     UserListFragment::class.java,
                     UserListFragmentArgs(
-                            title = getString(R.string.invite_users_to_room_title),
+                            title = getString(CommonStrings.invite_users_to_room_title),
                             menuResId = R.menu.vector_invite_users_to_room,
                             submitMenuItemId = R.id.action_invite_users_to_room_invite,
                             excludedUserIds = viewModel.getUserIdsOfRoomMembers(),
@@ -94,7 +87,19 @@ class InviteUsersToRoomActivity : SimpleFragmentActivity() {
     }
 
     private fun handleOnMenuItemSubmitClick(action: UserListSharedAction.OnMenuItemSubmitClick) {
-        viewModel.handle(InviteUsersToRoomAction.InviteSelectedUsers(action.selections))
+        val unknownUsers = action.selections.filter { it is PendingSelection.UserPendingSelection && it.isUnknownUser }
+        if (unknownUsers.isEmpty()) {
+            viewModel.handle(InviteUsersToRoomAction.InviteSelectedUsers(action.selections))
+        } else {
+            MaterialAlertDialogBuilder(this)
+                    .setTitle(CommonStrings.dialog_title_confirmation)
+                    .setMessage(getString(CommonStrings.invite_unknown_users_dialog_content, unknownUsers.joinToString("\n • ", " • ") { it.getMxId() }))
+                    .setPositiveButton(CommonStrings.invite_unknown_users_dialog_submit) { _, _ ->
+                        viewModel.handle(InviteUsersToRoomAction.InviteSelectedUsers(action.selections))
+                    }
+                    .setNegativeButton(CommonStrings.action_cancel, null)
+                    .show()
+        }
     }
 
     private fun openPhoneBook() {
@@ -108,7 +113,7 @@ class InviteUsersToRoomActivity : SimpleFragmentActivity() {
         if (allGranted) {
             doOnPostResume { addFragmentToBackstack(views.container, ContactsBookFragment::class.java) }
         } else if (deniedPermanently) {
-            onPermissionDeniedSnackbar(R.string.permissions_denied_add_contact)
+            onPermissionDeniedSnackbar(CommonStrings.permissions_denied_add_contact)
         }
     }
 
@@ -121,20 +126,20 @@ class InviteUsersToRoomActivity : SimpleFragmentActivity() {
     }
 
     private fun renderInviteLoading() {
-        updateWaitingView(WaitingViewData(getString(R.string.inviting_users_to_room)))
+        updateWaitingView(WaitingViewData(getString(CommonStrings.inviting_users_to_room)))
     }
 
     private fun renderInviteFailure(error: Throwable) {
         hideWaitingView()
         val message = if (error is Failure.ServerError && error.httpCode == HttpURLConnection.HTTP_INTERNAL_ERROR /*500*/) {
             // This error happen if the invited userId does not exist.
-            getString(R.string.invite_users_to_room_failure)
+            getString(CommonStrings.invite_users_to_room_failure)
         } else {
             errorFormatter.toHumanReadable(error)
         }
         MaterialAlertDialogBuilder(this)
                 .setMessage(message)
-                .setPositiveButton(R.string.ok, null)
+                .setPositiveButton(CommonStrings.ok, null)
                 .show()
     }
 

@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.core.di
@@ -32,9 +23,8 @@ import im.vector.app.features.createdirect.CreateDirectRoomViewModel
 import im.vector.app.features.crypto.keysbackup.settings.KeysBackupSettingsViewModel
 import im.vector.app.features.crypto.quads.SharedSecureStorageViewModel
 import im.vector.app.features.crypto.recover.BootstrapSharedViewModel
-import im.vector.app.features.crypto.verification.VerificationBottomSheetViewModel
-import im.vector.app.features.crypto.verification.choose.VerificationChooseMethodViewModel
-import im.vector.app.features.crypto.verification.emoji.VerificationEmojiCodeViewModel
+import im.vector.app.features.crypto.verification.self.SelfVerificationViewModel
+import im.vector.app.features.crypto.verification.user.UserVerificationViewModel
 import im.vector.app.features.devtools.RoomDevToolViewModel
 import im.vector.app.features.discovery.DiscoverySettingsViewModel
 import im.vector.app.features.discovery.change.SetIdentityServerViewModel
@@ -44,7 +34,6 @@ import im.vector.app.features.home.NewHomeDetailViewModel
 import im.vector.app.features.home.UnknownDeviceDetectorSharedViewModel
 import im.vector.app.features.home.UnreadMessagesSharedViewModel
 import im.vector.app.features.home.UserColorAccountDataViewModel
-import im.vector.app.features.home.accounts.AccountsViewModel
 import im.vector.app.features.home.room.breadcrumbs.BreadcrumbsViewModel
 import im.vector.app.features.home.room.detail.TimelineViewModel
 import im.vector.app.features.home.room.detail.composer.MessageComposerViewModel
@@ -63,7 +52,6 @@ import im.vector.app.features.location.LocationSharingViewModel
 import im.vector.app.features.location.live.map.LiveLocationMapViewModel
 import im.vector.app.features.location.preview.LocationPreviewViewModel
 import im.vector.app.features.login.LoginViewModel
-import im.vector.app.features.login.qr.QrCodeLoginViewModel
 import im.vector.app.features.matrixto.MatrixToBottomSheetViewModel
 import im.vector.app.features.media.VectorAttachmentViewerViewModel
 import im.vector.app.features.onboarding.OnboardingViewModel
@@ -164,11 +152,6 @@ interface MavericksViewModelModule {
     @IntoMap
     @MavericksViewModelKey(SpaceListViewModel::class)
     fun spaceListViewModelFactory(factory: SpaceListViewModel.Factory): MavericksAssistedViewModelFactory<*, *>
-
-    @Binds
-    @IntoMap
-    @MavericksViewModelKey(AccountsViewModel::class)
-    fun accountsViewModelFactory(factory: AccountsViewModel.Factory): MavericksAssistedViewModelFactory<*, *>
 
     @Binds
     @IntoMap
@@ -550,15 +533,10 @@ interface MavericksViewModelModule {
     @MavericksViewModelKey(MessageActionsViewModel::class)
     fun messageActionsViewModelFactory(factory: MessageActionsViewModel.Factory): MavericksAssistedViewModelFactory<*, *>
 
-    @Binds
-    @IntoMap
-    @MavericksViewModelKey(VerificationChooseMethodViewModel::class)
-    fun verificationChooseMethodViewModelFactory(factory: VerificationChooseMethodViewModel.Factory): MavericksAssistedViewModelFactory<*, *>
-
-    @Binds
-    @IntoMap
-    @MavericksViewModelKey(VerificationEmojiCodeViewModel::class)
-    fun verificationEmojiCodeViewModelFactory(factory: VerificationEmojiCodeViewModel.Factory): MavericksAssistedViewModelFactory<*, *>
+//    @Binds
+//    @IntoMap
+//    @MavericksViewModelKey(VerificationChooseMethodViewModel::class)
+//    fun verificationChooseMethodViewModelFactory(factory: VerificationChooseMethodViewModel.Factory): MavericksAssistedViewModelFactory<*, *>
 
     @Binds
     @IntoMap
@@ -630,10 +608,20 @@ interface MavericksViewModelModule {
     @MavericksViewModelKey(BootstrapSharedViewModel::class)
     fun bootstrapSharedViewModelFactory(factory: BootstrapSharedViewModel.Factory): MavericksAssistedViewModelFactory<*, *>
 
+//    @Binds
+//    @IntoMap
+//    @MavericksViewModelKey(VerificationBottomSheetViewModel::class)
+//    fun verificationBottomSheetViewModelFactory(factory: VerificationBottomSheetViewModel.Factory): MavericksAssistedViewModelFactory<*, *>
+
     @Binds
     @IntoMap
-    @MavericksViewModelKey(VerificationBottomSheetViewModel::class)
-    fun verificationBottomSheetViewModelFactory(factory: VerificationBottomSheetViewModel.Factory): MavericksAssistedViewModelFactory<*, *>
+    @MavericksViewModelKey(UserVerificationViewModel::class)
+    fun userVerificationBottomSheetViewModelFactory(factory: UserVerificationViewModel.Factory): MavericksAssistedViewModelFactory<*, *>
+
+    @Binds
+    @IntoMap
+    @MavericksViewModelKey(SelfVerificationViewModel::class)
+    fun selfVerificationBottomSheetViewModelFactory(factory: SelfVerificationViewModel.Factory): MavericksAssistedViewModelFactory<*, *>
 
     @Binds
     @IntoMap
@@ -699,11 +687,6 @@ interface MavericksViewModelModule {
     @IntoMap
     @MavericksViewModelKey(RenameSessionViewModel::class)
     fun renameSessionViewModelFactory(factory: RenameSessionViewModel.Factory): MavericksAssistedViewModelFactory<*, *>
-
-    @Binds
-    @IntoMap
-    @MavericksViewModelKey(QrCodeLoginViewModel::class)
-    fun qrCodeLoginViewModelFactory(factory: QrCodeLoginViewModel.Factory): MavericksAssistedViewModelFactory<*, *>
 
     @Binds
     @IntoMap

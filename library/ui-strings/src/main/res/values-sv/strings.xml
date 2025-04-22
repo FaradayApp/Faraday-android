@@ -2928,4 +2928,55 @@
     <string name="error_voice_broadcast_unable_to_decrypt">Kunder inte avkryptera den här röstsändningen.</string>
     <string name="settings_external_account_management">Dina kontodetaljer hanteras separat på %1$s.</string>
     <string name="settings_external_account_management_title">Konto</string>
+    <string name="pill_message_unknown_room_or_space">Rum/utrymme</string>
+    <string name="pill_message_in_unknown_room">Meddelande i rummet</string>
+    <string name="pill_message_in_room">Meddelande i %s</string>
+    <string name="pill_message_from_unknown_user">Meddelande</string>
+    <string name="pill_message_from_user">Meddelande från %s</string>
+    <string name="encrypted_by_deleted">Krypterat av en raderad enhet</string>
+    <string name="secure_backup_reset_danger_warning">Fortsätt bara om du är säker på att du har tappat bort alla dina andra enheter och din säkerhetsnyckel.</string>
+    <string name="secure_backup_reset_all_no_other_devices_long">Återställning av dina verifieringsnycklar kan inte ångras. Efter återställningen kommer du inte att ha tillgång till gamla krypterade meddelanden, och alla vänner som tidigare har verifierat dig kommer att se säkerhetsvarningar tills du verifierar med dem igen.</string>
+    <string name="direct_room_encryption_enabled_waiting_users_tile_description">När inbjudna användare har gått med i ${app_name} kommer du att kunna chatta och rummet kommer att totalsträckskrypteras</string>
+    <string name="direct_room_encryption_enabled_waiting_users">Väntar på att användare ska gå med i ${app_name}</string>
+    <string name="verification_not_found">Begäran om verifiering hittades inte. Det kan ha avbrutits eller hanterats av en annan session.</string>
+    <string name="_resume">Återuppta</string>
+    <string name="verification_request_was_sent">En verifieringsbegäran har skickats. Öppna en av dina andra sessioner för att acceptera och starta verifieringen.</string>
+    <string name="verification_verify_identity">Verifiera din identitet för att komma åt krypterade meddelanden och bevisa din identitet för andra.</string>
+    <string name="verification_verify_with_another_device">Verifiera med en annan enhet</string>
+    <string name="verification_request_waiting_for_recovery">Verifierar från säker nyckel eller fras…</string>
+    <string name="direct_room_user_list_only_invite_one_email">Du kan bara bjuda in ett e-brev åt gången</string>
+    <string name="settings_acceptable_use_policy">Policy för acceptabel användning</string>
+    <string name="settings_crypto_version">Kryptoversion</string>
+    <string name="settings_notification_error_on_update">Ett fel uppstod när du uppdaterade dina aviseringsinställningar. Var god försök igen.</string>
+    <string name="action_proceed_to_reset">Fortsätt till återställning</string>
+    <string name="avatar_of_user">Profilbild för användaren %1$s</string>
+    <string name="avatar_of_room">Avatar för rummet %1$s</string>
+    <string name="avatar_of_space">Avatar för utrymmet %1$s</string>
+    <string name="notice_display_name_changed_to">%1$s bytte sitt visningsnamn till %2$s</string>
+    <string name="confirm_your_identity_after_update">Säker meddelandehantering har förbättrats med den senaste uppdateringen. Vänligen verifiera din enhet igen.</string>
+    <string name="verification_profile_other_device_untrust_info">Tills den här användaren litar på den här sessionen märks meddelanden som skickas till och från den med varningar.</string>
+    <string name="crosssigning_verify_after_update">App uppdaterad</string>
+    <string name="sign_out_failed_dialog_message">Kan inte nå hemservern. Om du ändå loggar ut kommer den här enheten inte att raderas från din enhetslista, du kanske vill ta bort den med en annan klient.</string>
+    <string name="sign_out_anyway">Logga ut ändå</string>
+    <string name="create_room_unknown_users_dialog_content">Kunde in hitta profiler för Matrix-ID:n nedan. Vill du starta en chatt ändå\?
+\n
+\n%s</string>
+    <string name="create_room_unknown_users_dialog_submit">Starta chatt ändå</string>
+    <string name="invite_unknown_users_dialog_content">Kunde inte hitta profiler för Matrix-ID:n nedan. Vill du bjuda in dem ändå\?
+\n
+\n%s</string>
+    <string name="invite_unknown_users_dialog_submit">Bjud in ändå</string>
+    <string name="login_splash_sign_in">Logga in</string>
+    <string name="user_reported_as_inappropriate_title">Rapporterade användare</string>
+    <string name="message_report_user">Rapportera användare</string>
+    <string name="user_reported_as_inappropriate_content">Användaren har rapporterats.
+\n
+\nOm du inte vill se något mer innehåll från den här användaren så kan du ignorera denne för att dölja dennes meddelanden.</string>
+    <string name="microphone_in_use_title">Mikrofon används</string>
+    <string name="call_unsupported">Samtal stöds inte</string>
+    <string name="call_unsupported_matrix_rtc_call">Samtal stöds inte. Nya SchildiChat Next-appen behövs för att gå med i det här samtalet.</string>
+    <string name="view_download_replacement_app_title">Ladda ner %1$s</string>
+    <string name="view_download_replacement_app_subtitle">Snabbare, säkrare och fullproppad med kraftfulla samarbetsverktyg.</string>
+    <string name="error_mas_not_supported_title">Du kan inte längre skapa ett konto med %1$s med den här appen</string>
+    <string name="error_mas_not_supported_subtitle">Ladda ner %1$s för att använda %2$s för ditt konto eller välj en annan hemserver.</string>
 </resources>

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.crypto.quads
@@ -26,12 +17,12 @@ import com.airbnb.mvrx.Uninitialized
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import im.vector.app.R
 import im.vector.app.core.di.MavericksAssistedViewModelFactory
 import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.platform.VectorViewModel
 import im.vector.app.core.platform.WaitingViewData
 import im.vector.app.core.resources.StringProvider
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -58,7 +49,7 @@ data class SharedSecureStorageViewState(
         val ready: Boolean = false,
         val hasPassphrase: Boolean = true,
         val checkingSSSSAction: Async<Unit> = Uninitialized,
-        val step: Step = Step.EnterPassphrase,
+        val step: Step = Step.ResetAll,
         val activeDeviceCount: Int = 0,
         val showResetAllAction: Boolean = false,
         val userId: String = "",
@@ -74,7 +65,8 @@ data class SharedSecureStorageViewState(
             } else {
                 RequestType.ReadSecrets(args.requestedSecrets)
             },
-            resultKeyStoreAlias = args.resultKeyStoreAlias
+            resultKeyStoreAlias = args.resultKeyStoreAlias,
+            step = args.currentStep,
     )
 
     enum class Step {
@@ -107,36 +99,41 @@ class SharedSecureStorageViewModel @AssistedInject constructor(
             if (integrityResult !is IntegrityResult.Success) {
                 _viewEvents.post(
                         SharedSecureStorageViewEvent.Error(
-                                stringProvider.getString(R.string.enter_secret_storage_invalid),
+                                stringProvider.getString(CommonStrings.enter_secret_storage_invalid),
                                 true
                         )
                 )
             }
         }
-        val keyResult = initialState.keyId?.let { session.sharedSecretStorageService().getKey(it) }
-                ?: session.sharedSecretStorageService().getDefaultKey()
 
-        if (!keyResult.isSuccess()) {
-            _viewEvents.post(SharedSecureStorageViewEvent.Dismiss)
-        } else {
-            val info = (keyResult as KeyInfoResult.Success).keyInfo
-            if (info.content.passphrase != null) {
-                setState {
-                    copy(
-                            hasPassphrase = true,
-                            ready = true,
-                            step = SharedSecureStorageViewState.Step.EnterPassphrase
-                    )
-                }
+        if (initialState.step != SharedSecureStorageViewState.Step.ResetAll) {
+            val keyResult = initialState.keyId?.let { session.sharedSecretStorageService().getKey(it) }
+                    ?: session.sharedSecretStorageService().getDefaultKey()
+
+            if (!keyResult.isSuccess()) {
+                _viewEvents.post(SharedSecureStorageViewEvent.Dismiss)
             } else {
-                setState {
-                    copy(
-                            hasPassphrase = false,
-                            ready = true,
-                            step = SharedSecureStorageViewState.Step.EnterKey
-                    )
+                val info = (keyResult as KeyInfoResult.Success).keyInfo
+                if (info.content.passphrase != null) {
+                    setState {
+                        copy(
+                                hasPassphrase = true,
+                                ready = true,
+                                step = SharedSecureStorageViewState.Step.EnterPassphrase
+                        )
+                    }
+                } else {
+                    setState {
+                        copy(
+                                hasPassphrase = false,
+                                ready = true,
+                                step = SharedSecureStorageViewState.Step.EnterKey
+                        )
+                    }
                 }
             }
+        } else {
+            setState { copy(ready = true) }
         }
 
         session.flow()
@@ -165,10 +162,12 @@ class SharedSecureStorageViewModel @AssistedInject constructor(
         // as we are going to reset, we'd better cancel all outgoing requests
         // if not they could be accepted in the middle of the reset process
         // and cause strange use cases
-        session.cryptoService().verificationService().getExistingVerificationRequests(session.myUserId).forEach {
-            session.cryptoService().verificationService().cancelVerificationRequest(it)
+        viewModelScope.launch {
+            session.cryptoService().verificationService().getExistingVerificationRequests(session.myUserId).forEach {
+                session.cryptoService().verificationService().cancelVerificationRequest(it)
+            }
+            _viewEvents.post(SharedSecureStorageViewEvent.ShowResetBottomSheet)
         }
-        _viewEvents.post(SharedSecureStorageViewEvent.ShowResetBottomSheet)
     }
 
     private fun handleResetAll() {
@@ -201,6 +200,7 @@ class SharedSecureStorageViewModel @AssistedInject constructor(
                     _viewEvents.post(SharedSecureStorageViewEvent.Dismiss)
                 }
             }
+            /*
             SharedSecureStorageViewState.Step.ResetAll -> {
                 setState {
                     copy(
@@ -209,6 +209,7 @@ class SharedSecureStorageViewModel @AssistedInject constructor(
                     )
                 }
             }
+             */
             else -> {
                 _viewEvents.post(SharedSecureStorageViewEvent.Dismiss)
             }
@@ -225,7 +226,7 @@ class SharedSecureStorageViewModel @AssistedInject constructor(
                 val keyInfoResult = session.sharedSecretStorageService().getDefaultKey()
                 if (!keyInfoResult.isSuccess()) {
                     _viewEvents.post(SharedSecureStorageViewEvent.HideModalLoading)
-                    _viewEvents.post(SharedSecureStorageViewEvent.Error(stringProvider.getString(R.string.failed_to_access_secure_storage)))
+                    _viewEvents.post(SharedSecureStorageViewEvent.Error(stringProvider.getString(CommonStrings.failed_to_access_secure_storage)))
                     return@launch
                 }
                 val keyInfo = (keyInfoResult as KeyInfoResult.Success).keyInfo
@@ -233,15 +234,17 @@ class SharedSecureStorageViewModel @AssistedInject constructor(
                 _viewEvents.post(
                         SharedSecureStorageViewEvent.UpdateLoadingState(
                                 WaitingViewData(
-                                        message = stringProvider.getString(R.string.keys_backup_restoring_computing_key_waiting_message),
+                                        message = stringProvider.getString(CommonStrings.keys_backup_restoring_computing_key_waiting_message),
                                         isIndeterminate = true
                                 )
                         )
                 )
                 val keySpec = RawBytesKeySpec.fromRecoveryKey(recoveryKey) ?: return@launch Unit.also {
-                    _viewEvents.post(SharedSecureStorageViewEvent.KeyInlineError(stringProvider.getString(R.string.bootstrap_invalid_recovery_key)))
+                    _viewEvents.post(SharedSecureStorageViewEvent.KeyInlineError(stringProvider.getString(CommonStrings.bootstrap_invalid_recovery_key)))
                     _viewEvents.post(SharedSecureStorageViewEvent.HideModalLoading)
-                    setState { copy(checkingSSSSAction = Fail(IllegalArgumentException(stringProvider.getString(R.string.bootstrap_invalid_recovery_key)))) }
+                    setState {
+                        copy(checkingSSSSAction = Fail(IllegalArgumentException(stringProvider.getString(CommonStrings.bootstrap_invalid_recovery_key))))
+                    }
                 }
                 withContext(Dispatchers.IO) {
                     performRequest(keyInfo, keySpec, decryptedSecretMap)
@@ -258,7 +261,7 @@ class SharedSecureStorageViewModel @AssistedInject constructor(
             }, {
                 setState { copy(checkingSSSSAction = Fail(it)) }
                 _viewEvents.post(SharedSecureStorageViewEvent.HideModalLoading)
-                _viewEvents.post(SharedSecureStorageViewEvent.KeyInlineError(stringProvider.getString(R.string.keys_backup_passphrase_error_decrypt)))
+                _viewEvents.post(SharedSecureStorageViewEvent.KeyInlineError(stringProvider.getString(CommonStrings.keys_backup_passphrase_error_decrypt)))
             })
         }
     }
@@ -312,7 +315,7 @@ class SharedSecureStorageViewModel @AssistedInject constructor(
                 _viewEvents.post(
                         SharedSecureStorageViewEvent.UpdateLoadingState(
                                 WaitingViewData(
-                                        message = stringProvider.getString(R.string.keys_backup_restoring_computing_key_waiting_message),
+                                        message = stringProvider.getString(CommonStrings.keys_backup_restoring_computing_key_waiting_message),
                                         isIndeterminate = true
                                 )
                         )
@@ -326,7 +329,7 @@ class SharedSecureStorageViewModel @AssistedInject constructor(
                                 _viewEvents.post(
                                         SharedSecureStorageViewEvent.UpdateLoadingState(
                                                 WaitingViewData(
-                                                        message = stringProvider.getString(R.string.keys_backup_restoring_computing_key_waiting_message),
+                                                        message = stringProvider.getString(CommonStrings.keys_backup_restoring_computing_key_waiting_message),
                                                         isIndeterminate = false,
                                                         progress = progress,
                                                         progressTotal = total
@@ -354,7 +357,7 @@ class SharedSecureStorageViewModel @AssistedInject constructor(
             }, {
                 setState { copy(checkingSSSSAction = Fail(it)) }
                 _viewEvents.post(SharedSecureStorageViewEvent.HideModalLoading)
-                _viewEvents.post(SharedSecureStorageViewEvent.InlineError(stringProvider.getString(R.string.keys_backup_passphrase_error_decrypt)))
+                _viewEvents.post(SharedSecureStorageViewEvent.InlineError(stringProvider.getString(CommonStrings.keys_backup_passphrase_error_decrypt)))
             })
         }
     }

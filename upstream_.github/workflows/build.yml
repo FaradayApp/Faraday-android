@@ -7,7 +7,7 @@ on:
 
 # Enrich gradle.properties for CI/CD
 env:
-  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx3072m -Dfile.encoding=UTF-8 -XX:+HeapDumpOnOutOfMemoryError" -Dkotlin.daemon.jvm.options="-Xmx2560m" -Dkotlin.incremental=false
+  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx3072m -Dfile.encoding=UTF-8 -XX:+HeapDumpOnOutOfMemoryError -XX:MaxMetaspaceSize=1g" -Dkotlin.daemon.jvm.options="-Xmx2560m" -Dkotlin.incremental=false
   CI_GRADLE_ARG_PROPERTIES: --stacktrace -PpreDexEnable=false --max-workers 2 --no-daemon
 
 jobs:
@@ -24,18 +24,23 @@ jobs:
       group: ${{ github.ref == 'refs/heads/develop' && format('integration-tests-develop-{0}-{1}', matrix.target, github.sha) || format('build-debug-{0}-{1}', matrix.target, github.ref)  }}
       cancel-in-progress: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # https://github.com/actions/checkout/issues/881
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      - name: Use JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '21'
       - name: Configure gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/develop' }}
       - name: Assemble ${{ matrix.target }} debug apk
         run: ./gradlew assemble${{ matrix.target }}Debug $CI_GRADLE_ARG_PROPERTIES
       - name: Upload ${{ matrix.target }} debug APKs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: vector-${{ matrix.target }}-debug
           path: |
@@ -48,18 +53,23 @@ jobs:
       group: ${{ github.ref == 'refs/head/main' && format('build-release-apk-main-{0}', github.sha) || github.ref == 'refs/heads/develop' && format('build-release-apk-develop-{0}', github.sha) || format('build-debug-{0}', github.ref)  }}
       cancel-in-progress: ${{ github.ref != 'refs/head/main' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # https://github.com/actions/checkout/issues/881
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.ref }}
+      - name: Use JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '21'
       - name: Configure gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/develop' }}
       - name: Assemble GPlay unsigned apk
         run: ./gradlew clean assembleGplayRelease $CI_GRADLE_ARG_PROPERTIES
       - name: Upload Gplay unsigned APKs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: vector-gplay-release-unsigned
           path: |
@@ -71,7 +81,7 @@ jobs:
     steps:
       - name: Obtain apk from artifact
         id: download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: vector-gplay-release-unsigned
       - name: Show apks in artifact
@@ -79,12 +89,18 @@ jobs:
       - name: Execute exodus-standalone
         uses: docker://exodusprivacy/exodus-standalone:latest
         with:
-          args: /github/workspace/gplay/release/vector-gplay-universal-release-unsigned.apk -j -o /github/workspace/exodus.json
+          # Don't fail when finding trackers so they can be reported later
+          args: /github/workspace/gplay/release/vector-gplay-universal-release-unsigned.apk -j -o /github/workspace/exodus.json -e 0
       - name: Upload exodus json report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: exodus.json
           path: |
             exodus.json
       - name: Check for trackers
-        run: "jq -e '.trackers == []' exodus.json > /dev/null || { echo '::error static analysis identified user tracking library' ; exit 1; }"
+        env:
+          SENTRY_ID: 447
+        # Should only contain a Sentry item
+        run: |
+          TRACKER_IDS=$(jq ".trackers[] | .id" exodus.json)
+          [ $TRACKER_IDS = ${{ env.SENTRY_ID }} ] || { echo '::error static analysis identified user tracking library' ; exit 1; }

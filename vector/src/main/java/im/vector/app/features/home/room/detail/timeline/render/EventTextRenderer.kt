@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.detail.timeline.render
@@ -24,12 +15,12 @@ import android.util.Patterns
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import im.vector.app.R
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.glide.GlideApp
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.html.PillImageSpan
-import org.matrix.android.sdk.api.MatrixPatterns
+import im.vector.lib.strings.CommonStrings
+import org.matrix.android.sdk.api.extensions.orFalse
 import org.matrix.android.sdk.api.session.getRoomSummary
 import org.matrix.android.sdk.api.session.getUserOrDefault
 import org.matrix.android.sdk.api.session.permalinks.PermalinkData
@@ -99,7 +90,9 @@ class EventTextRenderer @AssistedInject constructor(
     private fun addPermalinksSpans(text: Spannable) {
         for (match in Patterns.WEB_URL.toRegex().findAll(text)) {
             val url = text.substring(match.range)
-            val matrixItem = if (MatrixPatterns.isPermalink(url)) {
+            val supportedHosts = context.resources.getStringArray(im.vector.app.config.R.array.permalink_supported_hosts)
+            val isPermalinkSupported = sessionHolder.getSafeActiveSession()?.permalinkService()?.isPermalinkSupported(supportedHosts, url).orFalse()
+            val matrixItem = if (isPermalinkSupported) {
                 when (val permalinkData = PermalinkParser.parse(url)) {
                     is PermalinkData.UserLink -> permalinkData.toMatrixItem()
                     is PermalinkData.RoomLink -> permalinkData.toMatrixItem()
@@ -134,7 +127,7 @@ class EventTextRenderer @AssistedInject constructor(
                 val room: RoomSummary? = sessionHolder.getSafeActiveSession()?.getRoomSummary(roomIdOrAlias)
                 when {
                     isRoomAlias -> MatrixItem.RoomAliasItem(roomIdOrAlias, room?.displayName, room?.avatarUrl)
-                    room == null -> MatrixItem.RoomItem(roomIdOrAlias, context.getString(R.string.pill_message_unknown_room_or_space))
+                    room == null -> MatrixItem.RoomItem(roomIdOrAlias, context.getString(CommonStrings.pill_message_unknown_room_or_space))
                     room.roomType == RoomType.SPACE -> MatrixItem.SpaceItem(roomIdOrAlias, room.displayName, room.avatarUrl)
                     else -> MatrixItem.RoomItem(roomIdOrAlias, room.displayName, room.avatarUrl)
                 }
@@ -144,25 +137,25 @@ class EventTextRenderer @AssistedInject constructor(
                     val event = session?.eventService()?.getEventFromCache(roomId, eventId!!)
                     val user = event?.senderId?.let { session.roomService().getRoomMember(it, roomId) }
                     val text = user?.let {
-                        context.getString(R.string.pill_message_from_user, user.displayName)
-                    } ?: context.getString(R.string.pill_message_from_unknown_user)
+                        context.getString(CommonStrings.pill_message_from_user, user.displayName)
+                    } ?: context.getString(CommonStrings.pill_message_from_unknown_user)
                     MatrixItem.RoomItem(roomIdOrAlias, text, user?.avatarUrl, user?.displayName)
                 } else {
                     val room: RoomSummary? = sessionHolder.getSafeActiveSession()?.getRoomSummary(roomIdOrAlias)
                     when {
                         isRoomAlias -> MatrixItem.RoomAliasItem(
                                 roomIdOrAlias,
-                                context.getString(R.string.pill_message_in_room, room?.displayName ?: roomIdOrAlias),
+                                context.getString(CommonStrings.pill_message_in_room, room?.displayName ?: roomIdOrAlias),
                                 room?.avatarUrl,
                                 room?.displayName
                         )
                         room != null -> MatrixItem.RoomItem(
                                 roomIdOrAlias,
-                                context.getString(R.string.pill_message_in_room, room.displayName),
+                                context.getString(CommonStrings.pill_message_in_room, room.displayName),
                                 room.avatarUrl,
                                 room.displayName
                         )
-                        else -> MatrixItem.RoomItem(roomIdOrAlias, context.getString(R.string.pill_message_in_unknown_room))
+                        else -> MatrixItem.RoomItem(roomIdOrAlias, context.getString(CommonStrings.pill_message_in_unknown_room))
                     }
                 }
             }

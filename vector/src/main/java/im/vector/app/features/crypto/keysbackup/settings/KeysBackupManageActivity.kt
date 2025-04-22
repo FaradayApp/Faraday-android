@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.crypto.keysbackup.settings
 
@@ -23,13 +14,13 @@ import com.airbnb.mvrx.Loading
 import com.airbnb.mvrx.viewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.registerStartForActivityResult
 import im.vector.app.core.extensions.replaceFragment
 import im.vector.app.core.platform.SimpleFragmentActivity
 import im.vector.app.core.platform.WaitingViewData
 import im.vector.app.features.crypto.keysbackup.setup.KeysBackupSetupActivity
 import im.vector.app.features.crypto.quads.SharedSecureStorageActivity
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.session.crypto.crosssigning.KEYBACKUP_SECRET_SSSS_NAME
 
 @AndroidEntryPoint
@@ -42,7 +33,7 @@ class KeysBackupManageActivity : SimpleFragmentActivity() {
         }
     }
 
-    override fun getTitleRes() = R.string.encryption_message_recovery
+    override fun getTitleRes() = CommonStrings.encryption_message_recovery
 
     private val viewModel: KeysBackupSettingsViewModel by viewModel()
 
@@ -75,14 +66,14 @@ class KeysBackupManageActivity : SimpleFragmentActivity() {
                     updateWaitingView(null)
 
                     MaterialAlertDialogBuilder(this)
-                            .setTitle(R.string.unknown_error)
-                            .setMessage(getString(R.string.keys_backup_get_version_error, asyncDelete.error.localizedMessage))
+                            .setTitle(CommonStrings.unknown_error)
+                            .setMessage(getString(CommonStrings.keys_backup_get_version_error, asyncDelete.error.localizedMessage))
                             .setCancelable(false)
-                            .setPositiveButton(R.string.ok, null)
+                            .setPositiveButton(CommonStrings.ok, null)
                             .show()
                 }
                 is Loading -> {
-                    updateWaitingView(WaitingViewData(getString(R.string.keys_backup_settings_deleting_backup)))
+                    updateWaitingView(WaitingViewData(getString(CommonStrings.keys_backup_settings_deleting_backup)))
                 }
                 else -> {
                     updateWaitingView(null)
@@ -107,6 +98,7 @@ class KeysBackupManageActivity : SimpleFragmentActivity() {
         }
     }
 
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun onBackPressed() {
         // When there is no network we could get stuck in infinite loading
         // because backup state will stay in CheckingBackUpOnHomeserver

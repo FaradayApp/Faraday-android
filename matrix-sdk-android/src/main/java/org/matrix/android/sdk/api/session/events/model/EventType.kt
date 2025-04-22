@@ -88,6 +88,9 @@ object EventType {
     // This type is not processed by the client, just sent to the server
     const val CALL_REPLACES = "m.call.replaces"
 
+    // Element Call
+    val ELEMENT_CALL_NOTIFY = StableUnstableId(stable = "m.call.notify", unstable = "org.matrix.msc4075.call.notify")
+
     // Key share events
     const val ROOM_KEY_REQUEST = "m.room_key_request"
     const val FORWARDED_ROOM_KEY = "m.forwarded_room_key"
@@ -97,6 +100,7 @@ object EventType {
     const val SEND_SECRET = "m.secret.send"
 
     // Interactive key verification
+    const val KEY_VERIFICATION_REQUEST = "m.key.verification.request"
     const val KEY_VERIFICATION_START = "m.key.verification.start"
     const val KEY_VERIFICATION_ACCEPT = "m.key.verification.accept"
     const val KEY_VERIFICATION_KEY = "m.key.verification.key"

@@ -748,7 +748,7 @@
     <string name="backup">備份</string>
     <string name="sign_out_bottom_sheet_will_lose_secure_messages">除非您在登出前備份好金鑰，否則將無法再存取所有加密訊息。</string>
     <string name="action_sign_out_confirmation_simple">您確定要登出嗎？</string>
-    <string name="encryption_message_recovery">還原加密訊息</string>
+    <string name="encryption_message_recovery">加密訊息還原</string>
     <string name="error_empty_field_enter_user_name">請輸入使用者名稱。</string>
     <string name="keys_backup_setup">開始使用金鑰備份</string>
     <string name="keys_backup_setup_step1_advanced">（進階）</string>
@@ -1301,9 +1301,9 @@
     <string name="delete_event_dialog_title">確認移除</string>
     <string name="delete_event_dialog_content">您確定要刪除此事件嗎？注意，如果您刪除聊天室名稱或主題的變更事件，該變更將被取消。</string>
     <string name="delete_event_dialog_reason_checkbox">包含理由</string>
-    <string name="delete_event_dialog_reason_hint">修改原因</string>
+    <string name="delete_event_dialog_reason_hint">刪除原因</string>
     <string name="event_redacted_by_user_reason_with_reason">使用者刪除事件，理由：%1$s</string>
-    <string name="event_redacted_by_admin_reason_with_reason">聊天室管理員管理了事件，理由：%1$s</string>
+    <string name="event_redacted_by_admin_reason_with_reason">聊天室管理員刪除了事件，理由：%1$s</string>
     <string name="keys_backup_restore_success_title_already_up_to_date">金鑰已為最新！</string>
     <string name="login_default_session_public_name">${app_name} Android</string>
     <string name="settings_key_requests">金鑰請求</string>
@@ -2872,4 +2872,53 @@
     <string name="direct_room_encryption_enabled_waiting_users_tile_description">受邀使用者加入 ${app_name} 後，您就可以聊天，聊天室將進行端對端加密</string>
     <string name="direct_room_encryption_enabled_waiting_users">正在等待使用者加入 ${app_name}</string>
     <string name="direct_room_user_list_only_invite_one_email">您一次僅能邀請一個電子郵件地址</string>
+    <string name="pill_message_unknown_room_or_space">聊天室／聊天空間</string>
+    <string name="pill_message_in_unknown_room">聊天室中的訊息</string>
+    <string name="pill_message_in_room">在 %s 的訊息</string>
+    <string name="pill_message_from_unknown_user">訊息</string>
+    <string name="pill_message_from_user">來自 %s 的訊息</string>
+    <string name="encrypted_by_deleted">由已刪除的裝置加密</string>
+    <string name="secure_backup_reset_danger_warning">請僅在您確定遺失了您其他所有裝置與安全金鑰時才繼續。</string>
+    <string name="secure_backup_reset_all_no_other_devices_long">重設您的驗證金鑰無法還原。重設後，您將無法存取舊的加密訊息，之前驗證過您的任何朋友都會看到安全警告，直到您重新驗證。</string>
+    <string name="verification_not_found">找不到驗證請求。其可能已取消，或由其他工作階段處理。</string>
+    <string name="_resume">繼續</string>
+    <string name="verification_request_was_sent">已傳送驗證請求。開啟您的其他其中一個工作階段以接受並開始驗證。</string>
+    <string name="verification_verify_identity">驗證您的身份以存取加密訊息並向他人證明您的身份。</string>
+    <string name="verification_verify_with_another_device">使用其他裝置驗證</string>
+    <string name="verification_request_waiting_for_recovery">正從安全金鑰或密語驗證……</string>
+    <string name="settings_acceptable_use_policy">可接受的使用政策</string>
+    <string name="action_proceed_to_reset">繼續重設</string>
+    <string name="settings_crypto_version">加密版本</string>
+    <string name="notice_display_name_changed_to">%1$s 變更了他們的顯示名稱為 %2$s</string>
+    <string name="avatar_of_user">使用者 %1$s 的個人資料照片</string>
+    <string name="avatar_of_room">聊天室 %1$s 的大頭貼</string>
+    <string name="avatar_of_space">聊天空間 %1$s 的大頭貼</string>
+    <string name="confirm_your_identity_after_update">最新更新改善了安全訊息傳遞。請重新驗證您的裝置。</string>
+    <string name="verification_profile_other_device_untrust_info">在該使用者信任該工作階段之前，發送到該工作階段與從該工作階段傳送的訊息都帶有警告標籤。</string>
+    <string name="crosssigning_verify_after_update">應用程式已更新</string>
+    <string name="sign_out_failed_dialog_message">無法連線至家伺服器。若您仍要登出，此裝置將不會從您的裝置清單中移除，您可能需要使用其他客戶端來移除。</string>
+    <string name="sign_out_anyway">仍要登出</string>
+    <string name="create_room_unknown_users_dialog_submit">無論如何都要開始聊天</string>
+    <string name="login_splash_sign_in">登入</string>
+    <string name="invite_unknown_users_dialog_submit">無論如何都要邀請</string>
+    <string name="create_room_unknown_users_dialog_content">找不到下面列出的 Matrix ID 的個人檔案。您是否仍想開始聊天？
+\n
+\n%s</string>
+    <string name="invite_unknown_users_dialog_content">找不到下面列出的 Matrix ID 的個人檔案。您是否仍想邀請他們？
+\n
+\n%s</string>
+    <string name="user_reported_as_inappropriate_title">已回報使用者</string>
+    <string name="user_reported_as_inappropriate_content">已回報使用者。
+\n
+\n若您不想要看到來自此使用者的任何內容，您可以忽略他們以隱藏他們的訊息。</string>
+    <string name="message_report_user">回報使用者</string>
+    <string name="view_download_replacement_app_title">下載 %1$s</string>
+    <string name="microphone_in_use_title">麥克風使用中</string>
+    <string name="call_unsupported_matrix_rtc_call">不支援的通話。需要新的 SchildiChat Next 應用程式才能加入此通話。</string>
+    <string name="call_unsupported">不支援的通話</string>
+    <string name="error_mas_not_supported_title">您無法再使用此應用程式建立 %1$s 的帳號</string>
+    <string name="error_mas_not_supported_subtitle">下載 %1$s 以將 %2$s 用於您的帳號或選擇其他家伺服器。</string>
+    <string name="view_download_replacement_app_subtitle">更快、更安全，並配備了強大的協作工具。</string>
+    <string name="room_profile_section_more_report">回報聊天室</string>
+    <string name="room_profile_section_more_report_success_content">已成功回報聊天室。</string>
 </resources>

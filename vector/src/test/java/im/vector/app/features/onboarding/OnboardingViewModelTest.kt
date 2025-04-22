@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.onboarding
@@ -19,13 +10,13 @@ package im.vector.app.features.onboarding
 import android.net.Uri
 import android.os.Build
 import com.airbnb.mvrx.test.MavericksTestRule
-import im.vector.app.R
 import im.vector.app.core.session.ConfigureAndStartSessionUseCase
 import im.vector.app.features.login.LoginConfig
 import im.vector.app.features.login.LoginMode
 import im.vector.app.features.login.ReAuthHelper
 import im.vector.app.features.login.ServerType
 import im.vector.app.features.login.SignMode
+import im.vector.app.features.mdm.NoOpMdmService
 import im.vector.app.features.onboarding.RegistrationStateFixture.aRegistrationState
 import im.vector.app.features.onboarding.StartAuthenticationFlowUseCase.StartAuthenticationResult
 import im.vector.app.test.TestBuildVersionSdkIntProvider
@@ -79,7 +70,7 @@ private val A_FINGERPRINT = Fingerprint(ByteArray(1), Fingerprint.HashType.SHA1)
 private val ANY_CONTINUING_REGISTRATION_RESULT = RegistrationActionHandler.Result.NextStage(Stage.Dummy(mandatory = true))
 private val A_DIRECT_LOGIN = OnboardingAction.AuthenticateAction.LoginDirect("@a-user:id.org", "a-password", "a-device-name")
 private const val A_HOMESERVER_URL = "https://edited-homeserver.org"
-private val A_DEFAULT_HOMESERVER_URL = "${R.string.matrix_org_server_url.toTestString()}/"
+private val A_DEFAULT_HOMESERVER_URL = "${im.vector.app.config.R.string.matrix_org_server_url.toTestString()}/"
 private val A_HOMESERVER_CONFIG = HomeServerConnectionConfig(FakeUri().instance)
 private val SELECTED_HOMESERVER_STATE = SelectedHomeserverState(preferredLoginMode = LoginMode.Password, userFacingUrl = A_HOMESERVER_URL)
 private val SELECTED_HOMESERVER_STATE_SUPPORTED_LOGOUT_DEVICES = SelectedHomeserverState(isLogoutDevicesSupported = true)
@@ -156,28 +147,6 @@ class OnboardingViewModelTest {
                         { copy(isLoading = true) },
                         { copy(selectedHomeserver = DEFAULT_SELECTED_HOMESERVER_STATE) },
                         { copy(signMode = SignMode.SignIn) },
-                        { copy(isLoading = false) }
-                )
-                .assertEvents(OnboardingViewEvents.OpenCombinedLogin)
-                .finish()
-    }
-
-    @Test
-    fun `given combined login enabled, when handling sign in splash action, then emits OpenCombinedLogin with default homeserver qrCode supported`() = runTest {
-        val test = viewModel.test()
-        fakeVectorFeatures.givenCombinedLoginEnabled()
-        givenCanSuccessfullyUpdateHomeserver(A_DEFAULT_HOMESERVER_URL, DEFAULT_SELECTED_HOMESERVER_STATE_WITH_QR_SUPPORTED)
-
-        viewModel.handle(OnboardingAction.SplashAction.OnIAlreadyHaveAnAccount(OnboardingFlow.SignIn))
-
-        test
-                .assertStatesChanges(
-                        initialState,
-                        { copy(onboardingFlow = OnboardingFlow.SignIn) },
-                        { copy(isLoading = true) },
-                        { copy(selectedHomeserver = DEFAULT_SELECTED_HOMESERVER_STATE_WITH_QR_SUPPORTED) },
-                        { copy(signMode = SignMode.SignIn) },
-                        { copy(canLoginWithQrCode = true) },
                         { copy(isLoading = false) }
                 )
                 .assertEvents(OnboardingViewEvents.OpenCombinedLogin)
@@ -1121,6 +1090,7 @@ class OnboardingViewModelTest {
                 fakeRegistrationActionHandler.instance,
                 TestBuildVersionSdkIntProvider().also { it.value = Build.VERSION_CODES.O },
                 fakeConfigureAndStartSessionUseCase,
+                NoOpMdmService()
         ).also {
             viewModel = it
             initialState = state

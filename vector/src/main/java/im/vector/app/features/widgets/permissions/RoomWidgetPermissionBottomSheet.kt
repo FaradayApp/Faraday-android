@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.widgets.permissions
 
@@ -26,11 +17,11 @@ import android.view.ViewGroup
 import com.airbnb.mvrx.activityViewModel
 import com.airbnb.mvrx.withState
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.platform.VectorBaseBottomSheetDialogFragment
 import im.vector.app.databinding.BottomSheetRoomWidgetPermissionBinding
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.widgets.WidgetArgs
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.util.toMatrixItem
 import javax.inject.Inject
 
@@ -73,15 +64,19 @@ class RoomWidgetPermissionBottomSheet :
         val domain = permissionData.widgetDomain ?: ""
         val infoBuilder = SpannableStringBuilder()
                 .append(getString(
-                        R.string.room_widget_permission_webview_shared_info_title
+                        CommonStrings.room_widget_permission_webview_shared_info_title
                                 .takeIf { permissionData.isWebviewWidget }
-                                ?: R.string.room_widget_permission_shared_info_title,
+                                ?: CommonStrings.room_widget_permission_shared_info_title,
                         "'$domain'"))
         infoBuilder.append("\n")
         permissionData.permissionsList.forEach {
             infoBuilder.append("\n")
             val bulletPoint = getString(it)
-            infoBuilder.append(bulletPoint, BulletSpan(resources.getDimension(R.dimen.quote_gap).toInt()), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            infoBuilder.append(
+                    bulletPoint,
+                    BulletSpan(resources.getDimension(im.vector.lib.ui.styles.R.dimen.quote_gap).toInt()),
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
         }
         infoBuilder.append("\n")
         views.widgetPermissionSharedInfo.text = infoBuilder

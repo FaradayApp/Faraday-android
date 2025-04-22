@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.home.room.detail.timeline.edithistory
 
@@ -21,7 +12,6 @@ import com.airbnb.mvrx.Fail
 import com.airbnb.mvrx.Loading
 import com.airbnb.mvrx.Success
 import com.airbnb.mvrx.Uninitialized
-import im.vector.app.R
 import im.vector.app.core.date.DateFormatKind
 import im.vector.app.core.date.VectorDateFormatter
 import im.vector.app.core.resources.ColorProvider
@@ -33,6 +23,7 @@ import im.vector.app.core.ui.list.genericLoaderItem
 import im.vector.app.features.html.EventHtmlRenderer
 import im.vector.lib.core.utils.epoxy.charsequence.toEpoxyCharSequence
 import im.vector.lib.core.utils.timer.Clock
+import im.vector.lib.strings.CommonStrings
 import me.gujun.android.span.span
 import name.fraser.neil.plaintext.diff_match_patch
 import org.matrix.android.sdk.api.session.events.model.Event
@@ -66,7 +57,7 @@ class ViewEditHistoryEpoxyController @Inject constructor(
             is Fail -> {
                 genericFooterItem {
                     id("failure")
-                    text(host.stringProvider.getString(R.string.unknown_error).toEpoxyCharSequence())
+                    text(host.stringProvider.getString(CommonStrings.unknown_error).toEpoxyCharSequence())
                 }
             }
             is Success -> {
@@ -80,7 +71,7 @@ class ViewEditHistoryEpoxyController @Inject constructor(
         if (sourceEvents.isEmpty()) {
             genericItem {
                 id("footer")
-                title(host.stringProvider.getString(R.string.no_message_edits_found).toEpoxyCharSequence())
+                title(host.stringProvider.getString(CommonStrings.no_message_edits_found).toEpoxyCharSequence())
             }
         } else {
             var lastDate: Calendar? = null
@@ -117,14 +108,14 @@ class ViewEditHistoryEpoxyController @Inject constructor(
                                 diff_match_patch.Operation.DELETE -> {
                                     span {
                                         text = it.text.replace("\n", " ")
-                                        textColor = colorProvider.getColorFromAttribute(R.attr.colorError)
+                                        textColor = colorProvider.getColorFromAttribute(com.google.android.material.R.attr.colorError)
                                         textDecorationLine = "line-through"
                                     }
                                 }
                                 diff_match_patch.Operation.INSERT -> {
                                     span {
                                         text = it.text
-                                        textColor = colorProvider.getColorFromAttribute(R.attr.vctr_encrypting_message_text_color)
+                                        textColor = colorProvider.getColorFromAttribute(im.vector.lib.ui.styles.R.attr.vctr_encrypting_message_text_color)
                                     }
                                 }
                                 else -> {

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.discovery
 
@@ -116,10 +107,10 @@ abstract class SettingsTextButtonSingleLineItem : VectorEpoxyModel<SettingsTextB
                     holder.switchButton.isVisible = false
                     when (buttonStyle) {
                         ButtonStyle.POSITIVE -> {
-                            holder.mainButton.setTextColor(colorProvider.getColorFromAttribute(R.attr.colorPrimary))
+                            holder.mainButton.setTextColor(colorProvider.getColorFromAttribute(com.google.android.material.R.attr.colorPrimary))
                         }
                         ButtonStyle.DESTRUCTIVE -> {
-                            holder.mainButton.setTextColor(colorProvider.getColorFromAttribute(R.attr.colorError))
+                            holder.mainButton.setTextColor(colorProvider.getColorFromAttribute(com.google.android.material.R.attr.colorError))
                         }
                     }
                     holder.mainButton.onClick(buttonClickListener)
@@ -140,14 +131,14 @@ abstract class SettingsTextButtonSingleLineItem : VectorEpoxyModel<SettingsTextB
                 holder.textView.setCompoundDrawables(null, null, null, null)
             }
             IconMode.INFO -> {
-                val errorColor = colorProvider.getColor(R.color.notification_accent_color)
+                val errorColor = colorProvider.getColor(im.vector.lib.ui.styles.R.color.notification_accent_color)
                 ContextCompat.getDrawable(holder.view.context, R.drawable.ic_notification_privacy_warning)?.apply {
                     ThemeUtils.tintDrawableWithColor(this, errorColor)
                     holder.textView.setCompoundDrawablesWithIntrinsicBounds(this, null, null, null)
                 }
             }
             IconMode.ERROR -> {
-                val errorColor = colorProvider.getColorFromAttribute(R.attr.colorError)
+                val errorColor = colorProvider.getColorFromAttribute(com.google.android.material.R.attr.colorError)
                 ContextCompat.getDrawable(holder.view.context, R.drawable.ic_notification_privacy_warning)?.apply {
                     ThemeUtils.tintDrawableWithColor(this, errorColor)
                     holder.textView.setCompoundDrawablesWithIntrinsicBounds(this, null, null, null)

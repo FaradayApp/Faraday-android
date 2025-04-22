@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.usercode
@@ -29,7 +20,6 @@ import com.airbnb.mvrx.Mavericks
 import com.airbnb.mvrx.viewModel
 import com.airbnb.mvrx.withState
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.replaceFragment
 import im.vector.app.core.platform.VectorBaseActivity
 import im.vector.app.core.utils.onPermissionDeniedSnackbar
@@ -41,6 +31,7 @@ import im.vector.app.features.qrcode.QrCodeScannerEvents
 import im.vector.app.features.qrcode.QrCodeScannerFragment
 import im.vector.app.features.qrcode.QrCodeScannerViewModel
 import im.vector.app.features.qrcode.QrScannerArgs
+import im.vector.lib.strings.CommonStrings
 import kotlinx.parcelize.Parcelize
 import kotlin.reflect.KClass
 
@@ -89,7 +80,7 @@ class UserCodeActivity : VectorBaseActivity<ActivitySimpleBinding>(),
             when (mode) {
                 UserCodeState.Mode.SHOW -> showFragment(ShowUserCodeFragment::class)
                 UserCodeState.Mode.SCAN -> {
-                    val args = QrScannerArgs(showExtraButtons = true, R.string.user_code_scan)
+                    val args = QrScannerArgs(showExtraButtons = true, CommonStrings.user_code_scan)
                     showFragment(QrCodeScannerFragment::class, args)
                 }
                 is UserCodeState.Mode.RESULT -> {
@@ -108,7 +99,7 @@ class UserCodeActivity : VectorBaseActivity<ActivitySimpleBinding>(),
                 is UserCodeShareViewEvents.NavigateToRoom -> navigator.openRoom(this, it.roomId)
                 is UserCodeShareViewEvents.CameraPermissionNotGranted -> {
                     if (it.deniedPermanently) {
-                        onPermissionDeniedSnackbar(R.string.permissions_denied_qr_code)
+                        onPermissionDeniedSnackbar(CommonStrings.permissions_denied_qr_code)
                     }
                 }
                 else -> {
@@ -125,7 +116,7 @@ class UserCodeActivity : VectorBaseActivity<ActivitySimpleBinding>(),
                     sharedViewModel.handle(UserCodeActions.SwitchMode(UserCodeState.Mode.SHOW))
                 }
                 is QrCodeScannerEvents.ParseFailed -> {
-                    Toast.makeText(this, R.string.qr_code_not_scanned, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, CommonStrings.qr_code_not_scanned, Toast.LENGTH_SHORT).show()
                     finish()
                 }
             }
@@ -149,6 +140,7 @@ class UserCodeActivity : VectorBaseActivity<ActivitySimpleBinding>(),
 
     override fun mxToBottomSheetSwitchToSpace(spaceId: String) {}
 
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun onBackPressed() = withState(sharedViewModel) {
         when (it.mode) {
             UserCodeState.Mode.SHOW -> {

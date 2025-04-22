@@ -18,7 +18,7 @@ package im.vector.app.features.workers.changeaccount
 
 import androidx.fragment.app.FragmentActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import im.vector.app.R
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.session.profile.model.AccountItem
 
 class ChangeAccountUiWorker(
@@ -29,12 +29,12 @@ class ChangeAccountUiWorker(
 
     fun perform() {
         MaterialAlertDialogBuilder(activity)
-                .setTitle(R.string.action_сhange_new_account)
-                .setMessage(R.string.action_change_account_confirmation_simple)
-                .setPositiveButton(R.string.action_сhange_new_account) { _, _ ->
+                .setTitle(CommonStrings.action_сhange_new_account)
+                .setMessage(CommonStrings.action_change_account_confirmation_simple)
+                .setPositiveButton(CommonStrings.action_сhange_new_account) { _, _ ->
                     onPositiveActionClicked(accountItem)
                 }
-                .setNegativeButton(R.string.action_cancel, null)
+                .setNegativeButton(CommonStrings.action_cancel, null)
                 .show()
     }
 }

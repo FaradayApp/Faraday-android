@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.core.epoxy.profiles.notifications
@@ -28,6 +19,7 @@ import im.vector.app.core.epoxy.VectorEpoxyHolder
 import im.vector.app.core.epoxy.VectorEpoxyModel
 import im.vector.app.core.epoxy.onClick
 import im.vector.app.core.extensions.setAttributeTintedImageResource
+import im.vector.lib.strings.CommonStrings
 
 @EpoxyModelClass
 abstract class RadioButtonItem : VectorEpoxyModel<RadioButtonItem.Holder>(R.layout.item_radio) {
@@ -55,11 +47,11 @@ abstract class RadioButtonItem : VectorEpoxyModel<RadioButtonItem.Holder>(R.layo
         }
 
         if (selected) {
-            holder.radioImage.setAttributeTintedImageResource(R.drawable.ic_radio_on, R.attr.colorPrimary)
-            holder.radioImage.contentDescription = holder.view.context.getString(R.string.a11y_checked)
+            holder.radioImage.setAttributeTintedImageResource(R.drawable.ic_radio_on, com.google.android.material.R.attr.colorPrimary)
+            holder.radioImage.contentDescription = holder.view.context.getString(CommonStrings.a11y_checked)
         } else {
             holder.radioImage.setImageDrawable(ContextCompat.getDrawable(holder.view.context, R.drawable.ic_radio_off))
-            holder.radioImage.contentDescription = holder.view.context.getString(R.string.a11y_unchecked)
+            holder.radioImage.contentDescription = holder.view.context.getString(CommonStrings.a11y_unchecked)
         }
     }
 

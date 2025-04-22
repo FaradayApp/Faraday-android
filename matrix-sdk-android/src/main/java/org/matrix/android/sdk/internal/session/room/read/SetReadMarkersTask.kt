@@ -20,6 +20,8 @@ import com.zhuinden.monarchy.Monarchy
 import de.spiritcroc.matrixsdk.util.DbgUtil
 import de.spiritcroc.matrixsdk.util.Dimber
 import io.realm.Realm
+import kotlinx.coroutines.withContext
+import org.matrix.android.sdk.api.MatrixCoroutineDispatchers
 import org.matrix.android.sdk.api.session.events.model.LocalEcho
 import org.matrix.android.sdk.api.session.homeserver.HomeServerCapabilitiesService
 import org.matrix.android.sdk.internal.database.model.RoomSummaryEntity
@@ -66,11 +68,12 @@ internal class DefaultSetReadMarkersTask @Inject constructor(
         private val globalErrorReceiver: GlobalErrorReceiver,
         private val clock: Clock,
         private val homeServerCapabilitiesService: HomeServerCapabilitiesService,
+        private val coroutineDispatchers: MatrixCoroutineDispatchers,
 ) : SetReadMarkersTask {
 
     private val rmDimber = Dimber("ReadMarkerDbg", DbgUtil.DBG_READ_MARKER)
 
-    override suspend fun execute(params: SetReadMarkersTask.Params) {
+    override suspend fun execute(params: SetReadMarkersTask.Params) = withContext(coroutineDispatchers.io) {
         val markers = mutableMapOf<String, String>()
         Timber.v("Execute set read marker with params: $params")
         val latestSyncedEventId = latestSyncedEventId(params.roomId)

@@ -1,21 +1,13 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.crypto.quads
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -29,11 +21,11 @@ import com.airbnb.mvrx.Mavericks
 import com.airbnb.mvrx.viewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.replaceFragment
 import im.vector.app.core.platform.SimpleFragmentActivity
 import im.vector.app.core.platform.VectorBaseBottomSheetDialogFragment
 import im.vector.app.features.crypto.recover.SetupMode
+import im.vector.lib.strings.CommonStrings
 import kotlinx.parcelize.Parcelize
 import kotlin.reflect.KClass
 
@@ -49,6 +41,7 @@ class SharedSecureStorageActivity :
             val requestedSecrets: List<String> = emptyList(),
             val resultKeyStoreAlias: String,
             val writeSecrets: List<Pair<String, String>> = emptyList(),
+            val currentStep: SharedSecureStorageViewState.Step = SharedSecureStorageViewState.Step.EnterPassphrase,
     ) : Parcelable
 
     private val viewModel: SharedSecureStorageViewModel by viewModel()
@@ -69,6 +62,8 @@ class SharedSecureStorageActivity :
         supportFragmentManager.removeFragmentOnAttachListener(this)
     }
 
+    @Suppress("OVERRIDE_DEPRECATION")
+    @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
         viewModel.handle(SharedSecureStorageAction.Back)
     }
@@ -92,10 +87,10 @@ class SharedSecureStorageActivity :
             }
             is SharedSecureStorageViewEvent.Error -> {
                 MaterialAlertDialogBuilder(this)
-                        .setTitle(getString(R.string.dialog_title_error))
+                        .setTitle(getString(CommonStrings.dialog_title_error))
                         .setMessage(it.message)
                         .setCancelable(false)
-                        .setPositiveButton(R.string.ok) { _, _ ->
+                        .setPositiveButton(CommonStrings.ok) { _, _ ->
                             if (it.dismiss) {
                                 finish()
                             }
@@ -150,7 +145,8 @@ class SharedSecureStorageActivity :
                 context: Context,
                 keyId: String? = null,
                 requestedSecrets: List<String>,
-                resultKeyStoreAlias: String = DEFAULT_RESULT_KEYSTORE_ALIAS
+                resultKeyStoreAlias: String = DEFAULT_RESULT_KEYSTORE_ALIAS,
+                initialStep: SharedSecureStorageViewState.Step = SharedSecureStorageViewState.Step.EnterPassphrase
         ): Intent {
             require(requestedSecrets.isNotEmpty())
             return Intent(context, SharedSecureStorageActivity::class.java).also {
@@ -159,7 +155,8 @@ class SharedSecureStorageActivity :
                         Args(
                                 keyId = keyId,
                                 requestedSecrets = requestedSecrets,
-                                resultKeyStoreAlias = resultKeyStoreAlias
+                                resultKeyStoreAlias = resultKeyStoreAlias,
+                                currentStep = initialStep
                         )
                 )
             }
@@ -169,7 +166,8 @@ class SharedSecureStorageActivity :
                 context: Context,
                 keyId: String? = null,
                 writeSecrets: List<Pair<String, String>>,
-                resultKeyStoreAlias: String = DEFAULT_RESULT_KEYSTORE_ALIAS
+                resultKeyStoreAlias: String = DEFAULT_RESULT_KEYSTORE_ALIAS,
+                initialStep: SharedSecureStorageViewState.Step = SharedSecureStorageViewState.Step.EnterPassphrase
         ): Intent {
             require(writeSecrets.isNotEmpty())
             return Intent(context, SharedSecureStorageActivity::class.java).also {
@@ -178,7 +176,8 @@ class SharedSecureStorageActivity :
                         Args(
                                 keyId = keyId,
                                 writeSecrets = writeSecrets,
-                                resultKeyStoreAlias = resultKeyStoreAlias
+                                resultKeyStoreAlias = resultKeyStoreAlias,
+                                currentStep = initialStep,
                         )
                 )
             }

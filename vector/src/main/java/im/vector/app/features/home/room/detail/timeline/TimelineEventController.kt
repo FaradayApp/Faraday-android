@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.detail.timeline
@@ -25,14 +16,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.epoxy.EpoxyController
 import com.airbnb.epoxy.EpoxyModel
 import com.airbnb.epoxy.VisibilityState
-import de.spiritcroc.matrixsdk.util.DbgUtil
 import im.vector.app.core.date.DateFormatKind
 import im.vector.app.core.date.VectorDateFormatter
 import im.vector.app.core.epoxy.LoadingItem_
 import im.vector.app.core.extensions.localDateTime
 import im.vector.app.core.extensions.nextOrNull
 import im.vector.app.core.extensions.prevOrNull
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.home.room.detail.JitsiState
 import im.vector.app.features.home.room.detail.RoomDetailAction
 import im.vector.app.features.home.room.detail.RoomDetailViewState
@@ -60,6 +50,7 @@ import im.vector.app.features.home.room.detail.timeline.item.MessageInformationD
 import im.vector.app.features.home.room.detail.timeline.item.ReactionsSummaryEvents
 import im.vector.app.features.home.room.detail.timeline.item.ReadReceiptData
 import im.vector.app.features.home.room.detail.timeline.item.ReadReceiptsItem
+import im.vector.app.features.home.room.detail.timeline.readreceipts.ReadReceiptsCache
 import im.vector.app.features.home.room.detail.timeline.reply.ReplyPreviewRetriever
 import im.vector.app.features.home.room.detail.timeline.url.PreviewUrlRetriever
 import im.vector.app.features.media.AttachmentData
@@ -78,7 +69,6 @@ import org.matrix.android.sdk.api.session.room.model.message.MessageAudioContent
 import org.matrix.android.sdk.api.session.room.model.message.MessageImageInfoContent
 import org.matrix.android.sdk.api.session.room.model.message.MessageVideoContent
 import org.matrix.android.sdk.api.session.room.powerlevels.PowerLevelsHelper
-import org.matrix.android.sdk.api.session.room.read.ReadService
 import org.matrix.android.sdk.api.session.room.timeline.Timeline
 import org.matrix.android.sdk.api.session.room.timeline.TimelineEvent
 import timber.log.Timber
@@ -213,7 +203,7 @@ class TimelineEventController @Inject constructor(
     // Map eventId to adapter position
     private val adapterPositionMapping = HashMap<String, Int>()
     private val timelineEventsGroups = TimelineEventsGroups()
-    private val receiptsByEvent = HashMap<String, MutableList<ReadReceipt>>()
+    private val readReceiptsCache = ReadReceiptsCache()
     private val modelCache = arrayListOf<CacheItemData?>()
     private var currentSnapshot: List<TimelineEvent> = emptyList()
     private var inSubmitList: Boolean = false
@@ -463,7 +453,7 @@ class TimelineEventController @Inject constructor(
         }
         Timber.v("Preprocess events took $preprocessEventsTiming ms")
         var numberOfEventsToBuild = 0
-        val lastSentEventWithoutReadReceipts = searchLastSentEventWithoutReadReceipts(receiptsByEvent)
+        val lastSentEventWithoutReadReceipts = searchLastSentEventWithoutReadReceipts(readReceiptsCache.receiptsByEvent())
         (0 until modelCache.size).forEach { position ->
             val event = currentSnapshot[position]
             val nextEvent = currentSnapshot.nextOrNull(position)
@@ -509,7 +499,7 @@ class TimelineEventController @Inject constructor(
             }
             val itemCachedData = modelCache[position] ?: return@forEach
             // Then update with additional models if needed
-            modelCache[position] = itemCachedData.enrichWithModels(event, nextEvent, position, receiptsByEvent)
+            modelCache[position] = itemCachedData.enrichWithModels(event, nextEvent, position, readReceiptsCache.receiptsByEvent())
         }
         Timber.v("Number of events to rebuild: $numberOfEventsToBuild on ${modelCache.size} total events")
     }
@@ -598,15 +588,15 @@ class TimelineEventController @Inject constructor(
     }
 
     private fun preprocessReverseEvents() {
-        receiptsByEvent.clear()
+        readReceiptsCache.clear()
         timelineEventsGroups.clear()
         val itr = currentSnapshot.listIterator(currentSnapshot.size)
         var lastShownEventId: String? = null
         while (itr.hasPrevious()) {
             val event = itr.previous()
             timelineEventsGroups.addOrIgnore(event)
-            val currentReadReceipts = ArrayList(event.readReceipts).filter {
-                it.roomMember.userId != session.myUserId && it.isVisibleInThisThread()
+            val currentReadReceipts = event.readReceipts.filter {
+                it.roomMember.userId != session.myUserId
             }
             if (timelineEventVisibilityHelper.shouldShowEvent(
                             timelineEvent = event,
@@ -619,18 +609,7 @@ class TimelineEventController @Inject constructor(
             if (lastShownEventId == null) {
                 continue
             }
-            val existingReceipts = receiptsByEvent.getOrPut(lastShownEventId) { ArrayList() }
-            existingReceipts.addAll(currentReadReceipts)
-        }
-    }
-
-    private fun ReadReceipt.isVisibleInThisThread(): Boolean {
-        return if (partialState.isFromThreadTimeline()) {
-            this.threadId == partialState.rootThreadEventId
-        } else if (DbgUtil.isDbgEnabled(DbgUtil.DBG_SHOW_DUPLICATE_READ_RECEIPTS)) {
-            this.threadId in listOf(null, ReadService.THREAD_ID_MAIN, ReadService.THREAD_ID_MAIN_OR_NULL)
-        } else {
-            this.threadId == ReadService.THREAD_ID_MAIN_OR_NULL
+            readReceiptsCache.addReceiptsOnEvent(currentReadReceipts, lastShownEventId)
         }
     }
 

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.location.live
@@ -33,6 +24,7 @@ import im.vector.app.core.glide.GlideApp
 import im.vector.app.core.utils.TextUtils
 import im.vector.app.databinding.ViewLiveLocationRunningBannerBinding
 import im.vector.app.features.themes.ThemeUtils
+import im.vector.lib.strings.CommonStrings
 import org.threeten.bp.Duration
 
 private const val REMAINING_TIME_COUNTER_INTERVAL_IN_MS = 1000L
@@ -77,7 +69,7 @@ class LiveLocationRunningBannerView @JvmOverloads constructor(
 
     private fun renderEmitter(viewState: LiveLocationMessageBannerViewState.Emitter) {
         stopButton.isVisible = true
-        title.text = context.getString(R.string.location_share_live_enabled)
+        title.text = context.getString(CommonStrings.location_share_live_enabled)
 
         countDownTimer?.cancel()
         viewState.remainingTimeInMillis
@@ -87,14 +79,14 @@ class LiveLocationRunningBannerView @JvmOverloads constructor(
                         override fun onTick(millisUntilFinished: Long) {
                             val duration = Duration.ofMillis(millisUntilFinished.coerceAtLeast(0L))
                             subTitle.text = context.getString(
-                                    R.string.location_share_live_remaining_time,
+                                    CommonStrings.location_share_live_remaining_time,
                                     TextUtils.formatDurationWithUnits(context, duration)
                             )
                         }
 
                         override fun onFinish() {
                             subTitle.text = context.getString(
-                                    R.string.location_share_live_remaining_time,
+                                    CommonStrings.location_share_live_remaining_time,
                                     TextUtils.formatDurationWithUnits(context, Duration.ofMillis(0L))
                             )
                         }
@@ -125,8 +117,8 @@ class LiveLocationRunningBannerView @JvmOverloads constructor(
 
     private fun renderWatcher(viewState: LiveLocationMessageBannerViewState.Watcher) {
         stopButton.isVisible = false
-        title.text = context.getString(R.string.location_share_live_view)
-        subTitle.text = context.getString(R.string.location_share_live_until, viewState.formattedLocalTimeOfEndOfLive)
+        title.text = context.getString(CommonStrings.location_share_live_view)
+        subTitle.text = context.getString(CommonStrings.location_share_live_until, viewState.formattedLocalTimeOfEndOfLive)
     }
 
     override fun onDetachedFromWindow() {

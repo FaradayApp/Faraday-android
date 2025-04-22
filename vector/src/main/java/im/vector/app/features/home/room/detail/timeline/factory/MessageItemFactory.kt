@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.detail.timeline.factory
@@ -86,6 +77,7 @@ import im.vector.app.features.voicebroadcast.model.MessageVoiceBroadcastInfoCont
 import im.vector.lib.core.utils.epoxy.charsequence.toEpoxyCharSequence
 import im.vector.lib.core.utils.epoxy.charsequence.toMessageTextEpoxyCharSequence
 import im.vector.lib.core.utils.timer.Clock
+import im.vector.lib.strings.CommonStrings
 import me.gujun.android.span.span
 import org.matrix.android.sdk.api.MatrixUrls.isMxcUrl
 import org.matrix.android.sdk.api.session.Session
@@ -186,7 +178,7 @@ class MessageItemFactory @Inject constructor(
 
         val messageContent = event.getVectorLastMessageContent()
         if (messageContent == null) {
-            val malformedText = stringProvider.getString(R.string.malformed_message)
+            val malformedText = stringProvider.getString(CommonStrings.malformed_message)
             return defaultItemFactory.create(malformedText, informationData, highlight, callback)
         }
         if (messageContent.relatesTo?.type == RelationType.REPLACE ||
@@ -241,14 +233,14 @@ class MessageItemFactory @Inject constructor(
             urlMapProvider.buildStaticMapUrl(it, INITIAL_MAP_ZOOM_IN_TIMELINE, width, height)
         }
 
-        val locationUserId = if (locationContent.isSelfLocation()) informationData.senderId else null
+        val pinMatrixItem = if (locationContent.isSelfLocation()) informationData.matrixItem else null
 
         return MessageLocationItem_()
                 .attributes(attributes)
                 .locationUrl(locationUrl)
                 .mapWidth(width)
                 .mapHeight(height)
-                .locationUserId(locationUserId)
+                .pinMatrixItem(pinMatrixItem)
                 .locationPinProvider(locationPinProvider)
                 .highlighted(highlight)
                 .leftGuideline(avatarSizeProvider.leftGuideline)
@@ -300,10 +292,13 @@ class MessageItemFactory @Inject constructor(
         } else {
             null
         }
-        val pollContent = pollStartEvent?.root?.getClearContent()?.toModel<MessagePollContent>()
+
+        val editedContent = pollStartEvent?.annotations?.editSummary?.latestEdit?.getClearContent()?.toModel<MessagePollContent>()?.newContent
+        val latestContent = editedContent ?: pollStartEvent?.root?.getClearContent()
+        val pollContent = latestContent?.toModel<MessagePollContent>()
 
         return if (pollContent == null) {
-            val title = stringProvider.getString(R.string.message_reply_to_ended_poll_preview).toEpoxyCharSequence()
+            val title = stringProvider.getString(CommonStrings.message_reply_to_ended_poll_preview).toEpoxyCharSequence()
             PollItem_()
                     .attributes(attributes)
                     .eventId(informationData.eventId)
@@ -561,6 +556,8 @@ class MessageItemFactory @Inject constructor(
         // Furthermore, its corner transformations are wrong when not using the animated case for rendering.
         val forcePlay = messageContent.mimeType == MimeTypes.Webp
         val playable = messageContent.mimeType == MimeTypes.Gif || forcePlay
+        // don't show play button because detecting animated webp isn't possible via mimetype
+        val playableIfAutoplay = playable || messageContent.mimeType == MimeTypes.Webp
 
         return MessageImageVideoItem_()
                 .attributes(attributes.takeUnless { forcePlay && !it.autoplayAnimatedImages } ?: attributes.copy(autoplayAnimatedImages = true))
@@ -587,7 +584,7 @@ class MessageItemFactory @Inject constructor(
                         }
                     }
                 }.apply {
-                    if (playable && vectorPreferences.autoplayAnimatedImages()) {
+                    if (playableIfAutoplay && vectorPreferences.autoplayAnimatedImages()) {
                         mode(ImageContentRenderer.Mode.ANIMATED_THUMBNAIL)
                     }
                 }
@@ -674,8 +671,9 @@ class MessageItemFactory @Inject constructor(
                 ?: matrixFormattedBody
          */
         val compressed = htmlCompressor.compress(matrixFormattedBody)
-        val renderedFormattedBody = htmlRenderer.get().render(compressed, pillsPostProcessor) as Spanned
-        val pseudoEmojiBody = htmlRenderer.get().render(customToPseudoEmoji(compressed), pillsPostProcessor) as Spanned
+        val renderedFormattedBody = htmlRenderer.get().render(compressed, pillsPostProcessor) as? Spanned ?: compressed
+        val pseudoEmojiCompressed = customToPseudoEmoji(compressed)
+        val pseudoEmojiBody = htmlRenderer.get().render(pseudoEmojiCompressed, pillsPostProcessor) as? Spanned ?: pseudoEmojiCompressed
         return buildMessageTextItem(
                 renderedFormattedBody,
                 true,
@@ -734,9 +732,9 @@ class MessageItemFactory @Inject constructor(
     ): Spannable {
         val spannable = SpannableStringBuilder()
         spannable.append(linkifiedBody)
-        val editedSuffix = stringProvider.getString(R.string.edited_suffix)
+        val editedSuffix = stringProvider.getString(CommonStrings.edited_suffix)
         spannable.append(" ").append(editedSuffix)
-        val color = colorProvider.getColorFromAttribute(R.attr.vctr_content_secondary)
+        val color = colorProvider.getColorFromAttribute(im.vector.lib.ui.styles.R.attr.vctr_content_secondary)
         val editStart = spannable.lastIndexOf(editedSuffix)
         val editEnd = editStart + editedSuffix.length
         spannable.setSpan(
@@ -806,7 +804,7 @@ class MessageItemFactory @Inject constructor(
 
         formattedBody = span {
             text = htmlBody
-            textColor = colorProvider.getColorFromAttribute(R.attr.vctr_content_secondary)
+            textColor = colorProvider.getColorFromAttribute(im.vector.lib.ui.styles.R.attr.vctr_content_secondary)
             textStyle = "italic"
         }
 

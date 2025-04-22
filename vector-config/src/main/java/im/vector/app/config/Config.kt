@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.config
@@ -41,6 +32,12 @@ object Config {
 
     const val ENABLE_LOCATION_SHARING = true
     const val LOCATION_MAP_TILER_KEY = "fU3vlMsMn4Jb6dnEIFsx"
+
+    /**
+     * Whether to read the `io.element.functional_members` state event
+     * and exclude any service members when computing a room's name and avatar.
+     */
+    const val SUPPORT_FUNCTIONAL_MEMBERS = true
 
     /**
      * The maximum length of voice messages in milliseconds.
@@ -83,7 +80,7 @@ object Config {
      * Can be disabled by providing Analytics.Disabled
      */
     val RELEASE_ANALYTICS_CONFIG = Analytics.Enabled(
-            postHogHost = "https://posthog.hss.element.io",
+            postHogHost = "https://posthog.element.io",
             postHogApiKey = "phc_Jzsm6DTm6V2705zeU5dcNvQDlonOR68XvX2sh1sEOHO",
             policyLink = "https://element.io/cookie-policy",
             sentryDSN = "https://f6acc9cfc2024641b28c87ad95e73e66@sentry.tools.element.io/49",
@@ -95,6 +92,20 @@ object Config {
      * Can be disabled by providing Analytics.Disabled
      */
     val NIGHTLY_ANALYTICS_CONFIG = RELEASE_ANALYTICS_CONFIG.copy(sentryEnvironment = "NIGHTLY")
+    val RELEASE_R_ANALYTICS_CONFIG = RELEASE_ANALYTICS_CONFIG.copy(sentryEnvironment = "RELEASE-R")
+    val ER_NIGHTLY_ANALYTICS_CONFIG = RELEASE_ANALYTICS_CONFIG.copy(sentryEnvironment = "element-r")
+    val ER_DEBUG_ANALYTICS_CONFIG = DEBUG_ANALYTICS_CONFIG.copy(sentryEnvironment = "element-r")
 
     val SHOW_UNVERIFIED_SESSIONS_ALERT_AFTER_MILLIS = 7.days.inWholeMilliseconds // 1 Week
+
+    /**
+     * Sunsetting the application.
+     * Fork maintainers can use this to inform users about their new application if any. Note that you probably also want
+     * to replace the resource `replacement_app_icon` too.
+     */
+    val sunsetConfig: SunsetConfig = SunsetConfig.Disabled /* SunsetConfig.Enabled(
+            learnMoreLink = "https://schildi.chat/android/next",
+            replacementApplicationName = "SchildiChat Next",
+            replacementApplicationId = "chat.schildi.android",
+    ) */
 }

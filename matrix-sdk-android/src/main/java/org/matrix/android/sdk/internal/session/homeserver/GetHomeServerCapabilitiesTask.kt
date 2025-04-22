@@ -20,12 +20,14 @@ import com.zhuinden.monarchy.Monarchy
 import org.matrix.android.sdk.api.MatrixPatterns.getServerName
 import org.matrix.android.sdk.api.auth.data.HomeServerConnectionConfig
 import org.matrix.android.sdk.api.auth.wellknown.WellknownResult
+import org.matrix.android.sdk.api.extensions.orFalse
 import org.matrix.android.sdk.api.extensions.orTrue
 import org.matrix.android.sdk.api.session.homeserver.HomeServerCapabilities
 import org.matrix.android.sdk.internal.auth.version.Versions
+import org.matrix.android.sdk.internal.auth.version.doesServerSupportAuthenticatedMedia
 import org.matrix.android.sdk.internal.auth.version.doesServerSupportLogoutDevices
 import org.matrix.android.sdk.internal.auth.version.doesServerSupportQrCodeLogin
-import org.matrix.android.sdk.internal.auth.version.doesServerSupportRedactEventWithRelations
+import org.matrix.android.sdk.internal.auth.version.doesServerSupportRedactionOfRelatedEvents
 import org.matrix.android.sdk.internal.auth.version.doesServerSupportRemoteToggleOfPushNotifications
 import org.matrix.android.sdk.internal.auth.version.doesServerSupportThreadUnreadNotifications
 import org.matrix.android.sdk.internal.auth.version.doesServerSupportThreads
@@ -38,8 +40,9 @@ import org.matrix.android.sdk.internal.di.UserId
 import org.matrix.android.sdk.internal.network.GlobalErrorReceiver
 import org.matrix.android.sdk.internal.network.executeRequest
 import org.matrix.android.sdk.internal.session.integrationmanager.IntegrationManagerConfigExtractor
+import org.matrix.android.sdk.internal.session.media.AuthenticatedMediaAPI
 import org.matrix.android.sdk.internal.session.media.GetMediaConfigResult
-import org.matrix.android.sdk.internal.session.media.MediaAPI
+import org.matrix.android.sdk.internal.session.media.UnauthenticatedMediaAPI
 import org.matrix.android.sdk.internal.task.Task
 import org.matrix.android.sdk.internal.util.awaitTransaction
 import org.matrix.android.sdk.internal.wellknown.GetWellknownTask
@@ -55,7 +58,8 @@ internal interface GetHomeServerCapabilitiesTask : Task<GetHomeServerCapabilitie
 
 internal class DefaultGetHomeServerCapabilitiesTask @Inject constructor(
         private val capabilitiesAPI: CapabilitiesAPI,
-        private val mediaAPI: MediaAPI,
+        private val unauthenticatedMediaAPI: UnauthenticatedMediaAPI,
+        private val authenticatedMediaAPI: AuthenticatedMediaAPI,
         @SessionDatabase private val monarchy: Monarchy,
         private val globalErrorReceiver: GlobalErrorReceiver,
         private val getWellknownTask: GetWellknownTask,
@@ -70,7 +74,6 @@ internal class DefaultGetHomeServerCapabilitiesTask @Inject constructor(
         if (!doRequest) {
             monarchy.awaitTransaction { realm ->
                 val homeServerCapabilitiesEntity = HomeServerCapabilitiesEntity.getOrCreate(realm)
-
                 doRequest = homeServerCapabilitiesEntity.lastUpdatedTimestamp + MIN_DELAY_BETWEEN_TWO_REQUEST_MILLIS < Date().time
             }
         }
@@ -85,15 +88,19 @@ internal class DefaultGetHomeServerCapabilitiesTask @Inject constructor(
             }
         }.getOrNull()
 
-        val mediaConfig = runCatching {
-            executeRequest(globalErrorReceiver) {
-                mediaAPI.getMediaConfig()
-            }
-        }.getOrNull()
-
         val versions = runCatching {
             executeRequest(null) {
                 capabilitiesAPI.getVersions()
+            }
+        }.getOrNull()
+
+        val mediaConfig = runCatching {
+            executeRequest(globalErrorReceiver) {
+                if (versions?.doesServerSupportAuthenticatedMedia().orFalse()) {
+                    authenticatedMediaAPI.getMediaConfig()
+                } else {
+                    unauthenticatedMediaAPI.getMediaConfig()
+                }
             }
         }.getOrNull()
 
@@ -151,12 +158,12 @@ internal class DefaultGetHomeServerCapabilitiesTask @Inject constructor(
                         getVersionResult.doesServerSupportThreads()
                 homeServerCapabilitiesEntity.canUseThreadReadReceiptsAndNotifications =
                         getVersionResult.doesServerSupportThreadUnreadNotifications()
-                homeServerCapabilitiesEntity.canLoginWithQrCode =
-                        getVersionResult.doesServerSupportQrCodeLogin()
                 homeServerCapabilitiesEntity.canRemotelyTogglePushNotificationsOfDevices =
                         getVersionResult.doesServerSupportRemoteToggleOfPushNotifications()
                 homeServerCapabilitiesEntity.canRedactEventWithRelations =
-                        getVersionResult.doesServerSupportRedactEventWithRelations()
+                        getVersionResult.doesServerSupportRedactionOfRelatedEvents()
+                homeServerCapabilitiesEntity.canUseAuthenticatedMedia =
+                        getVersionResult.doesServerSupportAuthenticatedMedia()
             }
 
             if (getWellknownResult != null && getWellknownResult is WellknownResult.Prompt) {
@@ -167,10 +174,27 @@ internal class DefaultGetHomeServerCapabilitiesTask @Inject constructor(
                     Timber.v("Extracted integration config : $config")
                     realm.insertOrUpdate(config)
                 }
+                homeServerCapabilitiesEntity.authenticationIssuer = getWellknownResult.wellKnown.unstableDelegatedAuthConfig?.issuer
                 homeServerCapabilitiesEntity.externalAccountManagementUrl = getWellknownResult.wellKnown.unstableDelegatedAuthConfig?.accountManagementUrl
+                homeServerCapabilitiesEntity.disableNetworkConstraint = getWellknownResult.wellKnown.disableNetworkConstraint
             }
+
+            homeServerCapabilitiesEntity.canLoginWithQrCode = canLoginWithQrCode(getCapabilitiesResult, getVersionResult)
+
             homeServerCapabilitiesEntity.lastUpdatedTimestamp = Date().time
         }
+    }
+
+    private fun canLoginWithQrCode(getCapabilitiesResult: GetCapabilitiesResult?, getVersionResult: Versions?): Boolean {
+        // in r0 of MSC3882 an unstable feature was exposed. In stable it is done via /capabilities and /login
+
+        // in stable 1.7 a capability is exposed for the authenticated user
+        if (getCapabilitiesResult?.capabilities?.getLoginToken != null) {
+            return getCapabilitiesResult.capabilities.getLoginToken.enabled == true
+        }
+
+        @Suppress("DEPRECATION")
+        return getVersionResult?.doesServerSupportQrCodeLogin() == true
     }
 
     companion object {

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.detail.timeline.item
@@ -34,12 +25,13 @@ import im.vector.app.R
 import im.vector.app.core.epoxy.onClick
 import im.vector.app.core.extensions.setTextOrHide
 import im.vector.app.core.utils.tappableMatchingText
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.home.room.detail.RoomDetailAction
 import im.vector.app.features.home.room.detail.timeline.TimelineEventController
 import im.vector.app.features.home.room.detail.timeline.style.TimelineMessageLayout
 import im.vector.app.features.home.room.detail.timeline.tools.linkify
 import im.vector.app.features.themes.ThemeUtils
+import im.vector.lib.strings.CommonStrings
 import me.gujun.android.span.span
 import org.matrix.android.sdk.api.extensions.orFalse
 import org.matrix.android.sdk.api.session.room.model.RoomSummary
@@ -98,15 +90,15 @@ abstract class MergedRoomCreationItem : BasedMergedItem<MergedRoomCreationItem.H
         val createdFromCurrentUser = data?.userId == attributes.currentUserId
         val summary = if (createdFromCurrentUser) {
             if (isDirectRoom) {
-                resources.getString(R.string.direct_room_created_summary_item_by_you)
+                resources.getString(CommonStrings.direct_room_created_summary_item_by_you)
             } else {
-                resources.getString(R.string.room_created_summary_item_by_you)
+                resources.getString(CommonStrings.room_created_summary_item_by_you)
             }
         } else {
             if (isDirectRoom) {
-                resources.getString(R.string.direct_room_created_summary_item, data?.memberName.orEmpty())
+                resources.getString(CommonStrings.direct_room_created_summary_item, data?.memberName.orEmpty())
             } else {
-                resources.getString(R.string.room_created_summary_item, data?.memberName.orEmpty())
+                resources.getString(CommonStrings.room_created_summary_item, data?.memberName.orEmpty())
             }
         }
         holder.summaryView.text = summary
@@ -134,24 +126,24 @@ abstract class MergedRoomCreationItem : BasedMergedItem<MergedRoomCreationItem.H
                 val isWaitingUser = roomSummary?.isEncrypted.orFalse() && roomSummary?.joinedMembersCount == 1 && roomSummary?.invitedMembersCount == 0
                 when {
                     attributes.isLocalRoom -> Triple(
-                            R.string.encryption_enabled,
-                            R.string.direct_room_encryption_enabled_tile_description_future,
+                            CommonStrings.encryption_enabled,
+                            CommonStrings.direct_room_encryption_enabled_tile_description_future,
                             R.drawable.ic_shield_black
                     )
                     isWaitingUser -> Triple(
-                            R.string.direct_room_encryption_enabled_waiting_users,
-                            R.string.direct_room_encryption_enabled_waiting_users_tile_description,
+                            CommonStrings.direct_room_encryption_enabled_waiting_users,
+                            CommonStrings.direct_room_encryption_enabled_waiting_users_tile_description,
                             R.drawable.ic_room_profile_member_list
                     )
                     else -> Triple(
-                            R.string.encryption_enabled,
-                            R.string.direct_room_encryption_enabled_tile_description,
+                            CommonStrings.encryption_enabled,
+                            CommonStrings.direct_room_encryption_enabled_tile_description,
                             R.drawable.ic_shield_black
                     )
                 }
             }
             else -> {
-                Triple(R.string.encryption_enabled, R.string.encryption_enabled_tile_description, R.drawable.ic_shield_black)
+                Triple(CommonStrings.encryption_enabled, CommonStrings.encryption_enabled_tile_description, R.drawable.ic_shield_black)
             }
         }
 
@@ -165,8 +157,8 @@ abstract class MergedRoomCreationItem : BasedMergedItem<MergedRoomCreationItem.H
     }
 
     private fun renderE2EUnsecureTile(holder: Holder) {
-        holder.e2eTitleTextView.text = holder.expandView.resources.getString(R.string.encryption_not_enabled)
-        holder.e2eTitleDescriptionView.text = holder.expandView.resources.getString(R.string.encryption_unknown_algorithm_tile_description)
+        holder.e2eTitleTextView.text = holder.expandView.resources.getString(CommonStrings.encryption_not_enabled)
+        holder.e2eTitleDescriptionView.text = holder.expandView.resources.getString(CommonStrings.encryption_unknown_algorithm_tile_description)
         holder.e2eTitleTextView.setCompoundDrawablesWithIntrinsicBounds(
                 ContextCompat.getDrawable(holder.view.context, R.drawable.ic_shield_warning),
                 null, null, null
@@ -221,22 +213,24 @@ abstract class MergedRoomCreationItem : BasedMergedItem<MergedRoomCreationItem.H
         val description = when {
             isDirectRoom -> {
                 if (attributes.isLocalRoom) {
-                    resources.getString(R.string.send_your_first_msg_to_invite, roomSummary?.displayName.orEmpty())
+                    resources.getString(CommonStrings.send_your_first_msg_to_invite, roomSummary?.displayName.orEmpty())
                 } else {
-                    resources.getString(R.string.this_is_the_beginning_of_dm, roomSummary?.displayName.orEmpty())
+                    resources.getString(CommonStrings.this_is_the_beginning_of_dm, roomSummary?.displayName.orEmpty())
                 }
             }
             roomDisplayName.isNullOrBlank() || roomSummary?.name.isNullOrBlank() -> {
-                holder.view.resources.getString(R.string.this_is_the_beginning_of_room_no_name)
+                holder.view.resources.getString(CommonStrings.this_is_the_beginning_of_room_no_name)
             }
             else -> {
-                holder.view.resources.getString(R.string.this_is_the_beginning_of_room, roomDisplayName)
+                holder.view.resources.getString(CommonStrings.this_is_the_beginning_of_room, roomDisplayName)
             }
         }
         holder.roomDescriptionText.text = description
         if (isDirectRoom && attributes.isLocalRoom) {
-            TextViewCompat.setTextAppearance(holder.roomDescriptionText, R.style.TextAppearance_Vector_Subtitle)
-            holder.roomDescriptionText.setTextColor(ThemeUtils.getColor(holder.roomDescriptionText.context, R.attr.vctr_content_primary))
+            TextViewCompat.setTextAppearance(holder.roomDescriptionText, im.vector.lib.ui.styles.R.style.TextAppearance_Vector_Subtitle)
+            holder.roomDescriptionText.setTextColor(
+                    ThemeUtils.getColor(holder.roomDescriptionText.context, im.vector.lib.ui.styles.R.attr.vctr_content_primary)
+            )
         }
     }
 
@@ -246,8 +240,8 @@ abstract class MergedRoomCreationItem : BasedMergedItem<MergedRoomCreationItem.H
             // do not show hint for DMs or group DMs
             val canSetTopic = attributes.canChangeTopic && !isDirectRoom
             if (canSetTopic) {
-                val addTopicLink = holder.view.resources.getString(R.string.add_a_topic_link_text)
-                val styledText = SpannableString(holder.view.resources.getString(R.string.room_created_summary_no_topic_creation_text, addTopicLink))
+                val addTopicLink = holder.view.resources.getString(CommonStrings.add_a_topic_link_text)
+                val styledText = SpannableString(holder.view.resources.getString(CommonStrings.room_created_summary_no_topic_creation_text, addTopicLink))
                 holder.roomTopicText.setTextOrHide(styledText.tappableMatchingText(addTopicLink, object : ClickableSpan() {
                     override fun onClick(widget: View) {
                         attributes.callback?.onTimelineItemAction(RoomDetailAction.QuickActionSetTopic)
@@ -257,7 +251,7 @@ abstract class MergedRoomCreationItem : BasedMergedItem<MergedRoomCreationItem.H
         } else {
             holder.roomTopicText.setTextOrHide(
                     span {
-                        span(holder.view.resources.getString(R.string.topic_prefix)) {
+                        span(holder.view.resources.getString(CommonStrings.topic_prefix)) {
                             textStyle = "bold"
                         }
                         +topic.linkify(attributes.callback)

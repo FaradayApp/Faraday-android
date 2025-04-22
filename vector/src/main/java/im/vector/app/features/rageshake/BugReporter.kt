@@ -1,17 +1,8 @@
 /*
- * Copyright 2018 New Vector Ltd
+ * Copyright 2018-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.rageshake
@@ -24,10 +15,11 @@ import android.os.Build
 import android.view.View
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
+import com.google.common.base.Strings.isNullOrEmpty
 import com.squareup.moshi.Types
 import de.spiritcroc.matrixsdk.util.DbgUtil
 import im.vector.app.BuildConfig
-import im.vector.app.R
+import im.vector.app.config.R
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.extensions.getAllChildFragments
 import im.vector.app.core.extensions.toOnOff
@@ -247,6 +239,9 @@ class BugReporter @Inject constructor(
                 activeSessionHolder.getSafeActiveSession()
                         ?.takeIf { !mIsCancelled && withKeyRequestHistory }
                         ?.cryptoService()
+                        ?.takeIf {
+                            it.supportKeyRequestInspection()
+                        }
                         ?.getGossipingEvents()
                         ?.let { GossipingEventsSerializer().serialize(it) }
                         ?.toByteArray()
@@ -266,8 +261,8 @@ class BugReporter @Inject constructor(
 
                 activeSessionHolder.getSafeActiveSession()?.let { session ->
                     userId = session.myUserId
-                    deviceId = session.sessionParams.deviceId ?: "undefined"
-                    olmVersion = session.cryptoService().getCryptoVersion(context, true)
+                    deviceId = session.sessionParams.deviceId
+                    olmVersion = Matrix.getCryptoVersion(true)
                 }
 
                 if (!mIsCancelled) {
@@ -314,15 +309,15 @@ class BugReporter @Inject constructor(
                     // UnifiedPush
                     // Only include the UP endpoint base url to exclude private user tokens in the path or parameters
                     val reportTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss ZZZ", Locale.US).format(Date())
-                    builder.addFormDataPart("unifiedpush_endpoint", unifiedPushHelper.getPrivacyFriendlyUpEndpoint().toString())
+                    builder.addFormDataPart("unifiedpush_endpoint", unifiedPushHelper.getPrivacyFriendlyUpEndpoint().ensureNonEmpty())
                             .addFormDataPart("unifiedpush_distributor_name", unifiedPushHelper.getCurrentDistributorName())
                             .addFormDataPart("unifiedpush_is_embedded_distributor", unifiedPushHelper.isEmbeddedDistributor().toString())
 
                     // More Schildi-specific fields
                     val enabledDebugSettings = DbgUtil.ALL_PREFS.filter { DbgUtil.isDbgEnabled(it) }
-                    builder.addFormDataPart("enabledDebugSettings", enabledDebugSettings.joinToString())
-                            .addFormDataPart("experimentalSettingsEnabled", vectorPreferences.getEnabledExperimentalSettings().joinToString())
-                            .addFormDataPart("experimentalSettingsDisabled", vectorPreferences.getDisabledExperimentalSettings().joinToString())
+                    builder.addFormDataPart("enabledDebugSettings", enabledDebugSettings.joinToString().ensureNonEmpty())
+                            .addFormDataPart("experimentalSettingsEnabled", vectorPreferences.getEnabledExperimentalSettings().joinToString().ensureNonEmpty())
+                            .addFormDataPart("experimentalSettingsDisabled", vectorPreferences.getDisabledExperimentalSettings().joinToString().ensureNonEmpty())
                             .addFormDataPart("reportTime", reportTime)
                             .addFormDataPart("packageName", buildMeta.applicationId)
                     // Device characteristics
@@ -565,12 +560,12 @@ class BugReporter @Inject constructor(
         // As per https://github.com/matrix-org/rageshake
         // app: Identifier for the application (eg 'riot-web').
         // Should correspond to a mapping configured in the configuration file for github issue reporting to work.
-        // (see R.string.bug_report_url for configured RS server)
+        // (see CommonStrings.bug_report_url for configured RS server)
         return context.getString(
                 when (reportType) {
                     ReportType.AUTO_UISI_SENDER,
-                    ReportType.AUTO_UISI -> R.string.bug_report_auto_uisi_app_name
-                    else -> R.string.bug_report_app_name
+                    ReportType.AUTO_UISI -> im.vector.app.config.R.string.bug_report_auto_uisi_app_name
+                    else -> im.vector.app.config.R.string.bug_report_app_name
                 }
         )
     }
@@ -806,5 +801,14 @@ class BugReporter @Inject constructor(
         }
 
         return null
+    }
+}
+
+fun String?.ensureNonEmpty(fallback: String = "∅"): String {
+    return if (isNullOrEmpty()) {
+        // GitHub markdown format doesn't like empty code blocks
+        fallback
+    } else {
+        this
     }
 }

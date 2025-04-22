@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.spaces.share
@@ -26,12 +17,12 @@ import androidx.fragment.app.FragmentManager
 import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.setTextOrHide
 import im.vector.app.core.platform.VectorBaseBottomSheetDialogFragment
 import im.vector.app.core.utils.startSharePlainTextIntent
 import im.vector.app.databinding.BottomSheetSpaceInviteBinding
 import im.vector.app.features.invite.InviteUsersToRoomActivity
+import im.vector.lib.strings.CommonStrings
 import kotlinx.parcelize.Parcelize
 
 @AndroidEntryPoint
@@ -58,10 +49,10 @@ class ShareSpaceBottomSheet : VectorBaseBottomSheetDialogFragment<BottomSheetSpa
         val spaceName = summary?.name
 
         if (state.postCreation) {
-            views.headerText.text = getString(R.string.invite_people_to_your_space)
-            views.descriptionText.setTextOrHide(getString(R.string.invite_people_to_your_space_desc, spaceName))
+            views.headerText.text = getString(CommonStrings.invite_people_to_your_space)
+            views.descriptionText.setTextOrHide(getString(CommonStrings.invite_people_to_your_space_desc, spaceName))
         } else {
-            views.headerText.text = getString(R.string.invite_to_space, spaceName)
+            views.headerText.text = getString(CommonStrings.invite_to_space, spaceName)
             views.descriptionText.setTextOrHide(null)
         }
 
@@ -91,9 +82,9 @@ class ShareSpaceBottomSheet : VectorBaseBottomSheetDialogFragment<BottomSheetSpa
                     startSharePlainTextIntent(
                             context = requireContext(),
                             activityResultLauncher = null,
-                            chooserTitle = getString(R.string.share_by_text),
-                            text = getString(R.string.share_space_link_message, event.spaceName, event.permalink),
-                            extraTitle = getString(R.string.share_space_link_message, event.spaceName, event.permalink)
+                            chooserTitle = getString(CommonStrings.share_by_text),
+                            text = getString(CommonStrings.share_space_link_message, event.spaceName, event.permalink),
+                            extraTitle = getString(CommonStrings.share_space_link_message, event.spaceName, event.permalink)
                     )
                     dismissAllowingStateLoss()
                 }

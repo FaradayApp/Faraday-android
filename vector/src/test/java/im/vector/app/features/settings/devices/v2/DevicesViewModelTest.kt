@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings.devices.v2
@@ -55,7 +46,7 @@ import org.matrix.android.sdk.api.session.crypto.model.CryptoDeviceInfo
 import org.matrix.android.sdk.api.session.crypto.model.DeviceInfo
 import org.matrix.android.sdk.api.session.crypto.model.RoomEncryptionTrustLevel
 import org.matrix.android.sdk.api.session.crypto.verification.VerificationTransaction
-import org.matrix.android.sdk.api.session.crypto.verification.VerificationTxState
+import org.matrix.android.sdk.api.session.homeserver.HomeServerCapabilities
 import org.matrix.android.sdk.api.session.uia.DefaultBaseAuth
 
 private const val A_CURRENT_DEVICE_ID = "current-device-id"
@@ -78,9 +69,8 @@ class DevicesViewModelTest {
     private val fakeRefreshDevicesUseCase = mockk<RefreshDevicesUseCase>(relaxUnitFun = true)
     private val fakeVectorPreferences = FakeVectorPreferences()
     private val toggleIpAddressVisibilityUseCase = mockk<ToggleIpAddressVisibilityUseCase>()
-
     private val verifiedTransaction = mockk<VerificationTransaction>().apply {
-        every { state } returns VerificationTxState.Verified
+        every { isSuccessful() } returns true
     }
 
     private fun createViewModel(): DevicesViewModel {
@@ -108,17 +98,19 @@ class DevicesViewModelTest {
         givenVerificationService()
         givenCurrentSessionCrossSigningInfo()
         givenDeviceFullInfoList(deviceId1 = A_DEVICE_ID_1, deviceId2 = A_DEVICE_ID_2)
+        fakeActiveSessionHolder.fakeSession.fakeHomeServerCapabilitiesService.givenCapabilities(
+                HomeServerCapabilities()
+        )
         fakeVectorPreferences.givenSessionManagerShowIpAddress(false)
     }
 
     private fun givenVerificationService(): FakeVerificationService {
-        val fakeVerificationService = fakeActiveSessionHolder
+        return fakeActiveSessionHolder
                 .fakeSession
                 .fakeCryptoService
-                .fakeVerificationService
-        fakeVerificationService.givenAddListenerSucceeds()
-        fakeVerificationService.givenRemoveListenerSucceeds()
-        return fakeVerificationService
+                .fakeVerificationService.also {
+                    it.givenEventFlow()
+                }
     }
 
     @After
@@ -132,26 +124,11 @@ class DevicesViewModelTest {
         val fakeVerificationService = givenVerificationService()
 
         // When
-        val viewModel = createViewModel()
+        createViewModel()
 
         // Then
         verify {
-            fakeVerificationService.addListener(viewModel)
-        }
-    }
-
-    @Test
-    fun `given the viewModel when clearing it then verification listener is removed`() {
-        // Given
-        val fakeVerificationService = givenVerificationService()
-
-        // When
-        val viewModel = createViewModel()
-        viewModel.onCleared()
-
-        // Then
-        verify {
-            fakeVerificationService.removeListener(viewModel)
+            fakeVerificationService.requestEventFlow()
         }
     }
 
@@ -253,7 +230,7 @@ class DevicesViewModelTest {
                 )
                 .assertEvent { it is DevicesViewEvent.SignoutSuccess }
                 .finish()
-        verify {
+        coVerify {
             fakeRefreshDevicesUseCase.execute()
         }
     }

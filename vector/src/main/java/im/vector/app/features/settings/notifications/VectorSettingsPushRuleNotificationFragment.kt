@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2023 New Vector Ltd
+ * Copyright 2023, 2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings.notifications
@@ -21,10 +12,10 @@ import android.view.View
 import androidx.preference.Preference
 import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
-import im.vector.app.R
 import im.vector.app.core.preference.VectorCheckboxPreference
 import im.vector.app.features.settings.VectorSettingsBaseFragment
 import im.vector.app.features.themes.ThemeUtils
+import im.vector.lib.strings.CommonStrings
 
 abstract class VectorSettingsPushRuleNotificationFragment :
         VectorSettingsBaseFragment() {
@@ -84,8 +75,8 @@ abstract class VectorSettingsPushRuleNotificationFragment :
         prefKeyToPushRuleId.forEach { (preferenceKey, ruleId) ->
             findPreference<VectorCheckboxPreference>(preferenceKey)?.apply {
                 if (ruleId in rulesWithError) {
-                    summaryTextColor = ThemeUtils.getColor(context, R.attr.colorError)
-                    setSummary(R.string.settings_notification_error_on_update)
+                    summaryTextColor = ThemeUtils.getColor(context, com.google.android.material.R.attr.colorError)
+                    setSummary(CommonStrings.settings_notification_error_on_update)
                 } else {
                     summaryTextColor = null
                     summary = null

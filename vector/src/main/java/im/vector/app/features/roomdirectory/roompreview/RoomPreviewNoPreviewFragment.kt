@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.roomdirectory.roompreview
@@ -31,7 +22,6 @@ import com.airbnb.mvrx.args
 import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.setTextOrHide
 import im.vector.app.core.platform.ButtonStateView
 import im.vector.app.core.platform.VectorBaseFragment
@@ -40,11 +30,12 @@ import im.vector.app.core.utils.tappableMatchingText
 import im.vector.app.databinding.FragmentRoomPreviewNoPreviewBinding
 import im.vector.app.features.analytics.plan.MobileScreen
 import im.vector.app.features.analytics.plan.ViewRoom
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.navigation.Navigator
 import im.vector.app.features.roomdirectory.JoinState
 import im.vector.app.features.settings.VectorSettingsActivity
 import im.vector.app.features.themes.ThemeUtils
+import im.vector.lib.strings.CommonStrings
 import me.gujun.android.span.span
 import org.matrix.android.sdk.api.session.room.model.RoomType
 import org.matrix.android.sdk.api.util.MatrixItem
@@ -131,11 +122,11 @@ class RoomPreviewNoPreviewFragment :
                             views.roomPreviewNoPreviewLabel.text =
                                     span {
                                         span {
-                                            textColor = ThemeUtils.getColor(requireContext(), R.attr.vctr_content_primary)
+                                            textColor = ThemeUtils.getColor(requireContext(), im.vector.lib.ui.styles.R.attr.vctr_content_primary)
                                             text = if (state.roomType == RoomType.SPACE) {
-                                                getString(R.string.this_invite_to_this_space_was_sent, state.fromEmailInvite.email)
+                                                getString(CommonStrings.this_invite_to_this_space_was_sent, state.fromEmailInvite.email)
                                             } else {
-                                                getString(R.string.this_invite_to_this_room_was_sent, state.fromEmailInvite.email)
+                                                getString(CommonStrings.this_invite_to_this_room_was_sent, state.fromEmailInvite.email)
                                             }
                                                     .toSpannable()
                                                     .styleMatchingText(state.fromEmailInvite.email, Typeface.BOLD)
@@ -143,11 +134,11 @@ class RoomPreviewNoPreviewFragment :
                                         +"\n"
                                         span {
                                             text = getString(
-                                                    R.string.link_this_email_with_your_account,
-                                                    getString(R.string.link_this_email_settings_link)
+                                                    CommonStrings.link_this_email_with_your_account,
+                                                    getString(CommonStrings.link_this_email_settings_link)
                                             )
                                                     .toSpannable()
-                                                    .tappableMatchingText(getString(R.string.link_this_email_settings_link), object : ClickableSpan() {
+                                                    .tappableMatchingText(getString(CommonStrings.link_this_email_settings_link), object : ClickableSpan() {
                                                         override fun onClick(widget: View) {
                                                             navigator.openSettings(
                                                                     requireContext(),
@@ -166,13 +157,13 @@ class RoomPreviewNoPreviewFragment :
                     PeekingState.NO_ACCESS -> {
                         views.roomPreviewNoPreviewJoin.isVisible = true
                         views.roomPreviewNoPreviewLabel.isVisible = true
-                        views.roomPreviewNoPreviewLabel.setText(R.string.room_preview_no_preview_join)
+                        views.roomPreviewNoPreviewLabel.setText(CommonStrings.room_preview_no_preview_join)
                         renderState(bestName, state.matrixItem().takeIf { state.roomAlias != null }, state.roomTopic)
                     }
                     else -> {
                         views.roomPreviewNoPreviewJoin.isVisible = false
                         views.roomPreviewNoPreviewLabel.isVisible = true
-                        views.roomPreviewNoPreviewLabel.setText(R.string.room_preview_not_found)
+                        views.roomPreviewNoPreviewLabel.setText(CommonStrings.room_preview_not_found)
                         renderState(bestName, null, state.roomTopic)
                     }
                 }

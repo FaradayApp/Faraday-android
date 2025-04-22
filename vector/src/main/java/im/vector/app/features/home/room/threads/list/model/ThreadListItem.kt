@@ -1,17 +1,8 @@
 /*
- * Copyright 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.threads.list.model
@@ -19,7 +10,6 @@ package im.vector.app.features.home.room.threads.list.model
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.airbnb.epoxy.EpoxyAttribute
 import com.airbnb.epoxy.EpoxyModelClass
@@ -32,8 +22,9 @@ import im.vector.app.core.extensions.clearDrawables
 import im.vector.app.core.extensions.setLeftDrawable
 import im.vector.app.core.utils.DimensionConverter
 import im.vector.app.features.displayname.getBestName
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.themes.ThemeUtils
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.session.threads.ThreadNotificationState
 import org.matrix.android.sdk.api.util.MatrixItem
 
@@ -60,12 +51,12 @@ abstract class ThreadListItem : VectorEpoxyModel<ThreadListItem.Holder>(R.layout
         holder.titleTextView.text = title
         holder.dateTextView.text = date
         if (rootMessageDeleted) {
-            holder.rootMessageTextView.text = holder.view.context.getString(R.string.event_redacted)
-            holder.rootMessageTextView.setTextColor(ThemeUtils.getColor(holder.view.context, R.attr.vctr_content_secondary))
-            holder.rootMessageTextView.setLeftDrawable(R.drawable.ic_trash_16, R.attr.vctr_content_tertiary)
+            holder.rootMessageTextView.text = holder.view.context.getString(CommonStrings.event_redacted)
+            holder.rootMessageTextView.setTextColor(ThemeUtils.getColor(holder.view.context, im.vector.lib.ui.styles.R.attr.vctr_content_secondary))
+            holder.rootMessageTextView.setLeftDrawable(R.drawable.ic_trash_16, im.vector.lib.ui.styles.R.attr.vctr_content_tertiary)
             holder.rootMessageTextView.compoundDrawablePadding = DimensionConverter(holder.view.context.resources).dpToPx(10)
         } else {
-            holder.rootMessageTextView.setTextColor(ThemeUtils.getColor(holder.view.context, R.attr.vctr_content_primary))
+            holder.rootMessageTextView.setTextColor(ThemeUtils.getColor(holder.view.context, im.vector.lib.ui.styles.R.attr.vctr_content_primary))
             holder.rootMessageTextView.text = rootMessage
             holder.rootMessageTextView.clearDrawables()
         }
@@ -83,11 +74,11 @@ abstract class ThreadListItem : VectorEpoxyModel<ThreadListItem.Holder>(R.layout
         when (threadNotificationState) {
             ThreadNotificationState.NEW_MESSAGE -> {
                 holder.unreadImageView.isVisible = true
-                holder.unreadImageView.setColorFilter(ThemeUtils.getColor(holder.view.context, R.attr.colorAccent))
+                holder.unreadImageView.setColorFilter(ThemeUtils.getColor(holder.view.context, com.google.android.material.R.attr.colorAccent))
             }
             ThreadNotificationState.NEW_HIGHLIGHTED_MESSAGE -> {
                 holder.unreadImageView.isVisible = true
-                holder.unreadImageView.setColorFilter(ThemeUtils.getColor(holder.view.context, R.attr.colorError))
+                holder.unreadImageView.setColorFilter(ThemeUtils.getColor(holder.view.context, com.google.android.material.R.attr.colorError))
             }
             else -> {
                 holder.unreadImageView.isVisible = false

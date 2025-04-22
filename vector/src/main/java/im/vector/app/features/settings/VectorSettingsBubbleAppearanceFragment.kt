@@ -17,13 +17,14 @@
 package im.vector.app.features.settings
 
 import im.vector.app.R
+import im.vector.lib.strings.CommonStrings
 import javax.inject.Inject
 
 class VectorSettingsBubbleAppearanceFragment @Inject constructor(
         //private val vectorPreferences: VectorPreferences
 ) : VectorSettingsBaseFragment() {
 
-    override var titleRes = R.string.bubble_appearance
+    override var titleRes = CommonStrings.bubble_appearance
     override val preferenceXmlRes = R.xml.vector_settings_bubble_appearance
 
     override fun bindPref() {

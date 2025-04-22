@@ -18,9 +18,8 @@ package im.vector.app.features.workers.changeaccount
 
 import androidx.fragment.app.FragmentActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import im.vector.app.R
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.session.profile.model.AccountItem
-import timber.log.Timber
 
 class ChangeAccountErrorUiWorker(
         private val activity: FragmentActivity,
@@ -30,12 +29,12 @@ class ChangeAccountErrorUiWorker(
 
     fun perform() {
         MaterialAlertDialogBuilder(activity)
-                .setTitle(R.string.action_сhange_error_title)
-                .setMessage(R.string.action_сhange_error_message)
-                .setPositiveButton(R.string.action_сhange_error_delete) { _, _ ->
+                .setTitle(CommonStrings.action_сhange_error_title)
+                .setMessage(CommonStrings.action_сhange_error_message)
+                .setPositiveButton(CommonStrings.action_сhange_error_delete) { _, _ ->
                     onPositiveActionClicked(accountItem)
                 }
-                .setNegativeButton(R.string.action_cancel, null)
+                .setNegativeButton(CommonStrings.action_cancel, null)
                 .show()
     }
 }

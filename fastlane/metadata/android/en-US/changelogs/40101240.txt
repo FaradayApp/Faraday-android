@@ -1,0 +1,2 @@
+- Update codebase to Element v1.6.8
+- Don't auto-insert ':' after mentions

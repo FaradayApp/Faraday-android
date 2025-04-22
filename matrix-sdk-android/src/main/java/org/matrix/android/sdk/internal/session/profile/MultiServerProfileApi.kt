@@ -35,15 +35,6 @@ internal interface MultiServerProfileApi {
             @Body body: GetLoginByPasswordBody
     ): GetLoginResponse
 
-    /**
-     * Return user credentials by token.
-     */
-    @POST(NetworkConstants.URI_API_PREFIX_PATH_V3 + "login")
-    suspend fun getLoginByToken(
-            @Tag requestCredentials: MultiServerCredentials,
-            @Body body: GetLoginByTokenBody
-    ): GetLoginResponse
-
     @GET(NetworkConstants.URI_API_PREFIX_PATH_R0 + "profile/{userId}")
     suspend fun getProfile(
             @Tag requestCredentials: MultiServerCredentials,

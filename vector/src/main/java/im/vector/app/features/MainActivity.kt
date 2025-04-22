@@ -46,6 +46,9 @@ import im.vector.app.features.analytics.VectorAnalytics
 import im.vector.app.features.analytics.plan.ViewRoom
 import im.vector.app.features.home.HomeActivity
 import im.vector.app.features.home.ShortcutsHandler
+import im.vector.app.features.home.room.detail.RoomDetailActivity
+import im.vector.app.features.home.room.threads.ThreadsActivity
+import im.vector.app.features.location.live.map.LiveLocationMapViewActivity
 import im.vector.app.features.notifications.NotificationDrawerManager
 import im.vector.app.features.pin.UnlockedActivity
 import im.vector.app.features.pin.lockscreen.crypto.LockScreenKeyRepository
@@ -61,6 +64,7 @@ import im.vector.app.features.start.StartAppViewState
 import im.vector.app.features.themes.ActivityOtherThemes
 import im.vector.app.features.ui.UiStateRepository
 import im.vector.lib.core.utils.compat.getParcelableExtraCompat
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -69,6 +73,7 @@ import kotlinx.parcelize.Parcelize
 import org.matrix.android.sdk.api.failure.GlobalError
 import org.matrix.android.sdk.api.settings.LightweightSettingsStorage
 import org.matrix.android.sdk.api.util.ConnectionType
+import org.matrix.android.sdk.api.session.Session
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -76,6 +81,7 @@ import javax.inject.Inject
 data class MainActivityArgs(
         val clearCache: Boolean = false,
         val clearCredentials: Boolean = false,
+        val ignoreLogoutServerError: Boolean = false,
         val isUserLoggedOut: Boolean = false,
         val isAccountDeactivated: Boolean = false,
         val isSoftLogout: Boolean = false
@@ -124,6 +130,14 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
                 putExtra(EXTRA_ROOM_ID, roomId)
             }
         }
+
+        val allowList = listOf(
+                HomeActivity::class.java.name,
+                MainActivity::class.java.name,
+                RoomDetailActivity::class.java.name,
+                ThreadsActivity::class.java.name,
+                LiveLocationMapViewActivity::class.java.name,
+        )
     }
 
     private val startAppViewModel: StartAppViewModel by viewModel()
@@ -152,6 +166,7 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         shortcutsHandler.updateShortcutsWithPreviousIntent()
         if (lightweightSettingsStorage.getConnectionType() == ConnectionType.ONION && !torService.isProxyRunning) {
             torService.switchTorPrefState(true)
@@ -159,6 +174,15 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
         } else {
             handleActivityCreated()
         }
+
+        startAppViewModel.onEach {
+            renderState(it)
+        }
+        startAppViewModel.observeViewEvents {
+            handleViewEvents(it)
+        }
+
+        startAppViewModel.handle(StartAppAction.StartApp)
     }
 
     private fun handleActivityCreated() = with(startAppViewModel) {
@@ -205,7 +229,7 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
 
     private fun renderState(state: StartAppViewState) {
         if (state.mayBeLongToProcess) {
-            views.status.setText(R.string.updating_your_data)
+            views.status.setText(CommonStrings.updating_your_data)
         }
         views.status.isVisible = state.mayBeLongToProcess
     }
@@ -226,10 +250,22 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
     }
 
     private fun handleAppStarted() {
+        // On the first run with rust crypto this would be false
+        if (!vectorPreferences.isOnRustCrypto()) {
+            if (activeSessionHolder.hasActiveSession()) {
+                vectorPreferences.setHadExistingLegacyData(activeSessionHolder.getActiveSession().isOpenable)
+            } else {
+                vectorPreferences.setHadExistingLegacyData(false)
+            }
+        }
+
+        vectorPreferences.setIsOnRustCrypto(true)
+
         if (intent.hasExtra(EXTRA_NEXT_INTENT)) {
             // Start the next Activity
             startSyncing()
             val nextIntent = intent.getParcelableExtraCompat<Intent>(EXTRA_NEXT_INTENT)
+                    ?.takeIf { it.isValid() }
             startIntentAndFinish(nextIntent)
         } else if (intent.hasExtra(EXTRA_INIT_SESSION)) {
             startSyncing()
@@ -279,6 +315,7 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
         return MainActivityArgs(
                 clearCache = argsFromIntent?.clearCache ?: false,
                 clearCredentials = argsFromIntent?.clearCredentials ?: false,
+                ignoreLogoutServerError = argsFromIntent?.ignoreLogoutServerError ?: false,
                 isUserLoggedOut = argsFromIntent?.isUserLoggedOut ?: false,
                 isAccountDeactivated = argsFromIntent?.isAccountDeactivated ?: false,
                 isSoftLogout = argsFromIntent?.isSoftLogout ?: false
@@ -306,7 +343,7 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
 
             args.clearCredentials && args.clearCache && args.isUserLoggedOut -> {
                 lifecycleScope.launch {
-                    Toast.makeText(applicationContext, getString(R.string.nuke_activated_notice), Toast.LENGTH_LONG).show()
+                    Toast.makeText(applicationContext, getString(CommonStrings.nuke_activated_notice), Toast.LENGTH_LONG).show()
                     delay(5000)
                     clearAppData()
                     finish()
@@ -314,21 +351,8 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
             }
 
             args.clearCredentials -> {
-                lifecycleScope.launch {
-                    try {
-                        session.signOutService().signOut(!args.isUserLoggedOut)
-                    } catch (failure: Throwable) {
-                        displayError(failure)
-                        return@launch
-                    }
-                    Timber.w("SIGN_OUT: success, start app")
-                    activeSessionHolder.clearActiveSession()
-                    doLocalCleanup(clearPreferences = true, onboardingStore)
-                    session.applicationPasswordService().clearSessionParamsStore()
-                    startNextActivityAndFinish()
-                }
+                signout(session, onboardingStore, ignoreServerError = args.ignoreLogoutServerError)
             }
-
             args.clearCache -> {
                 lifecycleScope.launch {
                     session.clearCache()
@@ -337,6 +361,27 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
                     startNextActivityAndFinish()
                 }
             }
+        }
+    }
+
+    private fun signout(
+            session: Session,
+            onboardingStore: VectorSessionStore,
+            ignoreServerError: Boolean,
+    ) {
+        lifecycleScope.launch {
+            try {
+                session.signOutService().signOut(!args.isUserLoggedOut, ignoreServerError)
+            } catch (failure: Throwable) {
+                Timber.e(failure, "SIGN_OUT: error, propose to sign out anyway")
+                displaySignOutFailedDialog(session, onboardingStore)
+                return@launch
+            }
+            Timber.w("SIGN_OUT: success, start app")
+            activeSessionHolder.clearActiveSession()
+            doLocalCleanup(clearPreferences = true, onboardingStore)
+            session.applicationPasswordService().clearSessionParamsStore()
+            startNextActivityAndFinish()
         }
     }
 
@@ -379,10 +424,30 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
     private fun displayError(failure: Throwable) {
         if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
             MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.dialog_title_error)
+                    .setTitle(CommonStrings.dialog_title_error)
                     .setMessage(errorFormatter.toHumanReadable(failure))
-                    .setPositiveButton(R.string.global_retry) { _, _ -> doCleanUp() }
-                    .setNegativeButton(R.string.action_cancel) { _, _ -> startNextActivityAndFinish(ignoreClearCredentials = true) }
+                    .setPositiveButton(CommonStrings.global_retry) { _, _ -> doCleanUp() }
+                    .setNegativeButton(CommonStrings.action_cancel) { _, _ -> startNextActivityAndFinish(ignoreClearCredentials = true) }
+                    .setCancelable(false)
+                    .show()
+        }
+    }
+
+    private fun displaySignOutFailedDialog(
+            session: Session,
+            onboardingStore: VectorSessionStore,
+    ) {
+        if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+            MaterialAlertDialogBuilder(this)
+                    .setTitle(CommonStrings.dialog_title_error)
+                    .setMessage(CommonStrings.sign_out_failed_dialog_message)
+                    .setPositiveButton(CommonStrings.sign_out_anyway) { _, _ ->
+                        signout(session, onboardingStore, ignoreServerError = true)
+                    }
+                    .setNeutralButton(CommonStrings.global_retry) { _, _ ->
+                        signout(session, onboardingStore, ignoreServerError = false)
+                    }
+                    .setNegativeButton(CommonStrings.action_cancel) { _, _ -> startNextActivityAndFinish(ignoreClearCredentials = true) }
                     .setCancelable(false)
                     .show()
         }
@@ -397,17 +462,14 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
                 navigator.openLogin(this, null)
                 null
             }
-
             args.isSoftLogout -> {
                 // The homeserver has invalidated the token, with a soft logout
                 navigator.softLogout(this)
                 null
             }
-
             args.isUserLoggedOut ->
                 // the homeserver has invalidated the token (password changed, device deleted, other security reasons)
                 SignedOutActivity.newIntent(this)
-
             activeSessionHolder.hasActiveSession() ->
                 // We have a session.
                 // Check it can be opened
@@ -418,7 +480,6 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
                     navigator.softLogout(this)
                     null
                 }
-
             else -> {
                 // First start, or no active session
                 navigator.openLogin(this, null)
@@ -431,5 +492,12 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
     private fun startIntentAndFinish(intent: Intent?) {
         intent?.let { startActivity(it) }
         finish()
+    }
+
+    private fun Intent.isValid(): Boolean {
+        val componentName = resolveActivity(packageManager) ?: return false
+        val packageName = componentName.packageName
+        val className = componentName.className
+        return packageName == buildMeta.applicationId && className in allowList
     }
 }

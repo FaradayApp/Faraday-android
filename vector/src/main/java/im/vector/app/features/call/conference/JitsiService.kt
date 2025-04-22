@@ -1,22 +1,12 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.call.conference
 
-import im.vector.app.R
 import im.vector.app.core.network.await
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.core.utils.ensureProtocol
@@ -57,7 +47,7 @@ class JitsiService @Inject constructor(
     }
 
     private val jitsiWidgetDataFactory by lazy {
-        JitsiWidgetDataFactory(stringProvider.getString(R.string.preferred_jitsi_domain)) { widget ->
+        JitsiWidgetDataFactory(stringProvider.getString(im.vector.app.config.R.string.preferred_jitsi_domain)) { widget ->
             session.widgetService().getWidgetComputedUrl(widget, themeProvider.isLightTheme())
         }
     }
@@ -70,12 +60,12 @@ class JitsiService @Inject constructor(
                     ?.jitsiServer
                     ?.preferredDomain
         }
-        val jitsiDomain = preferredJitsiDomain ?: stringProvider.getString(R.string.preferred_jitsi_domain)
+        val jitsiDomain = preferredJitsiDomain ?: stringProvider.getString(im.vector.app.config.R.string.preferred_jitsi_domain)
         val jitsiAuth = getJitsiAuth(jitsiDomain)
         val confId = createConferenceId(roomId, jitsiAuth)
 
         // We use the default element wrapper for this widget
-        // https://github.com/vector-im/element-web/blob/develop/docs/jitsi-dev.md
+        // https://github.com/element-hq/element-web/blob/develop/docs/jitsi-dev.md
         // https://github.com/matrix-org/matrix-react-sdk/blob/develop/src/utils/WidgetUtils.ts#L469
         val url = buildString {
             append("https://app.element.io/jitsi.html")

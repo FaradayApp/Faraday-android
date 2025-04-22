@@ -38,6 +38,7 @@ import im.vector.app.core.settings.connectionmethods.i2p.I2PEventListener
 import im.vector.app.core.settings.connectionmethods.onion.TorEventListener
 import im.vector.app.core.settings.connectionmethods.onion.TorService
 import im.vector.app.features.settings.VectorPreferences
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.settings.LightweightSettingsStorage
 import org.matrix.android.sdk.api.util.ConnectionType
 import org.matrix.android.sdk.api.util.ProxyType
@@ -164,7 +165,6 @@ open class ConnectionSettingsBaseFragment : ScPreferenceFragment(), MavericksVie
             pref.text = lightweightSettingsStorage.getProxyPort().toString().takeIf { it != "0" }.orEmpty()
         }
         proxyAuthRequiredPreference?.let { pref ->
-            pref.isIconFrameHidden = true
             proxySetupViews.add(pref)
         }
         proxyUsernamePreference?.let { pref ->
@@ -176,7 +176,6 @@ open class ConnectionSettingsBaseFragment : ScPreferenceFragment(), MavericksVie
             pref.text = lightweightSettingsStorage.getProxyPassword()
         }
         switchUseProxyPreference?.let { pref ->
-            pref.isIconFrameHidden = true
             pref.isVisible = connectionTypePreference?.type == ConnectionType.MATRIX
             pref.isChecked =
                     lightweightSettingsStorage.getProxyType() != ProxyType.NO_PROXY && lightweightSettingsStorage.getConnectionType() == ConnectionType.MATRIX
@@ -184,7 +183,7 @@ open class ConnectionSettingsBaseFragment : ScPreferenceFragment(), MavericksVie
 
             pref.onPreferenceClickListener = Preference.OnPreferenceClickListener {
                 if (connectionTypePreference?.type != ConnectionType.MATRIX) {
-                    Toast.makeText(context, getString(R.string.proxy_only_for_matrix), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(CommonStrings.proxy_only_for_matrix), Toast.LENGTH_SHORT).show()
                     pref.isChecked = false
                     return@OnPreferenceClickListener false
                 }
@@ -208,23 +207,23 @@ open class ConnectionSettingsBaseFragment : ScPreferenceFragment(), MavericksVie
         var allFieldsAreValid = true
 
         if (proxyHostPreference?.editTextView?.text?.matches(Regex(PROXY_HOST_REGEX_PATTERN)) == false) {
-            proxyHostPreference?.editTextView?.error = getString(R.string.error_in_host_address)
+            proxyHostPreference?.editTextView?.error = getString(CommonStrings.error_in_host_address)
             allFieldsAreValid = false
         }
         if (proxyPortPreference?.editTextView?.text?.matches(Regex(PROXY_PORT_REGEX_PATTERN)) == false) {
-            proxyPortPreference?.editTextView?.error = getString(R.string.error_in_port_number)
+            proxyPortPreference?.editTextView?.error = getString(CommonStrings.error_in_port_number)
             allFieldsAreValid = false
         }
         if (proxyUsernamePreference?.editTextView?.text?.isNotEmpty() == true && proxyPasswordPreference?.editTextView?.text?.isEmpty() == true) {
-            proxyPasswordPreference?.editTextView?.error = getString(R.string.error_in_proxy_provide_password)
+            proxyPasswordPreference?.editTextView?.error = getString(CommonStrings.error_in_proxy_provide_password)
             allFieldsAreValid = false
         }
         if (proxyUsernamePreference?.editTextView?.text?.isEmpty() == true && proxyPasswordPreference?.editTextView?.text?.isNotEmpty() == true) {
-            proxyUsernamePreference?.editTextView?.error = getString(R.string.error_in_proxy_provide_username)
+            proxyUsernamePreference?.editTextView?.error = getString(CommonStrings.error_in_proxy_provide_username)
             allFieldsAreValid = false
         }
         if (selectedProxyType == ProxyType.NO_PROXY) {
-            Toast.makeText(context, getString(R.string.error_in_proxy_provide_type), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, getString(CommonStrings.error_in_proxy_provide_type), Toast.LENGTH_SHORT).show()
             allFieldsAreValid = false
         }
 

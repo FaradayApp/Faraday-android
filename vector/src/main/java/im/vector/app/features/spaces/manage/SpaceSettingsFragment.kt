@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.spaces.manage
@@ -42,7 +33,7 @@ import im.vector.app.core.platform.VectorBaseFragment
 import im.vector.app.core.platform.VectorMenuProvider
 import im.vector.app.core.utils.toast
 import im.vector.app.databinding.FragmentRoomSettingGenericBinding
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.roomprofile.RoomProfileArgs
 import im.vector.app.features.roomprofile.settings.RoomSettingsAction
 import im.vector.app.features.roomprofile.settings.RoomSettingsViewEvents
@@ -50,6 +41,7 @@ import im.vector.app.features.roomprofile.settings.RoomSettingsViewModel
 import im.vector.app.features.roomprofile.settings.RoomSettingsViewState
 import im.vector.app.features.roomprofile.settings.joinrule.RoomJoinRuleActivity
 import im.vector.app.features.roomprofile.settings.joinrule.RoomJoinRuleSharedActionViewModel
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.matrix.android.sdk.api.session.room.model.GuestAccess
@@ -98,7 +90,7 @@ class SpaceSettingsFragment :
         setupRoomJoinRuleSharedActionViewModel()
         epoxyController.callback = this
         views.roomSettingsRecyclerView.configureWith(epoxyController, hasFixedSize = true)
-        views.waitingView.waitingStatusText.setText(R.string.please_wait)
+        views.waitingView.waitingStatusText.setText(CommonStrings.please_wait)
         views.waitingView.waitingStatusText.isVisible = true
 
         viewModel.observeViewEvents {
@@ -171,12 +163,12 @@ class SpaceSettingsFragment :
         return withState(viewModel) {
             return@withState if (it.showSaveAction) {
                 MaterialAlertDialogBuilder(requireContext())
-                        .setTitle(R.string.dialog_title_warning)
-                        .setMessage(R.string.warning_unsaved_change)
-                        .setPositiveButton(R.string.warning_unsaved_change_discard) { _, _ ->
+                        .setTitle(CommonStrings.dialog_title_warning)
+                        .setMessage(CommonStrings.warning_unsaved_change)
+                        .setPositiveButton(CommonStrings.warning_unsaved_change_discard) { _, _ ->
                             viewModel.handle(RoomSettingsAction.Cancel)
                         }
-                        .setNegativeButton(R.string.action_cancel, null)
+                        .setNegativeButton(CommonStrings.action_cancel, null)
                         .show()
                 true
             } else {
@@ -186,7 +178,7 @@ class SpaceSettingsFragment :
     }
 
     private fun showSuccess() {
-        activity?.toast(R.string.room_settings_save_success)
+        activity?.toast(CommonStrings.room_settings_save_success)
     }
 
     override fun onNameChanged(name: String) {

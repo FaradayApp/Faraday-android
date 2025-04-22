@@ -43,6 +43,7 @@ import im.vector.app.features.home.room.detail.timeline.style.TimelineMessageLay
 import im.vector.app.features.home.room.detail.timeline.tools.findPillsAndProcess
 import im.vector.app.features.media.ImageContentRenderer
 import im.vector.app.features.themes.ThemeUtils
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.CoroutineScope
 import org.matrix.android.sdk.api.extensions.orFalse
 import org.matrix.android.sdk.api.session.crypto.attachments.toElementToDecrypt
@@ -77,8 +78,8 @@ class InReplyToView @JvmOverloads constructor(
 
     private var state: PreviewReplyUiState = PreviewReplyUiState.NoReply
 
-    private val maxThumbnailWidth = context.resources.getDimensionPixelSize(R.dimen.reply_thumbnail_max_width)
-    private val maxThumbnailHeight = context.resources.getDimensionPixelSize(R.dimen.reply_thumbnail_height)
+    private val maxThumbnailWidth = context.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.reply_thumbnail_max_width)
+    private val maxThumbnailHeight = context.resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.reply_thumbnail_height)
 
     /**
      * This methods is responsible for rendering the view according to the newState
@@ -150,8 +151,8 @@ class InReplyToView @JvmOverloads constructor(
         hideViews()
         isVisible = true
         views.replyTextView.isVisible = true
-        val color = ThemeUtils.getColor(context, R.attr.vctr_content_secondary)
-        views.replyTextView.text = SpannableString(context.getString(R.string.in_reply_to_loading)).apply {
+        val color = ThemeUtils.getColor(context,im.vector.lib.ui.styles.R.attr.vctr_content_secondary)
+        views.replyTextView.text = SpannableString(context.getString(CommonStrings.in_reply_to_loading)).apply {
             setSpan(StyleSpan(Typeface.ITALIC), 0, length, 0)
             setSpan(ForegroundColorSpan(color), 0, length, 0)
         }
@@ -163,8 +164,8 @@ class InReplyToView @JvmOverloads constructor(
         isVisible = true
         Timber.w(state.throwable, "Error rendering reply")
         views.replyTextView.isVisible = true
-        val color = ThemeUtils.getColor(context, R.attr.vctr_content_secondary)
-        views.replyTextView.text = SpannableString(context.getString(R.string.in_reply_to_error)).apply {
+        val color = ThemeUtils.getColor(context, im.vector.lib.ui.styles.R.attr.vctr_content_secondary)
+        views.replyTextView.text = SpannableString(context.getString(CommonStrings.in_reply_to_error)).apply {
             setSpan(StyleSpan(Typeface.ITALIC), 0, length, 0)
             setSpan(ForegroundColorSpan(color), 0, length, 0)
         }
@@ -201,7 +202,7 @@ class InReplyToView @JvmOverloads constructor(
 
     private fun renderRedacted() {
         views.replyTextView.isVisible = true
-        views.replyTextView.setText(R.string.event_redacted)
+        views.replyTextView.setText(CommonStrings.event_redacted)
     }
 
     private fun renderTextContent(
@@ -333,21 +334,21 @@ class InReplyToView @JvmOverloads constructor(
             val bgColor = when (val layout = informationData.messageLayout) {
                 is TimelineMessageLayout.ScBubble -> {
                     if (informationData.sentByMe && !layout.singleSidedLayout) {
-                        ThemeUtils.getColor(context, R.attr.sc_message_bg_outgoing)
+                        ThemeUtils.getColor(context, im.vector.lib.ui.styles.R.attr.sc_message_bg_outgoing)
                     } else {
-                        ThemeUtils.getColor(context, R.attr.sc_message_bg_incoming)
+                        ThemeUtils.getColor(context, im.vector.lib.ui.styles.R.attr.sc_message_bg_incoming)
                     }
                 }
                 is TimelineMessageLayout.Bubble -> {
                     if (layout.isPseudoBubble) {
                         0
                     } else {
-                        val backgroundColorAttr = if (informationData.sentByMe) R.attr.vctr_message_bubble_outbound else R.attr.vctr_message_bubble_inbound
+                        val backgroundColorAttr = if (informationData.sentByMe) im.vector.lib.ui.styles.R.attr.vctr_message_bubble_outbound else im.vector.lib.ui.styles.R.attr.vctr_message_bubble_inbound
                         ThemeUtils.getColor(context, backgroundColorAttr)
                     }
                 }
                 is TimelineMessageLayout.Default -> {
-                    ThemeUtils.getColor(context, R.attr.vctr_system)
+                    ThemeUtils.getColor(context, im.vector.lib.ui.styles.R.attr.vctr_system)
                 }
             }
             val fadeView = views.expandableReplyView.getChildAt(1)

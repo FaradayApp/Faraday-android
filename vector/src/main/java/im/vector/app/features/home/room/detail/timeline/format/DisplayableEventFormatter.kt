@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.detail.timeline.format
@@ -31,6 +22,7 @@ import im.vector.app.features.voicebroadcast.VoiceBroadcastConstants
 import im.vector.app.features.voicebroadcast.isLive
 import im.vector.app.features.voicebroadcast.isVoiceBroadcast
 import im.vector.app.features.voicebroadcast.model.asVoiceBroadcastEvent
+import im.vector.lib.strings.CommonStrings
 import me.gujun.android.span.image
 import me.gujun.android.span.span
 import org.commonmark.node.Document
@@ -40,6 +32,7 @@ import org.matrix.android.sdk.api.session.events.model.toModel
 import org.matrix.android.sdk.api.session.room.model.message.MessageAudioContent
 import org.matrix.android.sdk.api.session.room.model.message.MessageContent
 import org.matrix.android.sdk.api.session.room.model.message.MessagePollContent
+import org.matrix.android.sdk.api.session.room.model.message.MessageStickerContent
 import org.matrix.android.sdk.api.session.room.model.message.MessageTextContent
 import org.matrix.android.sdk.api.session.room.model.message.MessageType
 import org.matrix.android.sdk.api.session.room.model.message.MessageWithAttachmentContent
@@ -73,7 +66,7 @@ class DisplayableEventFormatter @Inject constructor(
             val cryptoError = timelineEvent.root.mCryptoError
             val timestamp = dateFormatter.format(timelineEvent.root.originServerTs, DateFormatKind.MESSAGE_DETAIL)
             Timber.i("Render UTD preview: $cryptoError, ${timelineEvent.root.mCryptoErrorReason}, event: ${timelineEvent.root.eventId}, room: ${timelineEvent.root.roomId}, timestamp: $timestamp, sender: ${timelineEvent.senderInfo.userId}, sessionId: ${timelineEvent.root.content?.get("session_id")}")
-            return stringProvider.getString(R.string.encrypted_message)
+            return stringProvider.getString(CommonStrings.encrypted_message)
         }
 
         val senderName = timelineEvent.senderInfo.disambiguatedDisplayName
@@ -83,7 +76,7 @@ class DisplayableEventFormatter @Inject constructor(
                 timelineEvent.getVectorLastMessageContent()?.let { messageContent ->
                     when (messageContent.msgType) {
                         MessageType.MSGTYPE_TEXT -> {
-                            val body = messageContent.getTextDisplayableContent(imageFallback = stringProvider.getString(R.string.sent_an_image))
+                            val body = messageContent.getTextDisplayableContent(imageFallback = stringProvider.getString(CommonStrings.sent_an_image))
                             if (messageContent is MessageTextContent && messageContent.matrixFormattedBody.isNullOrBlank().not()) {
                                 val localFormattedBody = htmlRenderer.get().parse(body) as Document
                                 val renderedBody = htmlRenderer.get().render(localFormattedBody) ?: body
@@ -93,35 +86,35 @@ class DisplayableEventFormatter @Inject constructor(
                             }
                         }
                         MessageType.MSGTYPE_VERIFICATION_REQUEST -> {
-                            simpleFormat(senderName, stringProvider.getString(R.string.verification_request), appendAuthor)
+                            simpleFormat(senderName, stringProvider.getString(CommonStrings.verification_request), appendAuthor)
                         }
                         MessageType.MSGTYPE_IMAGE -> {
-                            val text = (messageContent as? MessageWithAttachmentContent)?.getCaption() ?: stringProvider.getString(R.string.sent_an_image)
+                            val text = (messageContent as? MessageWithAttachmentContent)?.getCaption() ?: stringProvider.getString(CommonStrings.sent_an_image)
                             simpleFormat(senderName, text, appendAuthor)
                         }
                         MessageType.MSGTYPE_AUDIO -> {
                             when {
                                 (messageContent as? MessageAudioContent)?.voiceMessageIndicator == null -> {
-                                    simpleFormat(senderName, stringProvider.getString(R.string.sent_an_audio_file), appendAuthor)
+                                    simpleFormat(senderName, stringProvider.getString(CommonStrings.sent_an_audio_file), appendAuthor)
                                 }
                                 timelineEvent.root.asMessageAudioEvent().isVoiceBroadcast() -> {
-                                    simpleFormat(senderName, stringProvider.getString(R.string.started_a_voice_broadcast), appendAuthor)
+                                    simpleFormat(senderName, stringProvider.getString(CommonStrings.started_a_voice_broadcast), appendAuthor)
                                 }
                                 else -> {
-                                    simpleFormat(senderName, stringProvider.getString(R.string.sent_a_voice_message), appendAuthor)
+                                    simpleFormat(senderName, stringProvider.getString(CommonStrings.sent_a_voice_message), appendAuthor)
                                 }
                             }
                         }
                         MessageType.MSGTYPE_VIDEO -> {
-                            val text = (messageContent as? MessageWithAttachmentContent)?.getCaption() ?: stringProvider.getString(R.string.sent_a_video)
+                            val text = (messageContent as? MessageWithAttachmentContent)?.getCaption() ?: stringProvider.getString(CommonStrings.sent_a_video)
                             simpleFormat(senderName, text, appendAuthor)
                         }
                         MessageType.MSGTYPE_FILE -> {
-                            val text = (messageContent as? MessageWithAttachmentContent)?.getCaption() ?: stringProvider.getString(R.string.sent_a_file)
+                            val text = (messageContent as? MessageWithAttachmentContent)?.getCaption() ?: stringProvider.getString(CommonStrings.sent_a_file)
                             simpleFormat(senderName, text, appendAuthor)
                         }
                         MessageType.MSGTYPE_LOCATION -> {
-                            simpleFormat(senderName, stringProvider.getString(R.string.sent_location), appendAuthor)
+                            simpleFormat(senderName, stringProvider.getString(CommonStrings.sent_location), appendAuthor)
                         }
                         else -> {
                             simpleFormat(senderName, messageContent.body, appendAuthor)
@@ -130,18 +123,19 @@ class DisplayableEventFormatter @Inject constructor(
                 } ?: span { }
             }
             EventType.STICKER -> {
-                simpleFormat(senderName, stringProvider.getString(R.string.send_a_sticker), appendAuthor)
+                simpleFormat(senderName, timelineEvent.root.getClearContent().toModel<MessageStickerContent>()?.body?.takeIf { it.isNotEmpty() }
+                        ?: stringProvider.getString(CommonStrings.send_a_sticker), appendAuthor)
             }
             EventType.REACTION -> {
                 timelineEvent.root.getClearContent().toModel<ReactionContent>()?.relatesTo?.let {
-                    val emojiSpanned = emojiSpanify.spanify(stringProvider.getString(R.string.sent_a_reaction, it.key))
+                    val emojiSpanned = emojiSpanify.spanify(stringProvider.getString(CommonStrings.sent_a_reaction, it.key))
                     simpleFormat(senderName, emojiSpanned, appendAuthor)
                 } ?: span { }
             }
             EventType.KEY_VERIFICATION_CANCEL,
             EventType.KEY_VERIFICATION_DONE -> {
                 // cancel and done can appear in timeline, so should have representation
-                simpleFormat(senderName, stringProvider.getString(R.string.sent_verification_conclusion), appendAuthor)
+                simpleFormat(senderName, stringProvider.getString(CommonStrings.sent_verification_conclusion), appendAuthor)
             }
             EventType.KEY_VERIFICATION_START,
             EventType.KEY_VERIFICATION_ACCEPT,
@@ -153,16 +147,19 @@ class DisplayableEventFormatter @Inject constructor(
             }
             in EventType.POLL_START.values -> {
                 (timelineEvent.getVectorLastMessageContent() as? MessagePollContent)?.getBestPollCreationInfo()?.question?.getBestQuestion()
-                        ?: stringProvider.getString(R.string.sent_a_poll)
+                        ?: stringProvider.getString(CommonStrings.sent_a_poll)
             }
             in EventType.POLL_RESPONSE.values -> {
-                stringProvider.getString(R.string.poll_response_room_list_preview)
+                stringProvider.getString(CommonStrings.poll_response_room_list_preview)
             }
             in EventType.POLL_END.values -> {
-                stringProvider.getString(R.string.poll_end_room_list_preview)
+                stringProvider.getString(CommonStrings.poll_end_room_list_preview)
             }
             in EventType.STATE_ROOM_BEACON_INFO.values -> {
-                simpleFormat(senderName, stringProvider.getString(R.string.sent_live_location), appendAuthor)
+                simpleFormat(senderName, stringProvider.getString(CommonStrings.sent_live_location), appendAuthor)
+            }
+            in EventType.ELEMENT_CALL_NOTIFY.values -> {
+                simpleFormat(senderName, stringProvider.getString(CommonStrings.call_unsupported), appendAuthor)
             }
             VoiceBroadcastConstants.STATE_ROOM_VOICE_BROADCAST_INFO -> {
                 formatVoiceBroadcastEvent(timelineEvent.root, isDm, senderName)
@@ -199,7 +196,7 @@ class DisplayableEventFormatter @Inject constructor(
         // The event is encrypted
         if (event.isEncrypted() &&
                 event.mxDecryptionResult == null) {
-            return stringProvider.getString(R.string.encrypted_message)
+            return stringProvider.getString(CommonStrings.encrypted_message)
         }
 
         return when (event.getClearType()) {
@@ -207,7 +204,7 @@ class DisplayableEventFormatter @Inject constructor(
                 (event.getClearContent().toModel() as? MessageContent)?.let { messageContent ->
                     when (messageContent.msgType) {
                         MessageType.MSGTYPE_TEXT -> {
-                            val body = messageContent.getTextDisplayableContent(imageFallback = stringProvider.getString(R.string.sent_an_image))
+                            val body = messageContent.getTextDisplayableContent(imageFallback = stringProvider.getString(CommonStrings.sent_an_image))
                             if (messageContent is MessageTextContent && messageContent.matrixFormattedBody.isNullOrBlank().not()) {
                                 val localFormattedBody = htmlRenderer.get().parse(body) as Document
                                 val renderedBody = htmlRenderer.get().render(localFormattedBody) ?: body
@@ -217,26 +214,26 @@ class DisplayableEventFormatter @Inject constructor(
                             }
                         }
                         MessageType.MSGTYPE_VERIFICATION_REQUEST -> {
-                            stringProvider.getString(R.string.verification_request)
+                            stringProvider.getString(CommonStrings.verification_request)
                         }
                         MessageType.MSGTYPE_IMAGE -> {
-                            (messageContent as? MessageWithAttachmentContent)?.getCaption() ?: stringProvider.getString(R.string.sent_an_image)
+                            (messageContent as? MessageWithAttachmentContent)?.getCaption() ?: stringProvider.getString(CommonStrings.sent_an_image)
                         }
                         MessageType.MSGTYPE_AUDIO -> {
                             if ((messageContent as? MessageAudioContent)?.voiceMessageIndicator != null) {
-                                stringProvider.getString(R.string.sent_a_voice_message)
+                                stringProvider.getString(CommonStrings.sent_a_voice_message)
                             } else {
-                                stringProvider.getString(R.string.sent_an_audio_file)
+                                stringProvider.getString(CommonStrings.sent_an_audio_file)
                             }
                         }
                         MessageType.MSGTYPE_VIDEO -> {
-                            (messageContent as? MessageWithAttachmentContent)?.getCaption() ?: stringProvider.getString(R.string.sent_a_video)
+                            (messageContent as? MessageWithAttachmentContent)?.getCaption() ?: stringProvider.getString(CommonStrings.sent_a_video)
                         }
                         MessageType.MSGTYPE_FILE -> {
-                            (messageContent as? MessageWithAttachmentContent)?.getCaption() ?: stringProvider.getString(R.string.sent_a_file)
+                            (messageContent as? MessageWithAttachmentContent)?.getCaption() ?: stringProvider.getString(CommonStrings.sent_a_file)
                         }
                         MessageType.MSGTYPE_LOCATION -> {
-                            stringProvider.getString(R.string.sent_location)
+                            stringProvider.getString(CommonStrings.sent_location)
                         }
                         else -> {
                             messageContent.body
@@ -245,25 +242,28 @@ class DisplayableEventFormatter @Inject constructor(
                 } ?: span { }
             }
             EventType.STICKER -> {
-                stringProvider.getString(R.string.send_a_sticker)
+                event.getClearContent().toModel<MessageStickerContent>()?.body?.takeIf { it.isNotEmpty() } ?: stringProvider.getString(CommonStrings.send_a_sticker)
             }
             EventType.REACTION -> {
                 event.getClearContent().toModel<ReactionContent>()?.relatesTo?.let {
-                    emojiSpanify.spanify(stringProvider.getString(R.string.sent_a_reaction, it.key))
+                    emojiSpanify.spanify(stringProvider.getString(CommonStrings.sent_a_reaction, it.key))
                 } ?: span { }
             }
             in EventType.POLL_START.values -> {
                 event.getClearContent().toModel<MessagePollContent>(catchError = true)?.pollCreationInfo?.question?.question
-                        ?: stringProvider.getString(R.string.sent_a_poll)
+                        ?: stringProvider.getString(CommonStrings.sent_a_poll)
             }
             in EventType.POLL_RESPONSE.values -> {
-                stringProvider.getString(R.string.poll_response_room_list_preview)
+                stringProvider.getString(CommonStrings.poll_response_room_list_preview)
             }
             in EventType.POLL_END.values -> {
-                stringProvider.getString(R.string.poll_end_room_list_preview)
+                stringProvider.getString(CommonStrings.poll_end_room_list_preview)
             }
             in EventType.STATE_ROOM_BEACON_INFO.values -> {
-                stringProvider.getString(R.string.sent_live_location)
+                stringProvider.getString(CommonStrings.sent_live_location)
+            }
+            in EventType.ELEMENT_CALL_NOTIFY.values -> {
+                stringProvider.getString(CommonStrings.call_unsupported)
             }
             else -> {
                 span {
@@ -280,24 +280,24 @@ class DisplayableEventFormatter @Inject constructor(
             }.append(
                     span {
                         text = senderName
-                        textColor = colorProvider.getColorFromAttribute(R.attr.vctr_content_primary)
+                        textColor = colorProvider.getColorFromAttribute(im.vector.lib.ui.styles.R.attr.vctr_content_primary)
                     })
                     .append(": $forceDirectionChar")
                     .append(body)
         } else {
             "\u2068$body"
-        }
+        }.removeSuffix("\n")
     }
 
     private fun formatVoiceBroadcastEvent(event: Event, isDm: Boolean, senderName: String): CharSequence {
         return if (event.asVoiceBroadcastEvent()?.isLive == true) {
             span {
-                drawableProvider.getDrawable(R.drawable.ic_voice_broadcast, colorProvider.getColor(R.color.palette_vermilion))?.let {
+                drawableProvider.getDrawable(R.drawable.ic_voice_broadcast, colorProvider.getColor(im.vector.lib.ui.styles.R.color.palette_vermilion))?.let {
                     image(it)
                     +" "
                 }
-                span(stringProvider.getString(R.string.voice_broadcast_live_broadcast)) {
-                    textColor = colorProvider.getColor(R.color.palette_vermilion)
+                span(stringProvider.getString(CommonStrings.voice_broadcast_live_broadcast)) {
+                    textColor = colorProvider.getColor(im.vector.lib.ui.styles.R.color.palette_vermilion)
                 }
             }
         } else {

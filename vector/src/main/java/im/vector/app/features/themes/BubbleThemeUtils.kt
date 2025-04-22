@@ -143,7 +143,7 @@ data class ScBubbleAppearance(
 }
 
 val defaultScBubbleAppearance = ScBubbleAppearance(
-        R.dimen.sc_bubble_radius,
+        im.vector.lib.ui.styles.R.dimen.sc_bubble_radius,
         R.drawable.msg_bubble_text_outgoing,
         R.drawable.msg_bubble_text_incoming,
         R.drawable.msg_bubble_text_outgoing_notail,
@@ -154,7 +154,7 @@ val defaultScBubbleAppearance = ScBubbleAppearance(
 )
 
 val r1ScBubbleAppearance = ScBubbleAppearance(
-        R.dimen.sc_bubble_r1_radius,
+        im.vector.lib.ui.styles.R.dimen.sc_bubble_r1_radius,
         R.drawable.msg_bubble_r1_text_outgoing,
         R.drawable.msg_bubble_r1_text_incoming,
         R.drawable.msg_bubble_r1_text_outgoing_notail,
@@ -166,7 +166,7 @@ val r1ScBubbleAppearance = ScBubbleAppearance(
 
 
 val r2ScBubbleAppearance = ScBubbleAppearance(
-        R.dimen.sc_bubble_r2_radius,
+        im.vector.lib.ui.styles.R.dimen.sc_bubble_r2_radius,
         R.drawable.msg_bubble_r2_text_outgoing,
         R.drawable.msg_bubble_r2_text_incoming,
         R.drawable.msg_bubble_r2_text_outgoing_notail,

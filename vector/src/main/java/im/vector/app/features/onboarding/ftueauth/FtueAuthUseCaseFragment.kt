@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.onboarding.ftueauth
@@ -41,6 +32,7 @@ import im.vector.app.features.login.ServerType
 import im.vector.app.features.onboarding.FtueUseCase
 import im.vector.app.features.onboarding.OnboardingAction
 import im.vector.app.features.themes.ThemeProvider
+import im.vector.lib.strings.CommonStrings
 import javax.inject.Inject
 
 private const val DARK_MODE_ICON_BACKGROUND_ALPHA = 0.30f
@@ -63,33 +55,33 @@ class FtueAuthUseCaseFragment :
     }
 
     private fun setupViews() {
-        // Connect to server relies on https://github.com/vector-im/element-android/issues/5782
+        // Connect to server relies on https://github.com/element-hq/element-android/issues/5782
         views.useCaseConnectToServerGroup.isGone = vectorFeatures.isOnboardingCombinedRegisterEnabled()
 
         views.useCaseOptionOne.renderUseCase(
                 useCase = FtueUseCase.FRIENDS_FAMILY,
-                label = R.string.ftue_auth_use_case_option_one,
+                label = CommonStrings.ftue_auth_use_case_option_one,
                 icon = R.drawable.ic_use_case_friends,
-                tint = R.color.palette_grape
+                tint = im.vector.lib.ui.styles.R.color.palette_grape
         )
         views.useCaseOptionTwo.renderUseCase(
                 useCase = FtueUseCase.TEAMS,
-                label = R.string.ftue_auth_use_case_option_two,
+                label = CommonStrings.ftue_auth_use_case_option_two,
                 icon = R.drawable.ic_use_case_teams,
-                tint = R.color.palette_element_green
+                tint = im.vector.lib.ui.styles.R.color.palette_element_green
         )
         views.useCaseOptionThree.renderUseCase(
                 useCase = FtueUseCase.COMMUNITIES,
-                label = R.string.ftue_auth_use_case_option_three,
+                label = CommonStrings.ftue_auth_use_case_option_three,
                 icon = R.drawable.ic_use_case_communities,
-                tint = R.color.palette_azure
+                tint = im.vector.lib.ui.styles.R.color.palette_azure
         )
 
         views.useCaseSkip.setTextWithColoredPart(
-                fullTextRes = R.string.ftue_auth_use_case_skip,
-                coloredTextRes = R.string.ftue_auth_use_case_skip_partial,
+                fullTextRes = CommonStrings.ftue_auth_use_case_skip,
+                coloredTextRes = CommonStrings.ftue_auth_use_case_skip_partial,
                 underline = false,
-                colorAttribute = R.attr.colorAccent,
+                colorAttribute = com.google.android.material.R.attr.colorAccent,
                 onClick = { viewModel.handle(OnboardingAction.UpdateUseCase(FtueUseCase.SKIP)) }
         )
 

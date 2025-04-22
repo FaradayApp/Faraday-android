@@ -48,6 +48,7 @@ import im.vector.app.features.MainActivity
 import im.vector.app.features.MainActivityArgs
 import im.vector.app.features.analytics.plan.MobileScreen
 import im.vector.app.features.home.accounts.AccountsFragment
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.login.HomeServerConnectionConfigFactory
 import im.vector.app.features.login.PromptSimplifiedModeActivity
 import im.vector.app.features.login.ReAuthHelper
@@ -56,6 +57,7 @@ import im.vector.app.features.settings.VectorPreferences
 import im.vector.app.features.settings.VectorSettingsActivity
 import im.vector.app.features.spaces.SpaceListFragment
 import im.vector.app.features.usercode.UserCodeActivity
+import im.vector.lib.strings.CommonStrings
 import im.vector.app.features.workers.signout.SignOutBottomSheetDialogFragment
 import kotlinx.coroutines.launch
 import org.matrix.android.sdk.api.auth.AuthenticationService
@@ -148,14 +150,14 @@ class HomeDrawerFragment :
         views.homeDrawerInviteFriendButton.debouncedClicks {
             permalinkFactory.createPermalinkOfCurrentUser()?.let { permalink ->
                 analyticsTracker.screen(MobileScreen(screenName = MobileScreen.ScreenName.InviteFriends))
-                val text = getString(R.string.invite_friends_text, permalink)
+                val text = getString(CommonStrings.invite_friends_text, permalink)
 
                 startSharePlainTextIntent(
                         context = requireContext(),
                         activityResultLauncher = null,
-                        chooserTitle = getString(R.string.invite_friends),
+                        chooserTitle = getString(CommonStrings.invite_friends),
                         text = text,
-                        extraTitle = getString(R.string.invite_friends_rich_title)
+                        extraTitle = getString(CommonStrings.invite_friends_rich_title)
                 )
             }
         }
@@ -201,29 +203,31 @@ class HomeDrawerFragment :
 
     private fun onSignOutClicked() {
         sharedActionViewModel.post(HomeActivitySharedAction.CloseDrawer)
-        if (session.cannotLogoutSafely()) {
-            // The backup check on logout flow has to be displayed if there are keys in the store, and the keys backup state is not Ready
-            val signOutDialog = SignOutBottomSheetDialogFragment.newInstance()
-            signOutDialog.onSignOut = Runnable {
-                showLoadingDialog("Try to connect to another account. Please wait...")
-                lightweightSettingsStorage.setApplicationPasswordEnabled(false)
-                shortcutsHandler.clearShortcuts()
-                multiAccountSignOut()
+        lifecycleScope.launch {
+            if (session.cannotLogoutSafely()) {
+                // The backup check on logout flow has to be displayed if there are keys in the store, and the keys backup state is not Ready
+                val signOutDialog = SignOutBottomSheetDialogFragment.newInstance()
+                signOutDialog.onSignOut = Runnable {
+                    showLoadingDialog("Try to connect to another account. Please wait...")
+                    lightweightSettingsStorage.setApplicationPasswordEnabled(false)
+                    shortcutsHandler.clearShortcuts()
+                    multiAccountSignOut()
+                }
+                signOutDialog.show(requireActivity().supportFragmentManager, "SO")
+            } else {
+                // Display a simple confirmation dialog
+                MaterialAlertDialogBuilder(requireActivity())
+                        .setTitle(CommonStrings.action_sign_out)
+                        .setMessage(CommonStrings.action_sign_out_confirmation_simple)
+                        .setPositiveButton(CommonStrings.action_sign_out) { _, _ ->
+                            showLoadingDialog("Try to connect to another account. Please wait...")
+                            lightweightSettingsStorage.setApplicationPasswordEnabled(false)
+                            shortcutsHandler.clearShortcuts()
+                            multiAccountSignOut()
+                        }
+                        .setNegativeButton(CommonStrings.action_cancel, null)
+                        .show()
             }
-            signOutDialog.show(requireActivity().supportFragmentManager, "SO")
-        } else {
-            // Display a simple confirmation dialog
-            MaterialAlertDialogBuilder(requireActivity())
-                    .setTitle(R.string.action_sign_out)
-                    .setMessage(R.string.action_sign_out_confirmation_simple)
-                    .setPositiveButton(R.string.action_sign_out) { _, _ ->
-                        showLoadingDialog("Try to connect to another account. Please wait...")
-                        lightweightSettingsStorage.setApplicationPasswordEnabled(false)
-                        shortcutsHandler.clearShortcuts()
-                        multiAccountSignOut()
-                    }
-                    .setNegativeButton(R.string.action_cancel, null)
-                    .show()
         }
     }
 
@@ -315,15 +319,15 @@ class HomeDrawerFragment :
                     notice.isVisible = isSignUpMode
                     when (isSignUpMode) {
                         true -> {
-                            header.text = getString(R.string.login_signup)
-                            registerButton.text = getString(R.string.add_existing_account)
-                            addAccountButton.text = getString(R.string.login_signup)
+                            header.text = getString(CommonStrings.login_signup)
+                            registerButton.text = getString(CommonStrings.add_existing_account)
+                            addAccountButton.text = getString(CommonStrings.login_signup)
                         }
 
                         false -> {
-                            header.text = getString(R.string.add_account)
-                            registerButton.text = getString(R.string.register_new_account)
-                            addAccountButton.text = getString(R.string.add_account)
+                            header.text = getString(CommonStrings.add_account)
+                            registerButton.text = getString(CommonStrings.register_new_account)
+                            addAccountButton.text = getString(CommonStrings.add_account)
                         }
                     }
                 }
@@ -351,7 +355,7 @@ class HomeDrawerFragment :
                         val result = runCatching {
                             when (isSignUpMode) {
                                 true -> session.profileService().createAccount(
-                                        username, password, getString(R.string.login_mobile_device_sc),
+                                        username, password, getString(CommonStrings.login_mobile_device_sc),
                                         homeServerConnectionConfigFactory.create(homeserverUrl)!!
                                 )
 
@@ -368,15 +372,15 @@ class HomeDrawerFragment :
                             when (success) {
                                 true -> {
                                     dialog.dismiss()
-                                    activity.toast(R.string.account_successfully_added)
+                                    activity.toast(CommonStrings.account_successfully_added)
                                 }
 
-                                false -> activity.toast(R.string.error_adding_account)
+                                false -> activity.toast(CommonStrings.error_adding_account)
                             }
                         }, { failure ->
                             val message = when (failure) {
                                 is Failure.ServerError -> failure.error.message
-                                else -> getString(R.string.error_adding_account)
+                                else -> getString(CommonStrings.error_adding_account)
                             }
                             activity.toast(message)
                         })
@@ -385,10 +389,6 @@ class HomeDrawerFragment :
             }
             dialog.show()
         }
-    }
-
-    fun updateAddAccountButtonVisibility(isVisible: Boolean) {
-        views.homeDrawerAddAccountButton.isVisible = isVisible
     }
 
     companion object {

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.media
 
@@ -35,7 +26,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.transition.Transition
 import com.airbnb.mvrx.viewModel
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.extensions.singletonEntryPoint
 import im.vector.app.core.intent.getMimeTypeFromUri
@@ -51,6 +41,7 @@ import im.vector.lib.attachmentviewer.AttachmentCommands
 import im.vector.lib.attachmentviewer.AttachmentViewerActivity
 import im.vector.lib.core.utils.compat.getParcelableArrayListExtraCompat
 import im.vector.lib.core.utils.compat.getParcelableExtraCompat
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -84,7 +75,7 @@ class VectorAttachmentViewerActivity : AttachmentViewerActivity(), AttachmentInt
                 viewModel.handle(it)
             }
         } else if (deniedPermanently) {
-            onPermissionDeniedDialog(R.string.denied_permission_generic)
+            onPermissionDeniedDialog(CommonStrings.denied_permission_generic)
         }
         viewModel.pendingAction = null
     }
@@ -147,8 +138,8 @@ class VectorAttachmentViewerActivity : AttachmentViewerActivity(), AttachmentInt
             }
         }
 
-        window.statusBarColor = ContextCompat.getColor(this, R.color.black_alpha)
-        window.navigationBarColor = ContextCompat.getColor(this, R.color.black_alpha)
+        window.statusBarColor = ContextCompat.getColor(this, im.vector.lib.ui.styles.R.color.black_alpha)
+        window.navigationBarColor = ContextCompat.getColor(this, im.vector.lib.ui.styles.R.color.black_alpha)
 
         observeViewEvents()
     }
@@ -163,6 +154,7 @@ class VectorAttachmentViewerActivity : AttachmentViewerActivity(), AttachmentInt
         Timber.i("onPause Activity ${javaClass.simpleName}")
     }
 
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun onBackPressed() {
         if (currentPosition == initialIndex) {
             // show back the transition view

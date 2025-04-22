@@ -102,7 +102,7 @@
     <string name="settings_apply_sc_default_settings_dialog_title">Нарушение настроек</string>
     <string name="settings_apply_sc_default_settings_dialog_summary">Если вы продолжите, это нарушит настройки вашего приложения!</string>
     <string name="settings_labs_room_list">Список комнат</string>
-    <string name="settings_jump_to_bottom_on_send">Переходить в самый низ после отправления</string>
+    <string name="settings_jump_to_bottom_on_send">Переходить в конец при отправке сообщения</string>
     <string name="bubble_style_element">Как в Element</string>
     <string name="settings_include_space_members_as_rooms">Показывать людей в Пространствах</string>
     <string name="room_settings_default">По умолчанию</string>
@@ -114,7 +114,7 @@
     <string name="bubble_rounded_corners_r2">Особо круглые</string>
     <string name="bubble_tail_summary">Добавлять хвостик к пузырю первого сообщения отправителя</string>
     <string name="bubble_tail">Хвостики пузырей</string>
-    <string name="settings_jump_to_bottom_on_send_summary">Автоматически проматывать вниз при отправлении сообщения</string>
+    <string name="settings_jump_to_bottom_on_send_summary">Автоматическая прокрутка вниз при отправке сообщения</string>
     <string name="setting_sc_accent_color">Цвет акцента</string>
     <string name="settings_hide_call_buttons_summary">Не показывать кнопки для начала голосового/видео звонка</string>
     <string name="dev_tools_menu_event_visibilities">Видимость событий</string>
@@ -152,7 +152,7 @@
     <string name="in_reply_to_error">Не удалось загрузить сообщение</string>
     <string name="settings_sc_debugging_category_logs">Дополнительные логи</string>
     <string name="settings_sc_debugging_category_visuals">Визуальная отладочная информация</string>
-    <string name="settings_sc_dbg_read_marker">Отладка отчётов о прочтении</string>
+    <string name="settings_sc_dbg_read_marker">Отладка маркеров прочтения</string>
     <string name="settings_sc_dbg_timeline_chunks">Отладка последовательности таймлайна</string>
     <string name="settings_sc_dbg_show_display_index">Показывать displayIndex в таймлайне</string>
     <string name="settings_sc_dbg_show_read_tracking">Показывать трекинг прочтения</string>
@@ -174,4 +174,10 @@
     <string name="dev_tools_menu_redacted">Отредактированные сообщения</string>
     <string name="settings_initial_sync_summary">Очистить кэш и перезагрузить данные из сервера</string>
     <string name="custom_emotes_named_other_room">\"%1$s\" из %2$s</string>
+    <string name="action_send_as_sticker">Отправить как стикер</string>
+    <string name="settings_clear_highlight_on_scroll_summary">Удаляет выделение из сообщений при прокрутке</string>
+    <string name="settings_call_ringtone_use_default_stun_summary">Использовать %s как вспомогательный сервер, если домашний сервер не поддерживает звонки (ваш IP адрес будет доступен TURN серверу)</string>
+    <string name="settings_clear_highlight_on_scroll">Очистить выделение при прокрутке</string>
+    <string name="settings_call_ringtone_use_default_stun_title">Разрешить резервный сервер звонков</string>
+    <string name="settings_integrations_scalar_warning">⚠️ Эта настройка по умолчанию (если не изменена конфигурацией Вашего домашнего сервера) включает доступ к \"Scalar\", менеджеру интеграций от Element. К сожалению, он является проприетарным, т.е. его исходый код не открытый и не может быть проверен пользователями или разработчиками SchildiChat.</string>
 </resources>

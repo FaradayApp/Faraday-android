@@ -28,7 +28,6 @@ import org.matrix.android.sdk.BuildConfig
 import org.matrix.android.sdk.api.MatrixConfiguration
 import org.matrix.android.sdk.api.auth.AuthenticationService
 import org.matrix.android.sdk.api.auth.HomeServerHistoryService
-import org.matrix.android.sdk.api.legacy.LegacySessionImporter
 import org.matrix.android.sdk.api.network.ApiInterceptorListener
 import org.matrix.android.sdk.api.network.ApiPath
 import org.matrix.android.sdk.api.raw.RawService
@@ -37,7 +36,6 @@ import org.matrix.android.sdk.internal.network.ApiInterceptor
 import org.matrix.android.sdk.internal.network.UserAgentHolder
 import org.matrix.android.sdk.internal.util.BackgroundDetectionObserver
 import org.matrix.android.sdk.internal.worker.MatrixWorkerFactory
-import org.matrix.olm.OlmManager
 import java.util.concurrent.Executors
 import javax.inject.Inject
 
@@ -46,12 +44,10 @@ import javax.inject.Inject
  */
 internal class TestMatrix(context: Context, matrixConfiguration: MatrixConfiguration) {
 
-    @Inject internal lateinit var legacySessionImporter: LegacySessionImporter
     @Inject internal lateinit var authenticationService: AuthenticationService
     @Inject internal lateinit var rawService: RawService
     @Inject internal lateinit var userAgentHolder: UserAgentHolder
     @Inject internal lateinit var backgroundDetectionObserver: BackgroundDetectionObserver
-    @Inject internal lateinit var olmManager: OlmManager
     @Inject internal lateinit var sessionManager: SessionManager
     @Inject internal lateinit var homeServerHistoryService: HomeServerHistoryService
     @Inject internal lateinit var apiInterceptor: ApiInterceptor
@@ -87,10 +83,6 @@ internal class TestMatrix(context: Context, matrixConfiguration: MatrixConfigura
     fun rawService() = rawService
 
     fun homeServerHistoryService() = homeServerHistoryService
-
-    fun legacySessionImporter(): LegacySessionImporter {
-        return legacySessionImporter
-    }
 
     fun registerApiInterceptorListener(path: ApiPath, listener: ApiInterceptorListener) {
         apiInterceptor.addListener(path, listener)

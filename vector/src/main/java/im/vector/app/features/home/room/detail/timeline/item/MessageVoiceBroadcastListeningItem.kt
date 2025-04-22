@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.detail.timeline.item
@@ -34,6 +25,7 @@ import im.vector.app.features.voicebroadcast.listening.VoiceBroadcastPlayer
 import im.vector.app.features.voicebroadcast.model.VoiceBroadcastState
 import im.vector.app.features.voicebroadcast.views.VoiceBroadcastBufferingView
 import im.vector.app.features.voicebroadcast.views.VoiceBroadcastMetadataView
+import im.vector.lib.strings.CommonStrings
 
 @EpoxyModelClass
 abstract class MessageVoiceBroadcastListeningItem : AbsMessageVoiceBroadcastItem<MessageVoiceBroadcastListeningItem.Holder>() {
@@ -121,13 +113,13 @@ abstract class MessageVoiceBroadcastListeningItem : AbsMessageVoiceBroadcastItem
                 VoiceBroadcastPlayer.State.Playing,
                 VoiceBroadcastPlayer.State.Buffering -> {
                     playPauseButton.setImageResource(R.drawable.ic_play_pause_pause)
-                    playPauseButton.contentDescription = view.resources.getString(R.string.a11y_pause_voice_broadcast)
+                    playPauseButton.contentDescription = view.resources.getString(CommonStrings.a11y_pause_voice_broadcast)
                 }
                 is VoiceBroadcastPlayer.State.Error,
                 VoiceBroadcastPlayer.State.Idle,
                 VoiceBroadcastPlayer.State.Paused -> {
                     playPauseButton.setImageResource(R.drawable.ic_play_pause_play)
-                    playPauseButton.contentDescription = view.resources.getString(R.string.a11y_play_voice_broadcast)
+                    playPauseButton.contentDescription = view.resources.getString(CommonStrings.a11y_play_voice_broadcast)
                 }
             }
 

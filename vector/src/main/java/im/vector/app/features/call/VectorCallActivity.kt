@@ -1,27 +1,20 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.call
 
+import android.Manifest
 import android.app.Activity
 import android.app.KeyguardManager
 import android.app.PictureInPictureParams
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
@@ -40,6 +33,8 @@ import androidx.core.content.getSystemService
 import androidx.core.util.Consumer
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ProcessLifecycleOwner
 import com.airbnb.mvrx.Fail
 import com.airbnb.mvrx.Mavericks
 import com.airbnb.mvrx.viewModel
@@ -57,6 +52,7 @@ import im.vector.app.core.utils.PERMISSIONS_FOR_VIDEO_IP_CALL
 import im.vector.app.core.utils.checkPermissions
 import im.vector.app.core.utils.registerForPermissionsResult
 import im.vector.app.databinding.ActivityCallBinding
+import im.vector.app.features.call.audio.MicrophoneAccessService
 import im.vector.app.features.call.dialpad.CallDialPadBottomSheet
 import im.vector.app.features.call.dialpad.DialPadFragment
 import im.vector.app.features.call.transfer.CallTransferActivity
@@ -66,10 +62,11 @@ import im.vector.app.features.call.webrtc.ScreenCaptureServiceConnection
 import im.vector.app.features.call.webrtc.WebRtcCall
 import im.vector.app.features.call.webrtc.WebRtcCallManager
 import im.vector.app.features.displayname.getBestName
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.home.room.detail.RoomDetailActivity
 import im.vector.app.features.home.room.detail.arguments.TimelineArgs
 import im.vector.lib.core.utils.compat.getParcelableExtraCompat
+import im.vector.lib.strings.CommonStrings
 import io.github.hyuwah.draggableviewlib.DraggableView
 import io.github.hyuwah.draggableviewlib.setupDraggable
 import kotlinx.parcelize.Parcelize
@@ -162,11 +159,11 @@ class VectorCallActivity :
 
         callViewModel.onEach(VectorCallViewState::callId, VectorCallViewState::isVideoCall) { _, isVideoCall ->
             if (isVideoCall) {
-                if (checkPermissions(PERMISSIONS_FOR_VIDEO_IP_CALL, this, permissionCameraLauncher, R.string.permissions_rationale_msg_camera_and_audio)) {
+                if (checkPermissions(PERMISSIONS_FOR_VIDEO_IP_CALL, this, permissionCameraLauncher, CommonStrings.permissions_rationale_msg_camera_and_audio)) {
                     setupRenderersIfNeeded()
                 }
             } else {
-                if (checkPermissions(PERMISSIONS_FOR_AUDIO_IP_CALL, this, permissionCameraLauncher, R.string.permissions_rationale_msg_record_audio)) {
+                if (checkPermissions(PERMISSIONS_FOR_AUDIO_IP_CALL, this, permissionCameraLauncher, CommonStrings.permissions_rationale_msg_record_audio)) {
                     setupRenderersIfNeeded()
                 }
             }
@@ -176,9 +173,9 @@ class VectorCallActivity :
         bindToScreenCaptureService()
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        intent?.takeIf { it.hasExtra(Mavericks.KEY_ARG) }
+        intent.takeIf { it.hasExtra(Mavericks.KEY_ARG) }
                 ?.let { intent.getParcelableExtraCompat<CallArgs>(Mavericks.KEY_ARG) }
                 ?.let {
                     callViewModel.handle(VectorCallViewActions.SwitchCall(it))
@@ -189,12 +186,13 @@ class VectorCallActivity :
     override fun getMenuRes() = R.menu.vector_call
 
     override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
         enterPictureInPictureIfRequired()
     }
 
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun onBackPressed() {
         if (!enterPictureInPictureIfRequired()) {
-            @Suppress("DEPRECATION")
             super.onBackPressed()
         }
     }
@@ -203,7 +201,10 @@ class VectorCallActivity :
         if (!it.isVideoCall) {
             false
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val aspectRatio = Rational(resources.getDimensionPixelSize(R.dimen.call_pip_width), resources.getDimensionPixelSize(R.dimen.call_pip_height))
+            val aspectRatio = Rational(
+                    resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.call_pip_width),
+                    resources.getDimensionPixelSize(im.vector.lib.ui.styles.R.dimen.call_pip_height)
+            )
             val params = PictureInPictureParams.Builder()
                     .setAspectRatio(aspectRatio)
                     .build()
@@ -238,6 +239,57 @@ class VectorCallActivity :
             }
             else -> false
         }
+    }
+
+    private fun startMicrophoneService() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED) {
+            // Only start the service if the app is in the foreground
+            if (isAppInForeground()) {
+                withState(callViewModel) {
+                    // Starting in Android 14, you can't create a microphone foreground service while your app is in
+                    // the background. If we call startForegroundService while the call state is ringing (i.e. the
+                    // user has not interacted with the device at all) the app will crash. Make sure the call has
+                    // already been answered before starting the MicrophoneAccessService
+                    // https://github.com/element-hq/element-android/issues/8964
+                    val callState = it.callState.invoke()
+                    if (callState !is CallState.LocalRinging && callState !is CallState.Ended && callState != null) {
+                        Timber.tag(loggerTag.value).v("Starting microphone foreground service")
+                        val intent = Intent(this, MicrophoneAccessService::class.java)
+                        ContextCompat.startForegroundService(this, intent)
+                    } else {
+                        Timber.tag(loggerTag.value).v("Call is in ringing or ended state; cannot start microphone service. callState: $callState")
+                    }
+                }
+            } else {
+                Timber.tag(loggerTag.value).v("App is not in foreground; cannot start microphone service")
+            }
+        } else {
+            Timber.tag(loggerTag.value).v("Microphone permission not granted; cannot start service")
+        }
+    }
+
+    private fun isAppInForeground(): Boolean {
+        val appProcess = ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+        return appProcess
+    }
+    private fun stopMicrophoneService() {
+        Timber.tag(loggerTag.value).d("Stopping MicrophoneAccessService (if needed).")
+        val intent = Intent(this, MicrophoneAccessService::class.java)
+        stopService(intent)
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // Start the microphone service to keep access to the microphone when the call is in the background
+        // https://github.com/element-hq/element-android/issues/8881
+        startMicrophoneService()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        stopMicrophoneService()
     }
 
     override fun onDestroy() {
@@ -287,14 +339,14 @@ class VectorCallActivity :
                 views.fullscreenRenderer.isVisible = false
                 views.pipRendererWrapper.isVisible = false
                 views.callInfoGroup.isVisible = true
-                toolbar?.setSubtitle(R.string.call_ringing)
+                toolbar?.setSubtitle(CommonStrings.call_ringing)
                 configureCallInfo(state)
             }
             is CallState.Answering -> {
                 views.fullscreenRenderer.isVisible = false
                 views.pipRendererWrapper.isVisible = false
                 views.callInfoGroup.isVisible = true
-                toolbar?.setSubtitle(R.string.call_connecting)
+                toolbar?.setSubtitle(CommonStrings.call_connecting)
                 configureCallInfo(state)
             }
             is CallState.Connected -> {
@@ -307,23 +359,23 @@ class VectorCallActivity :
                         views.callInfoGroup.isVisible = true
                         configureCallInfo(state, blurAvatar = true)
                         if (state.isRemoteOnHold) {
-                            views.callActionText.setText(R.string.call_resume_action)
+                            views.callActionText.setText(CommonStrings.call_resume_action)
                             views.callActionText.isVisible = true
                             views.callActionText.setOnClickListener { callViewModel.handle(VectorCallViewActions.ToggleHoldResume) }
-                            toolbar?.setSubtitle(R.string.call_held_by_you)
+                            toolbar?.setSubtitle(CommonStrings.call_held_by_you)
                         } else {
                             views.callActionText.isInvisible = true
                             state.callInfo?.opponentUserItem?.let {
-                                toolbar?.subtitle = getString(R.string.call_held_by_user, it.getBestName())
+                                toolbar?.subtitle = getString(CommonStrings.call_held_by_user, it.getBestName())
                             }
                         }
                     } else if (state.transferee !is VectorCallViewState.TransfereeState.NoTransferee) {
                         val transfereeName = if (state.transferee is VectorCallViewState.TransfereeState.KnownTransferee) {
                             state.transferee.name
                         } else {
-                            getString(R.string.call_transfer_unknown_person)
+                            getString(CommonStrings.call_transfer_unknown_person)
                         }
-                        views.callActionText.text = getString(R.string.call_transfer_transfer_to_title, transfereeName)
+                        views.callActionText.text = getString(CommonStrings.call_transfer_transfer_to_title, transfereeName)
                         views.callActionText.isVisible = true
                         views.callActionText.setOnClickListener { callViewModel.handle(VectorCallViewActions.TransferCall) }
                         configureCallInfo(state)
@@ -346,14 +398,14 @@ class VectorCallActivity :
                     views.pipRendererWrapper.isVisible = false
                     views.callInfoGroup.isVisible = true
                     configureCallInfo(state)
-                    toolbar?.setSubtitle(R.string.call_connecting)
+                    toolbar?.setSubtitle(CommonStrings.call_connecting)
                 }
             }
             is CallState.Ended -> {
                 views.fullscreenRenderer.isVisible = false
                 views.pipRendererWrapper.isVisible = false
                 views.callInfoGroup.isVisible = true
-                toolbar?.setSubtitle(R.string.call_ended)
+                toolbar?.setSubtitle(CommonStrings.call_ended)
                 configureCallInfo(state)
             }
             else -> {
@@ -412,10 +464,10 @@ class VectorCallActivity :
         }
         when (callState.reason) {
             EndCallReason.USER_BUSY -> {
-                showEndCallDialog(R.string.call_ended_user_busy_title, R.string.call_ended_user_busy_description)
+                showEndCallDialog(CommonStrings.call_ended_user_busy_title, CommonStrings.call_ended_user_busy_description)
             }
             EndCallReason.INVITE_TIMEOUT -> {
-                showEndCallDialog(R.string.call_ended_invite_timeout_title, R.string.call_error_user_not_responding)
+                showEndCallDialog(CommonStrings.call_ended_invite_timeout_title, CommonStrings.call_error_user_not_responding)
             }
             else -> {
                 finish()
@@ -427,7 +479,7 @@ class VectorCallActivity :
         MaterialAlertDialogBuilder(this)
                 .setTitle(title)
                 .setMessage(description)
-                .setNegativeButton(R.string.ok, null)
+                .setNegativeButton(CommonStrings.ok, null)
                 .setOnDismissListener {
                     finish()
                 }
@@ -436,17 +488,17 @@ class VectorCallActivity :
 
     private fun configureCallInfo(state: VectorCallViewState, blurAvatar: Boolean = false) {
         state.callInfo?.opponentUserItem?.let {
-            val colorFilter = ContextCompat.getColor(this, R.color.bg_call_screen_blur)
+            val colorFilter = ContextCompat.getColor(this, im.vector.lib.ui.styles.R.color.bg_call_screen_blur)
             avatarRenderer.renderBlur(it, views.bgCallView, sampling = 20, rounded = false, colorFilter = colorFilter, addPlaceholder = false)
             if (state.transferee is VectorCallViewState.TransfereeState.NoTransferee) {
                 views.participantNameText.setTextOrHide(null)
                 toolbar?.title = if (state.isVideoCall) {
-                    getString(R.string.video_call_with_participant, it.getBestName())
+                    getString(CommonStrings.video_call_with_participant, it.getBestName())
                 } else {
-                    getString(R.string.audio_call_with_participant, it.getBestName())
+                    getString(CommonStrings.audio_call_with_participant, it.getBestName())
                 }
             } else {
-                views.participantNameText.setTextOrHide(getString(R.string.call_transfer_consulting_with, it.getBestName()))
+                views.participantNameText.setTextOrHide(getString(CommonStrings.call_transfer_consulting_with, it.getBestName()))
             }
             if (blurAvatar) {
                 avatarRenderer.renderBlur(it, views.otherMemberAvatar, sampling = 2, rounded = true, colorFilter = colorFilter, addPlaceholder = true)
@@ -458,7 +510,7 @@ class VectorCallActivity :
             views.otherKnownCallLayout.isVisible = false
         } else {
             val otherCall = callManager.getCallById(state.otherKnownCallInfo.callId)
-            val colorFilter = ContextCompat.getColor(this, R.color.bg_call_screen_blur)
+            val colorFilter = ContextCompat.getColor(this, im.vector.lib.ui.styles.R.color.bg_call_screen_blur)
             avatarRenderer.renderBlur(
                     matrixItem = state.otherKnownCallInfo.opponentUserItem,
                     imageView = views.otherKnownCallAvatarView,
@@ -550,7 +602,7 @@ class VectorCallActivity :
                 val callId = withState(callViewModel) { it.callId }
                 navigator.openCallTransfer(this, callTransferActivityResultLauncher, callId)
             }
-            is VectorCallViewEvents.FailToTransfer -> showSnackbar(getString(R.string.call_transfer_failure))
+            is VectorCallViewEvents.FailToTransfer -> showSnackbar(getString(CommonStrings.call_transfer_failure))
             is VectorCallViewEvents.ShowScreenSharingPermissionDialog -> handleShowScreenSharingPermissionDialog()
             is VectorCallViewEvents.StopScreenSharingService -> handleStopScreenSharingService()
             else -> Unit
@@ -573,9 +625,9 @@ class VectorCallActivity :
         Timber.tag(loggerTag.value).d("onErrorTimoutConnect $turn")
         // TODO ask to use default stun, etc...
         MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.call_failed_no_connection)
-                .setMessage(R.string.call_failed_no_connection_description)
-                .setNegativeButton(R.string.ok) { _, _ ->
+                .setTitle(CommonStrings.call_failed_no_connection)
+                .setMessage(CommonStrings.call_failed_no_connection_description)
+                .setNegativeButton(CommonStrings.ok) { _, _ ->
                     callViewModel.handle(VectorCallViewActions.EndCall)
                 }
                 .show()

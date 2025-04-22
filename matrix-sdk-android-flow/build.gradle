@@ -28,13 +28,25 @@ android {
         targetCompatibility versions.targetCompat
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = versions.jvmTarget
     }
+
+//    publishNonDefault true
 }
+
+//configurations {
+//    kotlinCryptoDebugImplementation
+//    kotlinCryptoReleaseImplementation
+//    rustCryptoDebugImplementation
+//    rustCryptoReleaseImplementation
+//}
 
 dependencies {
     implementation project(":matrix-sdk-android")
-
+//    kotlinCryptoDebugImplementation project(path: ":matrix-sdk-android", configuration :"kotlinCryptoDebug")
+//    kotlinCryptoReleaseImplementation project(path: ":matrix-sdk-android", configuration :"kotlinCryptoRelease")
+//    rustCryptoDebugImplementation project(path: ":matrix-sdk-android", configuration :"rustCryptoDebug")
+//    rustCryptoReleaseImplementation project(path: ":matrix-sdk-android", configuration :"rustCryptoDebug")
     implementation libs.jetbrains.coroutinesCore
     implementation libs.jetbrains.coroutinesAndroid
     implementation libs.androidx.lifecycleLivedata

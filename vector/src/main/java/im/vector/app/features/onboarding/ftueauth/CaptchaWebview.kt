@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.onboarding.ftueauth
@@ -31,10 +22,10 @@ import android.webkit.WebViewClient
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import im.vector.app.R
 import im.vector.app.core.utils.AssetReader
 import im.vector.app.features.login.JavascriptResponse
 import im.vector.app.features.onboarding.OnboardingViewState
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.util.MatrixJsonParser
 import timber.log.Timber
 import java.net.URLDecoder
@@ -135,12 +126,12 @@ class CaptchaWebview @Inject constructor(
 
     private fun showSslErrorDialog(container: Fragment, handler: SslErrorHandler) {
         MaterialAlertDialogBuilder(container.requireActivity())
-                .setMessage(R.string.ssl_could_not_verify)
-                .setPositiveButton(R.string.ssl_trust) { _, _ ->
+                .setMessage(CommonStrings.ssl_could_not_verify)
+                .setPositiveButton(CommonStrings.ssl_trust) { _, _ ->
                     Timber.d("## onReceivedSslError() : the user trusted")
                     handler.proceed()
                 }
-                .setNegativeButton(R.string.ssl_do_not_trust) { _, _ ->
+                .setNegativeButton(CommonStrings.ssl_do_not_trust) { _, _ ->
                     Timber.d("## onReceivedSslError() : the user did not trust")
                     handler.cancel()
                 }

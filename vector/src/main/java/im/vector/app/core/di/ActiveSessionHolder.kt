@@ -1,23 +1,14 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.core.di
 
-import android.content.Context
 import im.vector.app.ActiveSessionDataSource
+import im.vector.app.core.dispatchers.CoroutineDispatchers
 import im.vector.app.core.pushers.UnregisterUnifiedPushUseCase
 import im.vector.app.core.services.GuardServiceStarter
 import im.vector.app.core.session.ConfigureAndStartSessionUseCase
@@ -26,6 +17,8 @@ import im.vector.app.features.crypto.keysrequest.KeyRequestHandler
 import im.vector.app.features.crypto.verification.IncomingVerificationRequestHandler
 import im.vector.app.features.notifications.PushRuleTriggerListener
 import im.vector.app.features.session.SessionListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.matrix.android.sdk.api.auth.AuthenticationService
 import org.matrix.android.sdk.api.session.Session
@@ -47,10 +40,11 @@ class ActiveSessionHolder @Inject constructor(
         private val imageManager: ImageManager,
         private val guardServiceStarter: GuardServiceStarter,
         private val sessionInitializer: SessionInitializer,
-        private val applicationContext: Context,
         private val authenticationService: AuthenticationService,
         private val configureAndStartSessionUseCase: ConfigureAndStartSessionUseCase,
         private val unregisterUnifiedPushUseCase: UnregisterUnifiedPushUseCase,
+        private val applicationCoroutineScope: CoroutineScope,
+        private val coroutineDispatchers: CoroutineDispatchers,
 ) {
 
     private var activeSessionReference: AtomicReference<Session?> = AtomicReference()
@@ -94,6 +88,13 @@ class ActiveSessionHolder @Inject constructor(
 
     fun getSafeActiveSession(): Session? {
         return runBlocking { getOrInitializeSession() }
+    }
+
+    fun getSafeActiveSessionAsync(withSession: ((Session?) -> Unit)) {
+        applicationCoroutineScope.launch(coroutineDispatchers.io) {
+            val session = getOrInitializeSession()
+            withSession(session)
+        }
     }
 
     fun getActiveSession(): Session {

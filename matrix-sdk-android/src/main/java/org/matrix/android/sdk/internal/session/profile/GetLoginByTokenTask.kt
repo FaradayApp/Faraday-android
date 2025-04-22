@@ -17,6 +17,7 @@
 package org.matrix.android.sdk.internal.session.profile
 
 
+import org.matrix.android.sdk.api.MatrixPatterns.getServerName
 import org.matrix.android.sdk.api.session.profile.model.AccountLoginCredentials
 import org.matrix.android.sdk.internal.network.GlobalErrorReceiver
 import org.matrix.android.sdk.internal.network.executeRequest
@@ -46,7 +47,7 @@ internal data class DefaultGetLoginByTokenTask @Inject constructor(
                 userId = result.userId,
                 deviceId = result.deviceId,
                 accessToken = result.accessToken,
-                homeServer = result.homeServer
+                homeServer = result.homeServer ?: result.userId.getServerName()
         )
     }
 }

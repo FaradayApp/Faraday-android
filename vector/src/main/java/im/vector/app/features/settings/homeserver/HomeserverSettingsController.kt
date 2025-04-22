@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings.homeserver
@@ -32,6 +23,7 @@ import im.vector.app.features.discovery.settingsInfoItem
 import im.vector.app.features.discovery.settingsSectionTitleItem
 import im.vector.app.features.settings.VectorPreferences
 import im.vector.lib.core.utils.epoxy.charsequence.toEpoxyCharSequence
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.federation.FederationVersion
 import org.matrix.android.sdk.api.session.homeserver.HomeServerCapabilities
 import org.matrix.android.sdk.api.session.homeserver.RoomVersionStatus
@@ -79,7 +71,7 @@ class HomeserverSettingsController @Inject constructor(
         }
         settingsSectionTitleItem {
             id("urlTitle")
-            titleResId(R.string.hs_url)
+            titleResId(CommonStrings.hs_url)
         }
         settingsInfoItem {
             id("urlValue")
@@ -88,7 +80,7 @@ class HomeserverSettingsController @Inject constructor(
         if (vectorPreferences.developerMode()) {
             settingsSectionTitleItem {
                 id("urlApiTitle")
-                titleResId(R.string.hs_client_url)
+                titleResId(CommonStrings.hs_client_url)
             }
             settingsInfoItem {
                 id("urlApiValue")
@@ -100,7 +92,7 @@ class HomeserverSettingsController @Inject constructor(
     private fun buildFederationVersion(federationVersion: FederationVersion) {
         settingsSectionTitleItem {
             id("nameTitle")
-            titleResId(R.string.settings_server_name)
+            titleResId(CommonStrings.settings_server_name)
         }
         settingsInfoItem {
             id("nameValue")
@@ -108,7 +100,7 @@ class HomeserverSettingsController @Inject constructor(
         }
         settingsSectionTitleItem {
             id("versionTitle")
-            titleResId(R.string.settings_server_version)
+            titleResId(CommonStrings.settings_server_version)
         }
         settingsInfoItem {
             id("versionValue")
@@ -120,7 +112,7 @@ class HomeserverSettingsController @Inject constructor(
         val host = this
         settingsSectionTitleItem {
             id("uploadTitle")
-            titleResId(R.string.settings_server_upload_size_title)
+            titleResId(CommonStrings.settings_server_upload_size_title)
         }
 
         val limit = data.homeServerCapabilities.maxUploadFileSize
@@ -128,9 +120,9 @@ class HomeserverSettingsController @Inject constructor(
         settingsInfoItem {
             id("uploadValue")
             if (limit == HomeServerCapabilities.MAX_UPLOAD_FILE_SIZE_UNKNOWN) {
-                helperTextResId(R.string.settings_server_upload_size_unknown)
+                helperTextResId(CommonStrings.settings_server_upload_size_unknown)
             } else {
-                helperText(host.stringProvider.getString(R.string.settings_server_upload_size_content, "${limit / 1048576L} MB"))
+                helperText(host.stringProvider.getString(CommonStrings.settings_server_upload_size_content, "${limit / 1048576L} MB"))
             }
         }
 
@@ -139,12 +131,12 @@ class HomeserverSettingsController @Inject constructor(
             if (roomCapabilities != null) {
                 settingsSectionTitleItem {
                     id("room_versions")
-                    titleResId(R.string.settings_server_room_versions)
+                    titleResId(CommonStrings.settings_server_room_versions)
                 }
 
                 genericWithValueItem {
                     id("room_version_default")
-                    title(host.stringProvider.getString(R.string.settings_server_default_room_version).toEpoxyCharSequence())
+                    title(host.stringProvider.getString(CommonStrings.settings_server_default_room_version).toEpoxyCharSequence())
                     value(roomCapabilities.defaultRoomVersion)
                 }
 
@@ -155,8 +147,8 @@ class HomeserverSettingsController @Inject constructor(
                         value(
                                 host.stringProvider.getString(
                                         when (it.status) {
-                                            RoomVersionStatus.STABLE -> R.string.settings_server_room_version_stable
-                                            RoomVersionStatus.UNSTABLE -> R.string.settings_server_room_version_unstable
+                                            RoomVersionStatus.STABLE -> CommonStrings.settings_server_room_version_stable
+                                            RoomVersionStatus.UNSTABLE -> CommonStrings.settings_server_room_version_unstable
                                         }
                                 )
                         )

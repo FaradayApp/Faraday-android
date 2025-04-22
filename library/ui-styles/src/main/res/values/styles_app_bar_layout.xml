@@ -6,6 +6,9 @@
         <!-- Defining this here actually breaks elevation...?
         <item name="elevation">4dp</item>
         -->
+
+        <!-- a11y -->
+        <item name="android:touchscreenBlocksFocus">false</item>
     </style>
 
 </resources>

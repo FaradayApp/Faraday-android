@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.usercode
@@ -20,12 +11,12 @@ import com.airbnb.mvrx.MavericksViewModelFactory
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import im.vector.app.R
 import im.vector.app.core.di.MavericksAssistedViewModelFactory
 import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.platform.VectorViewModel
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.features.createdirect.DirectRoomHelper
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.matrix.android.sdk.api.extensions.tryOrNull
@@ -73,12 +64,12 @@ class UserCodeSharedViewModel @AssistedInject constructor(
 
     private fun handleShareByText() {
         session.permalinkService().createPermalink(session.myUserId)?.let { permalink ->
-            val text = stringProvider.getString(R.string.invite_friends_text, permalink)
+            val text = stringProvider.getString(CommonStrings.invite_friends_text, permalink)
             _viewEvents.post(
                     UserCodeShareViewEvents.SharePlainText(
                             text,
-                            stringProvider.getString(R.string.invite_friends),
-                            stringProvider.getString(R.string.invite_friends_rich_title)
+                            stringProvider.getString(CommonStrings.invite_friends),
+                            stringProvider.getString(CommonStrings.invite_friends_rich_title)
                     )
             )
         }
@@ -94,7 +85,7 @@ class UserCodeSharedViewModel @AssistedInject constructor(
             val roomId = try {
                 directRoomHelper.ensureDMExists(mxId)
             } catch (failure: Throwable) {
-                _viewEvents.post(UserCodeShareViewEvents.ToastMessage(stringProvider.getString(R.string.invite_users_to_room_failure)))
+                _viewEvents.post(UserCodeShareViewEvents.ToastMessage(stringProvider.getString(CommonStrings.invite_users_to_room_failure)))
                 return@launch
             } finally {
                 _viewEvents.post(UserCodeShareViewEvents.HideWaitingScreen)
@@ -106,7 +97,7 @@ class UserCodeSharedViewModel @AssistedInject constructor(
     private fun handleQrCodeDecoded(action: UserCodeActions.DecodedQRCode) {
         val linkedId = PermalinkParser.parse(action.code)
         if (linkedId is PermalinkData.FallbackLink) {
-            _viewEvents.post(UserCodeShareViewEvents.ToastMessage(stringProvider.getString(R.string.not_a_valid_qr_code)))
+            _viewEvents.post(UserCodeShareViewEvents.ToastMessage(stringProvider.getString(CommonStrings.not_a_valid_qr_code)))
             return
         }
         _viewEvents.post(UserCodeShareViewEvents.ShowWaitingScreen)
@@ -114,7 +105,7 @@ class UserCodeSharedViewModel @AssistedInject constructor(
             when (linkedId) {
                 is PermalinkData.RoomLink -> {
                     // not yet supported
-                    _viewEvents.post(UserCodeShareViewEvents.ToastMessage(stringProvider.getString(R.string.not_implemented)))
+                    _viewEvents.post(UserCodeShareViewEvents.ToastMessage(stringProvider.getString(CommonStrings.not_implemented)))
                 }
                 is PermalinkData.UserLink -> {
                     val user = tryOrNull { session.userService().resolveUser(linkedId.userId) }
@@ -130,7 +121,7 @@ class UserCodeSharedViewModel @AssistedInject constructor(
                 is PermalinkData.RoomEmailInviteLink,
                 is PermalinkData.FallbackLink -> {
                     // not yet supported
-                    _viewEvents.post(UserCodeShareViewEvents.ToastMessage(stringProvider.getString(R.string.not_implemented)))
+                    _viewEvents.post(UserCodeShareViewEvents.ToastMessage(stringProvider.getString(CommonStrings.not_implemented)))
                 }
             }
             _viewEvents.post(UserCodeShareViewEvents.HideWaitingScreen)

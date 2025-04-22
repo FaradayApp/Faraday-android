@@ -1,18 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.roomprofile
@@ -43,17 +33,19 @@ import im.vector.app.core.platform.VectorBaseFragment
 import im.vector.app.core.platform.VectorMenuProvider
 import im.vector.app.core.utils.copyToClipboard
 import im.vector.app.core.utils.startSharePlainTextIntent
+import im.vector.app.databinding.DialogReportContentBinding
 import im.vector.app.databinding.FragmentMatrixProfileBinding
 import im.vector.app.databinding.ViewStubRoomProfileHeaderBinding
 import im.vector.app.features.analytics.plan.Interaction
 import im.vector.app.features.analytics.plan.MobileScreen
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.home.room.detail.RoomDetailPendingAction
 import im.vector.app.features.home.room.detail.RoomDetailPendingActionStore
 import im.vector.app.features.home.room.detail.upgrade.MigrateRoomBottomSheet
 import im.vector.app.features.home.room.list.actions.RoomListQuickActionsSharedAction
 import im.vector.app.features.home.room.list.actions.RoomListQuickActionsSharedActionViewModel
 import im.vector.app.features.navigation.SettingsActivityPayload
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.parcelize.Parcelize
@@ -132,6 +124,7 @@ class RoomProfileFragment :
                 is RoomProfileViewEvents.ShareRoomProfile -> onShareRoomProfile(it.permalink)
                 is RoomProfileViewEvents.OnShortcutReady -> addShortcut(it)
                 RoomProfileViewEvents.DismissLoading -> dismissLoadingDialog()
+                is RoomProfileViewEvents.Success -> dismissSuccessDialog(it.message)
             }
         }
         roomListQuickActionsSharedActionViewModel
@@ -142,8 +135,19 @@ class RoomProfileFragment :
         setupLongClicks()
     }
 
+    private fun dismissSuccessDialog(message: CharSequence) {
+        MaterialAlertDialogBuilder(
+                requireActivity(),
+                im.vector.lib.ui.styles.R.style.ThemeOverlay_Vector_MaterialAlertDialog_NegativeDestructive
+        )
+                .setTitle(CommonStrings.room_profile_section_more_report)
+                .setMessage(message)
+                .setPositiveButton(CommonStrings.ok, null)
+                .show()
+    }
+
     private fun setupWaitingView() {
-        views.waitingView.waitingStatusText.setText(R.string.please_wait)
+        views.waitingView.waitingStatusText.setText(CommonStrings.please_wait)
         views.waitingView.waitingStatusText.isVisible = true
     }
 
@@ -245,10 +249,10 @@ class RoomProfileFragment :
 
     override fun onEnableEncryptionClicked() {
         MaterialAlertDialogBuilder(requireActivity())
-                .setTitle(R.string.room_settings_enable_encryption_dialog_title)
-                .setMessage(R.string.room_settings_enable_encryption_dialog_content)
-                .setNegativeButton(R.string.action_cancel, null)
-                .setPositiveButton(R.string.room_settings_enable_encryption_dialog_submit) { _, _ ->
+                .setTitle(CommonStrings.room_settings_enable_encryption_dialog_title)
+                .setMessage(CommonStrings.room_settings_enable_encryption_dialog_content)
+                .setNegativeButton(CommonStrings.action_cancel, null)
+                .setPositiveButton(CommonStrings.room_settings_enable_encryption_dialog_submit) { _, _ ->
                     roomProfileViewModel.handle(RoomProfileAction.EnableEncryption)
                 }
                 .show()
@@ -295,22 +299,45 @@ class RoomProfileFragment :
         ShortcutManagerCompat.requestPinShortcut(requireContext(), onShortcutReady.shortcutInfo, null)
     }
 
+    override fun onReportRoomClicked() {
+        promptReasonToReportRoom()
+    }
+
+    private fun promptReasonToReportRoom() {
+        val inflater = requireActivity().layoutInflater
+        val layout = inflater.inflate(R.layout.dialog_report_content, null)
+        val views = DialogReportContentBinding.bind(layout)
+
+        MaterialAlertDialogBuilder(requireActivity())
+                .setTitle(CommonStrings.room_profile_section_more_report)
+                .setView(layout)
+                .setPositiveButton(CommonStrings.report_content_custom_submit) { _, _ ->
+                    val reason = views.dialogReportContentInput.text.toString()
+                    roomProfileViewModel.handle(RoomProfileAction.ReportRoom(reason))
+                }
+                .setNegativeButton(CommonStrings.action_cancel, null)
+                .show()
+    }
+
     override fun onLeaveRoomClicked() {
         val isPublicRoom = roomProfileViewModel.isPublicRoom()
         val message = buildString {
-            append(getString(R.string.room_participants_leave_prompt_msg))
+            append(getString(CommonStrings.room_participants_leave_prompt_msg))
             if (!isPublicRoom) {
                 append("\n\n")
-                append(getString(R.string.room_participants_leave_private_warning))
+                append(getString(CommonStrings.room_participants_leave_private_warning))
             }
         }
-        MaterialAlertDialogBuilder(requireContext(), if (isPublicRoom) 0 else R.style.ThemeOverlay_Vector_MaterialAlertDialog_Destructive)
-                .setTitle(R.string.room_participants_leave_prompt_title)
+        MaterialAlertDialogBuilder(
+                requireContext(),
+                if (isPublicRoom) 0 else im.vector.lib.ui.styles.R.style.ThemeOverlay_Vector_MaterialAlertDialog_Destructive
+        )
+                .setTitle(CommonStrings.room_participants_leave_prompt_title)
                 .setMessage(message)
-                .setPositiveButton(R.string.action_leave) { _, _ ->
+                .setPositiveButton(CommonStrings.action_leave) { _, _ ->
                     roomProfileViewModel.handle(RoomProfileAction.LeaveRoom)
                 }
-                .setNegativeButton(R.string.action_cancel, null)
+                .setNegativeButton(CommonStrings.action_cancel, null)
                 .show()
     }
 

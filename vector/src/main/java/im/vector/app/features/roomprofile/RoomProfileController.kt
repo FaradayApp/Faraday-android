@@ -1,18 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.roomprofile
@@ -33,6 +23,8 @@ import im.vector.app.features.home.room.detail.timeline.TimelineEventController
 import im.vector.app.features.home.room.detail.timeline.tools.createLinkMovementMethod
 import im.vector.app.features.settings.VectorPreferences
 import im.vector.lib.core.utils.epoxy.charsequence.toEpoxyCharSequence
+import im.vector.lib.strings.CommonPlurals
+import im.vector.lib.strings.CommonStrings
 import me.gujun.android.span.image
 import me.gujun.android.span.span
 import org.matrix.android.sdk.api.session.crypto.model.RoomEncryptionTrustLevel
@@ -60,6 +52,7 @@ class RoomProfileController @Inject constructor(
         fun onUploadsClicked()
         fun createShortcut()
         fun onSettingsClicked()
+        fun onReportRoomClicked()
         fun onLeaveRoomClicked()
         fun onRoomAliasesClicked()
         fun onRoomPermissionsClicked()
@@ -76,13 +69,14 @@ class RoomProfileController @Inject constructor(
         data ?: return
         val host = this
         val roomSummary = data.roomSummary() ?: return
+        val enableNonSimplifiedMode = !vectorPreferences.simplifiedMode()
 
         // Topic
         roomSummary
                 .topic
                 .takeIf { it.isNotEmpty() }
                 ?.let {
-                    buildProfileSection(stringProvider.getString(R.string.room_settings_topic))
+                    buildProfileSection(stringProvider.getString(CommonStrings.room_settings_topic))
                     expandableTextItem {
                         id("topic")
                         content(it)
@@ -102,7 +96,7 @@ class RoomProfileController @Inject constructor(
                 }
 
         // Security
-        buildProfileSection(stringProvider.getString(R.string.room_profile_section_security))
+        buildProfileSection(stringProvider.getString(CommonStrings.room_profile_section_security))
 
         // Upgrade warning
         val roomVersion = data.roomCreateContent()?.roomVersion
@@ -113,14 +107,14 @@ class RoomProfileController @Inject constructor(
                 data.recommendedRoomVersion != null) {
             genericFooterItem {
                 id("version_warning")
-                text(host.stringProvider.getString(R.string.room_using_unstable_room_version, roomVersion).toEpoxyCharSequence())
-                textColor(host.colorProvider.getColorFromAttribute(R.attr.colorError))
+                text(host.stringProvider.getString(CommonStrings.room_using_unstable_room_version, roomVersion).toEpoxyCharSequence())
+                textColor(host.colorProvider.getColorFromAttribute(com.google.android.material.R.attr.colorError))
                 centered(false)
             }
 
             genericPositiveButtonItem {
                 id("migrate_button")
-                text(host.stringProvider.getString(R.string.room_upgrade_to_recommended_version))
+                text(host.stringProvider.getString(CommonStrings.room_upgrade_to_recommended_version))
                 buttonClickAction { host.callback?.doMigrateToVersion(data.recommendedRoomVersion) }
             }
         }
@@ -129,31 +123,31 @@ class RoomProfileController @Inject constructor(
         val e2eInfoText = if (roomSummary.isEncrypted) {
             if (roomSummary.roomEncryptionAlgorithm is RoomEncryptionAlgorithm.SupportedAlgorithm) {
                 stringProvider.getString(
-                        if (roomSummary.isDirect) R.string.direct_room_profile_encrypted_subtitle
-                        else R.string.room_profile_encrypted_subtitle
+                        if (roomSummary.isDirect) CommonStrings.direct_room_profile_encrypted_subtitle
+                        else CommonStrings.room_profile_encrypted_subtitle
                 )
             } else {
                 encryptionMisconfigured = true
                 buildString {
-                    append(stringProvider.getString(R.string.encryption_has_been_misconfigured))
+                    append(stringProvider.getString(CommonStrings.encryption_has_been_misconfigured))
                     append(" ")
                     apply {
                         if (!data.canUpdateRoomState) {
-                            append(stringProvider.getString(R.string.contact_admin_to_restore_encryption))
+                            append(stringProvider.getString(CommonStrings.contact_admin_to_restore_encryption))
                         }
                     }
                 }
             }
         } else {
             stringProvider.getString(
-                    if (roomSummary.isDirect) R.string.direct_room_profile_not_encrypted_subtitle
-                    else R.string.room_profile_not_encrypted_subtitle
+                    if (roomSummary.isDirect) CommonStrings.direct_room_profile_not_encrypted_subtitle
+                    else CommonStrings.room_profile_not_encrypted_subtitle
             )
         }
         genericFooterItem {
             id("e2e info")
             centered(false)
-            backgroundColor(host.colorProvider.getColorFromAttribute(R.attr.vctr_header_background))
+            backgroundColor(host.colorProvider.getColorFromAttribute(im.vector.lib.ui.styles.R.attr.vctr_header_background))
             text(
                     span {
                         apply {
@@ -172,7 +166,7 @@ class RoomProfileController @Inject constructor(
         if (encryptionMisconfigured && data.canUpdateRoomState) {
             genericPositiveButtonItem {
                 id("restore_encryption")
-                text(host.stringProvider.getString(R.string.room_profile_section_restore_security))
+                text(host.stringProvider.getString(CommonStrings.room_profile_section_restore_security))
                 iconRes(R.drawable.ic_shield_black_no_border)
                 buttonClickAction {
                     host.callback?.restoreEncryptionState()
@@ -190,11 +184,11 @@ class RoomProfileController @Inject constructor(
                         centered(false)
                         text(
                                 span {
-                                    +host.stringProvider.getString(R.string.room_settings_global_block_unverified_info_text)
+                                    +host.stringProvider.getString(CommonStrings.room_settings_global_block_unverified_info_text)
                                     apply {
                                         if (data.unverifiedDevicesInTheRoom.invoke() == true) {
                                             +"\n"
-                                            +host.stringProvider.getString(R.string.some_devices_will_not_be_able_to_decrypt)
+                                            +host.stringProvider.getString(CommonStrings.some_devices_will_not_be_able_to_decrypt)
                                         }
                                     }
                                 }.toEpoxyCharSequence()
@@ -209,14 +203,14 @@ class RoomProfileController @Inject constructor(
                     formSwitchItem {
                         id("send_to_unverified")
                         enabled(shouldBlockUnverified != null)
-                        title(host.stringProvider.getString(R.string.encryption_never_send_to_unverified_devices_in_room))
+                        title(host.stringProvider.getString(CommonStrings.encryption_never_send_to_unverified_devices_in_room))
 
                         switchChecked(shouldBlockUnverified ?: false)
 
                         apply {
                             if (shouldBlockUnverified == true && data.unverifiedDevicesInTheRoom.invoke() == true) {
                                 summary(
-                                        host.stringProvider.getString(R.string.some_devices_will_not_be_able_to_decrypt)
+                                        host.stringProvider.getString(CommonStrings.some_devices_will_not_be_able_to_decrypt)
                                 )
                             } else {
                                 summary(null)
@@ -230,14 +224,14 @@ class RoomProfileController @Inject constructor(
             }
         }
         // More
-        buildProfileSection(stringProvider.getString(R.string.room_profile_section_more))
+        buildProfileSection(stringProvider.getString(CommonStrings.room_profile_section_more))
         buildProfileAction(
                 id = "settings",
                 title = stringProvider.getString(
                         if (roomSummary.isDirect) {
-                            R.string.direct_room_profile_section_more_settings
+                            CommonStrings.direct_room_profile_section_more_settings
                         } else {
-                            R.string.room_profile_section_more_settings
+                            CommonStrings.room_profile_section_more_settings
                         }
                 ),
                 icon = R.drawable.ic_room_profile_settings,
@@ -245,7 +239,7 @@ class RoomProfileController @Inject constructor(
         )
         buildProfileAction(
                 id = "notifications",
-                title = stringProvider.getString(R.string.room_profile_section_more_notifications),
+                title = stringProvider.getString(CommonStrings.room_profile_section_more_notifications),
                 icon = R.drawable.ic_room_profile_notification,
                 action = { callback?.onNotificationsClicked() }
         )
@@ -253,7 +247,7 @@ class RoomProfileController @Inject constructor(
         val hasWarning = roomSummary.isEncrypted && roomSummary.roomEncryptionTrustLevel == RoomEncryptionTrustLevel.Warning
         buildProfileAction(
                 id = "member_list",
-                title = stringProvider.getQuantityString(R.plurals.room_profile_section_more_member_list, numberOfMembers, numberOfMembers),
+                title = stringProvider.getQuantityString(CommonPlurals.room_profile_section_more_member_list, numberOfMembers, numberOfMembers),
                 icon = R.drawable.ic_room_profile_member_list,
                 accessory = R.drawable.ic_shield_warning.takeIf { hasWarning } ?: 0,
                 action = { callback?.onMemberListClicked() }
@@ -262,43 +256,51 @@ class RoomProfileController @Inject constructor(
         if (data.bannedMembership.invoke()?.isNotEmpty() == true) {
             buildProfileAction(
                     id = "banned_list",
-                    title = stringProvider.getString(R.string.room_settings_banned_users_title),
-                    icon = R.drawable.ic_settings_root_labs,
+                    title = stringProvider.getString(CommonStrings.room_settings_banned_users_title),
+                    icon = R.drawable.ic_room_profile_banned_users,
                     action = { callback?.onBannedMemberListClicked() }
             )
         }
 
         buildProfileAction(
                 id = "poll_history",
-                title = stringProvider.getString(R.string.room_profile_section_more_polls),
+                title = stringProvider.getString(CommonStrings.room_profile_section_more_polls),
                 icon = R.drawable.ic_attachment_poll,
                 action = { callback?.onPollHistoryClicked() }
         )
 
         buildProfileAction(
                 id = "uploads",
-                title = stringProvider.getString(R.string.room_profile_section_more_uploads),
+                title = stringProvider.getString(CommonStrings.room_profile_section_more_uploads),
                 icon = R.drawable.ic_room_profile_uploads,
                 action = { callback?.onUploadsClicked() }
         )
         if (shortcutCreator.canCreateShortcut()) {
             buildProfileAction(
                     id = "shortcut",
-                    title = stringProvider.getString(R.string.room_settings_add_homescreen_shortcut),
+                    title = stringProvider.getString(CommonStrings.room_settings_add_homescreen_shortcut),
                     editable = false,
                     icon = R.drawable.ic_add_to_home_screen_24dp,
                     action = { callback?.createShortcut() }
             )
         }
-        buildEncryptionAction(data.actionPermissions, roomSummary)
-
+        if (enableNonSimplifiedMode) {
+            buildEncryptionAction(data.actionPermissions, roomSummary)
+        }
+        buildProfileAction(
+                id = "Report",
+                title = stringProvider.getString(CommonStrings.room_profile_section_more_report),
+                icon = R.drawable.ic_report_spam,
+                editable = false,
+                action = { callback?.onReportRoomClicked() }
+        )
         buildProfileAction(
                 id = "leave",
                 title = stringProvider.getString(
                         if (roomSummary.isDirect) {
-                            R.string.direct_room_profile_section_more_leave
+                            CommonStrings.direct_room_profile_section_more_leave
                         } else {
-                            R.string.room_profile_section_more_leave
+                            CommonStrings.room_profile_section_more_leave
                         }
                 ),
                 divider = false,
@@ -309,30 +311,34 @@ class RoomProfileController @Inject constructor(
         )
 
         // Advanced
-        buildProfileSection(stringProvider.getString(R.string.room_settings_category_advanced_title))
+        if (enableNonSimplifiedMode || vectorPreferences.developerMode()) {
+            buildProfileSection(stringProvider.getString(CommonStrings.room_settings_category_advanced_title))
+        }
 
-        buildProfileAction(
-                id = "alias",
-                title = stringProvider.getString(R.string.room_settings_alias_title),
-                subtitle = stringProvider.getString(R.string.room_settings_alias_subtitle),
-                divider = true,
-                editable = true,
-                action = { callback?.onRoomAliasesClicked() }
-        )
+        if (enableNonSimplifiedMode) {
+            buildProfileAction(
+                    id = "alias",
+                    title = stringProvider.getString(CommonStrings.room_settings_alias_title),
+                    subtitle = stringProvider.getString(CommonStrings.room_settings_alias_subtitle),
+                    divider = true,
+                    editable = true,
+                    action = { callback?.onRoomAliasesClicked() }
+            )
 
-        buildProfileAction(
-                id = "permissions",
-                title = stringProvider.getString(R.string.room_settings_permissions_title),
-                subtitle = stringProvider.getString(R.string.room_settings_permissions_subtitle),
-                divider = vectorPreferences.developerMode(),
-                editable = true,
-                action = { callback?.onRoomPermissionsClicked() }
-        )
+            buildProfileAction(
+                    id = "permissions",
+                    title = stringProvider.getString(CommonStrings.room_settings_permissions_title),
+                    subtitle = stringProvider.getString(CommonStrings.room_settings_permissions_subtitle),
+                    divider = vectorPreferences.developerMode(),
+                    editable = true,
+                    action = { callback?.onRoomPermissionsClicked() }
+            )
+        }
 
         if (vectorPreferences.developerMode()) {
             buildProfileAction(
                     id = "roomId",
-                    title = stringProvider.getString(R.string.room_settings_room_internal_id),
+                    title = stringProvider.getString(CommonStrings.room_settings_room_internal_id),
                     subtitle = roomSummary.roomId,
                     divider = true,
                     editable = false,
@@ -341,7 +347,7 @@ class RoomProfileController @Inject constructor(
             roomVersion?.let {
                 buildProfileAction(
                         id = "roomVersion",
-                        title = stringProvider.getString(R.string.room_settings_room_version_title),
+                        title = stringProvider.getString(CommonStrings.room_settings_room_version_title),
                         subtitle = it,
                         divider = true,
                         editable = false
@@ -349,7 +355,7 @@ class RoomProfileController @Inject constructor(
             }
             buildProfileAction(
                     id = "devTools",
-                    title = stringProvider.getString(R.string.dev_tools_menu_name),
+                    title = stringProvider.getString(CommonStrings.dev_tools_menu_name),
                     divider = false,
                     editable = true,
                     action = { callback?.onRoomDevToolsClicked() }
@@ -362,7 +368,7 @@ class RoomProfileController @Inject constructor(
             if (actionPermissions.canEnableEncryption) {
                 buildProfileAction(
                         id = "enableEncryption",
-                        title = stringProvider.getString(R.string.room_settings_enable_encryption),
+                        title = stringProvider.getString(CommonStrings.room_settings_enable_encryption),
                         icon = R.drawable.ic_shield_black,
                         divider = true,
                         editable = false,
@@ -372,7 +378,7 @@ class RoomProfileController @Inject constructor(
             } else {
                 buildProfileAction(
                         id = "enableEncryption",
-                        title = stringProvider.getString(R.string.room_settings_enable_encryption_no_permission),
+                        title = stringProvider.getString(CommonStrings.room_settings_enable_encryption_no_permission),
                         icon = R.drawable.ic_shield_black,
                         divider = false,
                         editable = false

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.home.room.detail.composer.voice
@@ -38,6 +29,7 @@ import im.vector.app.features.home.room.detail.composer.voice.VoiceMessageRecord
 import im.vector.app.features.home.room.detail.timeline.helper.AudioMessagePlaybackTracker
 import im.vector.app.features.themes.ThemeUtils
 import im.vector.app.features.voice.AudioWaveformView
+import im.vector.lib.strings.CommonStrings
 
 class VoiceMessageViews(
         private val resources: Resources,
@@ -47,7 +39,7 @@ class VoiceMessageViews(
 
     private val distanceToLock = dimensionConverter.dpToPx(48).toFloat()
     private val distanceToCancel = dimensionConverter.dpToPx(120).toFloat()
-    private val rtlXMultiplier = resources.getInteger(R.integer.rtl_x_multiplier)
+    private val rtlXMultiplier = resources.getInteger(im.vector.lib.ui.styles.R.integer.rtl_x_multiplier)
 
     fun start(actions: Actions) {
         views.voiceMessageSendButton.setOnClickListener {
@@ -121,7 +113,7 @@ class VoiceMessageViews(
     }
 
     fun renderLocking(distanceY: Float) {
-        views.voiceMessageLockImage.setAttributeTintedImageResource(R.drawable.ic_voice_message_locked, R.attr.colorPrimary)
+        views.voiceMessageLockImage.setAttributeTintedImageResource(R.drawable.ic_voice_message_locked, com.google.android.material.R.attr.colorPrimary)
         val translationAmount = -distanceY.coerceIn(0F, distanceToLock)
         views.voiceMessageMicButton.translationY = translationAmount
         views.voiceMessageLockArrow.translationY = translationAmount
@@ -152,7 +144,7 @@ class VoiceMessageViews(
         views.voiceMessageMicButton.isVisible = true
         views.voiceMessageBackgroundView.isVisible = true
         views.voiceMessageMicButton.setImageResource(R.drawable.ic_composer_rich_mic_pressed)
-        views.voiceMessageMicButton.setAttributeTintedBackground(R.drawable.circle_with_halo, R.attr.colorPrimary)
+        views.voiceMessageMicButton.setAttributeTintedBackground(R.drawable.circle_with_halo, com.google.android.material.R.attr.colorPrimary)
         /* This is a no-op for SchildiChat
         views.voiceMessageMicButton.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             setMargins(0, 0, 0, 0)
@@ -308,7 +300,7 @@ class VoiceMessageViews(
         views.voiceMessageSendButton.isVisible = true
         views.voiceMessageMicButton.isVisible = false
         views.voicePlaybackWaveform.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
-        renderToast(resources.getString(R.string.voice_message_tap_to_stop_toast))
+        renderToast(resources.getString(CommonStrings.voice_message_tap_to_stop_toast))
     }
 
     fun initViews() {
@@ -320,17 +312,17 @@ class VoiceMessageViews(
 
     fun renderPlaying(state: AudioMessagePlaybackTracker.Listener.State.Playing) {
         views.voicePlaybackControlButton.setImageResource(R.drawable.ic_play_pause_pause)
-        views.voicePlaybackControlButton.contentDescription = resources.getString(R.string.a11y_pause_voice_message)
+        views.voicePlaybackControlButton.contentDescription = resources.getString(CommonStrings.a11y_pause_voice_message)
         val formattedTimerText = DateUtils.formatElapsedTime((state.playbackTime / 1000).toLong())
         views.voicePlaybackTime.text = formattedTimerText
-        val waveformColorIdle = ThemeUtils.getColor(views.voicePlaybackWaveform.context, R.attr.vctr_content_quaternary)
-        val waveformColorPlayed = ThemeUtils.getColor(views.voicePlaybackWaveform.context, R.attr.vctr_content_secondary)
+        val waveformColorIdle = ThemeUtils.getColor(views.voicePlaybackWaveform.context, im.vector.lib.ui.styles.R.attr.vctr_content_quaternary)
+        val waveformColorPlayed = ThemeUtils.getColor(views.voicePlaybackWaveform.context, im.vector.lib.ui.styles.R.attr.vctr_content_secondary)
         views.voicePlaybackWaveform.updateColors(state.percentage, waveformColorPlayed, waveformColorIdle)
     }
 
     fun renderIdle() {
         views.voicePlaybackControlButton.setImageResource(R.drawable.ic_play_pause_play)
-        views.voicePlaybackControlButton.contentDescription = resources.getString(R.string.a11y_play_voice_message)
+        views.voicePlaybackControlButton.contentDescription = resources.getString(CommonStrings.a11y_play_voice_message)
         views.voicePlaybackWaveform.summarize()
     }
 
@@ -362,7 +354,7 @@ class VoiceMessageViews(
 
     fun renderRecordingWaveform(amplitudeList: List<Int>) {
         views.voicePlaybackWaveform.doOnLayout { waveFormView ->
-            val waveformColor = ThemeUtils.getColor(waveFormView.context, R.attr.vctr_content_quaternary)
+            val waveformColor = ThemeUtils.getColor(waveFormView.context, im.vector.lib.ui.styles.R.attr.vctr_content_quaternary)
             amplitudeList.forEach {
                 (waveFormView as AudioWaveformView).add(AudioWaveformView.FFT(it.toFloat(), waveformColor))
             }
@@ -371,7 +363,7 @@ class VoiceMessageViews(
 
     fun renderVisibilityChanged(parentChanged: Boolean, visibility: Int) {
         if (parentChanged && visibility == ConstraintLayout.VISIBLE) {
-            views.voiceMessageMicButton.contentDescription = resources.getString(R.string.a11y_start_voice_message)
+            views.voiceMessageMicButton.contentDescription = resources.getString(CommonStrings.a11y_start_voice_message)
         } else {
             views.voiceMessageMicButton.contentDescription = ""
         }

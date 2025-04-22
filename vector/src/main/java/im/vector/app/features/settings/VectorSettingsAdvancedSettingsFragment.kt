@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings
@@ -26,10 +17,12 @@ import im.vector.app.core.platform.VectorBaseActivity
 import im.vector.app.core.preference.VectorPreference
 import im.vector.app.core.preference.VectorPreferenceCategory
 import im.vector.app.core.preference.VectorSwitchPreference
+import im.vector.app.core.resources.BuildMeta
 import im.vector.app.core.utils.copyToClipboard
 import im.vector.app.features.analytics.plan.MobileScreen
 import im.vector.app.features.home.NightlyProxy
 import im.vector.app.features.rageshake.RageShake
+import im.vector.lib.strings.CommonStrings
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -38,10 +31,12 @@ class VectorSettingsAdvancedSettingsFragment :
 
     @Inject lateinit var vectorPreferences: VectorPreferences
 
-    override var titleRes = R.string.settings_advanced_settings
+    override var titleRes = CommonStrings.settings_advanced_settings
     override val preferenceXmlRes = R.xml.vector_settings_advanced_settings
 
     @Inject lateinit var nightlyProxy: NightlyProxy
+
+    @Inject lateinit var buildMeta: BuildMeta
 
     private var rageshake: RageShake? = null
 
@@ -55,7 +50,7 @@ class VectorSettingsAdvancedSettingsFragment :
 
         rageshake = (activity as? VectorBaseActivity<*>)?.rageShake
         rageshake?.interceptor = {
-            (activity as? VectorBaseActivity<*>)?.showSnackbar(getString(R.string.rageshake_detected))
+            (activity as? VectorBaseActivity<*>)?.showSnackbar(getString(CommonStrings.rageshake_detected))
         }
     }
 
@@ -75,6 +70,10 @@ class VectorSettingsAdvancedSettingsFragment :
         findPreference<VectorPreference>("SETTINGS_ACCESS_TOKEN")?.setOnPreferenceClickListener {
             copyToClipboard(requireActivity(), session.sessionParams.credentials.accessToken)
             true
+        }
+
+        findPreference<VectorPreference>(VectorPreferences.SETTINGS_DEVELOPER_MODE_KEY_REQUEST_AUDIT_KEY)?.apply {
+            isVisible = session.cryptoService().supportKeyRequestInspection()
         }
     }
 
@@ -108,16 +107,19 @@ class VectorSettingsAdvancedSettingsFragment :
             findPreference<VectorPreferenceCategory>("SETTINGS_RAGE_SHAKE_CATEGORY_KEY")!!.isVisible = false
         }
 
-        findPreference<VectorPreference>("SETTINGS_APPLY_SC_DEFAULT_SETTINGS")?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            MaterialAlertDialogBuilder(requireContext())
-                    .setTitle(R.string.settings_apply_sc_default_settings_dialog_title)
-                    .setMessage(R.string.settings_apply_sc_default_settings_dialog_summary)
-                    .setPositiveButton(R.string._continue) { _, _ ->
-                        vectorPreferences.applyScDefaultValues()
-                    }
-                    .setNegativeButton(R.string.action_cancel) { _, _ -> /* Just close dialog */ }
-                    .show()
-            true
+        findPreference<VectorPreference>("SETTINGS_APPLY_SC_DEFAULT_SETTINGS")?.let {
+            it.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+                MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(CommonStrings.settings_apply_sc_default_settings_dialog_title)
+                        .setMessage(CommonStrings.settings_apply_sc_default_settings_dialog_summary)
+                        .setPositiveButton(CommonStrings._continue) { _, _ ->
+                            vectorPreferences.applyScDefaultValues()
+                        }
+                        .setNegativeButton(CommonStrings.action_cancel) { _, _ -> /* Just close dialog */ }
+                        .show()
+                true
+            }
+            it.isVisible = buildMeta.isInternalBuild
         }
     }
 

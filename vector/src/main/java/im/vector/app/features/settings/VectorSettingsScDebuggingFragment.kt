@@ -6,13 +6,14 @@ import androidx.preference.PreferenceGroup
 import de.spiritcroc.matrixsdk.util.DbgUtil
 import im.vector.app.R
 import im.vector.app.core.preference.VectorSwitchPreference
+import im.vector.lib.strings.CommonStrings
 import javax.inject.Inject
 
 class VectorSettingsScDebuggingFragment @Inject constructor(
         //private val vectorPreferences: VectorPreferences
 ) : VectorSettingsBaseFragment() {
 
-    override var titleRes = R.string.settings_sc_debugging
+    override var titleRes = CommonStrings.settings_sc_debugging
     override val preferenceXmlRes = R.xml.vector_settings_sc_debugging
 
     companion object {
@@ -22,16 +23,16 @@ class VectorSettingsScDebuggingFragment @Inject constructor(
 
     data class DbgPref(val key: String, @StringRes val stringRes: Int)
     private val dbgLoggingPrefs = arrayOf(
-            DbgPref(DbgUtil.DBG_TIMELINE_CHUNKS, R.string.settings_sc_dbg_timeline_chunks),
-            DbgPref(DbgUtil.DBG_READ_MARKER, R.string.settings_sc_dbg_read_marker),
-            DbgPref(DbgUtil.DBG_READ_RECEIPTS, R.string.settings_sc_dbg_read_receipts),
-            DbgPref(DbgUtil.DBG_VIEW_PAGER, R.string.settings_sc_dbg_view_pager),
+            DbgPref(DbgUtil.DBG_TIMELINE_CHUNKS, CommonStrings.settings_sc_dbg_timeline_chunks),
+            DbgPref(DbgUtil.DBG_READ_MARKER, CommonStrings.settings_sc_dbg_read_marker),
+            DbgPref(DbgUtil.DBG_READ_RECEIPTS, CommonStrings.settings_sc_dbg_read_receipts),
+            DbgPref(DbgUtil.DBG_VIEW_PAGER, CommonStrings.settings_sc_dbg_view_pager),
     )
     private val dbgVisualsPrefs = arrayOf(
-            DbgPref(DbgUtil.DBG_SHOW_DISPLAY_INDEX, R.string.settings_sc_dbg_show_display_index),
-            DbgPref(DbgUtil.DBG_SHOW_READ_TRACKING, R.string.settings_sc_dbg_show_read_tracking),
-            DbgPref(DbgUtil.DBG_VIEW_PAGER_VISUALS, R.string.settings_sc_dbg_view_pager_visuals),
-            DbgPref(DbgUtil.DBG_SHOW_DUPLICATE_READ_RECEIPTS, R.string.settings_sc_dbg_show_duplicate_read_receipts),
+            DbgPref(DbgUtil.DBG_SHOW_DISPLAY_INDEX, CommonStrings.settings_sc_dbg_show_display_index),
+            DbgPref(DbgUtil.DBG_SHOW_READ_TRACKING, CommonStrings.settings_sc_dbg_show_read_tracking),
+            DbgPref(DbgUtil.DBG_VIEW_PAGER_VISUALS, CommonStrings.settings_sc_dbg_view_pager_visuals),
+            DbgPref(DbgUtil.DBG_SHOW_DUPLICATE_READ_RECEIPTS, CommonStrings.settings_sc_dbg_show_duplicate_read_receipts),
     )
     val dbgPrefs = dbgLoggingPrefs + dbgVisualsPrefs
 

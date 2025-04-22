@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings.notifications
@@ -63,6 +54,8 @@ import im.vector.app.features.settings.VectorSettingsBaseFragment
 import im.vector.app.features.settings.VectorSettingsFragmentInteractionListener
 import im.vector.app.features.settings.notifications.nukepasswordnotifications.NukePasswordNotificationsFragment
 import im.vector.lib.core.utils.compat.getParcelableExtraCompat
+import im.vector.lib.strings.CommonPlurals
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.matrix.android.sdk.api.extensions.tryOrNull
@@ -91,7 +84,7 @@ class VectorSettingsNotificationFragment :
     @Inject lateinit var ensureFcmTokenIsRetrievedUseCase: EnsureFcmTokenIsRetrievedUseCase
     @Inject lateinit var lightweightSettingsStorage: LightweightSettingsStorage
 
-    override var titleRes: Int = R.string.settings_notifications
+    override var titleRes: Int = CommonStrings.settings_notifications
     override val preferenceXmlRes = R.xml.vector_settings_notifications
 
     private var interactionListener: VectorSettingsFragmentInteractionListener? = null
@@ -288,7 +281,7 @@ class VectorSettingsNotificationFragment :
             category.removeAll()
             if (emails.isEmpty()) {
                 val vectorPreference = VectorPreference(requireContext())
-                vectorPreference.title = resources.getString(R.string.settings_notification_emails_no_emails)
+                vectorPreference.title = resources.getString(CommonStrings.settings_notification_emails_no_emails)
                 category.addPreference(vectorPreference)
                 vectorPreference.setOnPreferenceClickListener {
                     interactionListener?.navigateToEmailAndPhoneNumbers()
@@ -297,7 +290,7 @@ class VectorSettingsNotificationFragment :
             } else {
                 emails.forEach { (emailPid, isEnabled) ->
                     val pref = VectorSwitchPreference(requireContext())
-                    pref.title = resources.getString(R.string.settings_notification_emails_enable_for_email, emailPid.email)
+                    pref.title = resources.getString(CommonStrings.settings_notification_emails_enable_for_email, emailPid.email)
                     pref.isChecked = isEnabled
                     pref.setTransactionalSwitchChangeListener(lifecycleScope) { isChecked ->
                         if (isChecked) {
@@ -334,9 +327,9 @@ class VectorSettingsNotificationFragment :
     private fun refreshBackgroundSyncPrefs() {
         findPreference<VectorPreference>(VectorPreferences.SETTINGS_FDROID_BACKGROUND_SYNC_MODE)?.let {
             it.summary = when (vectorPreferences.getFdroidSyncBackgroundMode()) {
-                BackgroundSyncMode.FDROID_BACKGROUND_SYNC_MODE_FOR_BATTERY -> getString(R.string.settings_background_fdroid_sync_mode_battery)
-                BackgroundSyncMode.FDROID_BACKGROUND_SYNC_MODE_FOR_REALTIME -> getString(R.string.settings_background_fdroid_sync_mode_real_time)
-                BackgroundSyncMode.FDROID_BACKGROUND_SYNC_MODE_DISABLED -> getString(R.string.settings_background_fdroid_sync_mode_disabled)
+                BackgroundSyncMode.FDROID_BACKGROUND_SYNC_MODE_FOR_BATTERY -> getString(CommonStrings.settings_background_fdroid_sync_mode_battery)
+                BackgroundSyncMode.FDROID_BACKGROUND_SYNC_MODE_FOR_REALTIME -> getString(CommonStrings.settings_background_fdroid_sync_mode_real_time)
+                BackgroundSyncMode.FDROID_BACKGROUND_SYNC_MODE_DISABLED -> getString(CommonStrings.settings_background_fdroid_sync_mode_disabled)
             }
         }
 
@@ -373,7 +366,7 @@ class VectorSettingsNotificationFragment :
      * @return the text
      */
     private fun secondsToText(seconds: Int): String {
-        return resources.getQuantityString(R.plurals.seconds, seconds, seconds)
+        return resources.getQuantityString(CommonPlurals.seconds, seconds, seconds)
     }
 
     private fun handleSystemPreference() {
@@ -512,7 +505,7 @@ class VectorSettingsNotificationFragment :
 
                             // revert the check box
                             switchPref.isChecked = !switchPref.isChecked
-                            Toast.makeText(activity, R.string.unknown_error, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(activity, CommonStrings.unknown_error, Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -528,7 +521,7 @@ private fun SwitchPreference.setTransactionalSwitchChangeListener(scope: Corouti
                 transaction(isChecked as Boolean)
             } catch (failure: Throwable) {
                 switchPreference.isChecked = originalState
-                Toast.makeText(switchPreference.context, R.string.unknown_error, Toast.LENGTH_SHORT).show()
+                Toast.makeText(switchPreference.context, CommonStrings.unknown_error, Toast.LENGTH_SHORT).show()
             }
         }
         true

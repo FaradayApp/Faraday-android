@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.invite
@@ -20,12 +11,13 @@ import com.airbnb.mvrx.MavericksViewModelFactory
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import im.vector.app.R
 import im.vector.app.core.di.MavericksAssistedViewModelFactory
 import im.vector.app.core.di.hiltMavericksViewModelFactory
 import im.vector.app.core.platform.VectorViewModel
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.features.userdirectory.PendingSelection
+import im.vector.lib.strings.CommonPlurals
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
@@ -68,16 +60,16 @@ class InviteUsersToRoomViewModel @AssistedInject constructor(
 
                     val successMessage = when (selections.size) {
                         1 -> stringProvider.getString(
-                                R.string.invitation_sent_to_one_user,
+                                CommonStrings.invitation_sent_to_one_user,
                                 selections.first().getBestName()
                         )
                         2 -> stringProvider.getString(
-                                R.string.invitations_sent_to_two_users,
+                                CommonStrings.invitations_sent_to_two_users,
                                 selections.first().getBestName(),
                                 selections.last().getBestName()
                         )
                         else -> stringProvider.getQuantityString(
-                                R.plurals.invitations_sent_to_one_and_more_users,
+                                CommonPlurals.invitations_sent_to_one_and_more_users,
                                 selections.size - 1,
                                 selections.first().getBestName(),
                                 selections.size - 1

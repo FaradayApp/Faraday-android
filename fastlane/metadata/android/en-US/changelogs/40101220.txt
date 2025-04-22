@@ -1,0 +1,3 @@
+- Address libwebp security vulnerability by dropping an outdated dependency
+- Fix some message render failures and crashes
+- Labs setting to prefer lower root spaces in bottom space bar

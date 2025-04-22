@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.onboarding.ftueauth
@@ -24,13 +15,13 @@ import android.view.ViewGroup
 import androidx.core.view.isInvisible
 import com.airbnb.mvrx.args
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.utils.colorTerminatingFullStop
 import im.vector.app.databinding.FragmentFtueWaitForEmailVerificationBinding
 import im.vector.app.features.onboarding.OnboardingAction
 import im.vector.app.features.onboarding.RegisterAction
 import im.vector.app.features.themes.ThemeProvider
 import im.vector.app.features.themes.ThemeUtils
+import im.vector.lib.strings.CommonStrings
 import kotlinx.parcelize.Parcelize
 import javax.inject.Inject
 
@@ -65,9 +56,9 @@ class FtueAuthWaitForEmailFragment :
 
     private fun setupUi() {
         views.emailVerificationGradientContainer.setBackgroundResource(themeProvider.ftueBreakerBackground())
-        views.emailVerificationTitle.text = getString(R.string.ftue_auth_email_verification_title)
-                .colorTerminatingFullStop(ThemeUtils.getColor(requireContext(), R.attr.colorSecondary))
-        views.emailVerificationSubtitle.text = getString(R.string.ftue_auth_email_verification_subtitle, params.email)
+        views.emailVerificationTitle.text = getString(CommonStrings.ftue_auth_email_verification_title)
+                .colorTerminatingFullStop(ThemeUtils.getColor(requireContext(), com.google.android.material.R.attr.colorSecondary))
+        views.emailVerificationSubtitle.text = getString(CommonStrings.ftue_auth_email_verification_subtitle, params.email)
         views.emailVerificationResendEmail.debouncedClicks {
             hideWaitingForVerificationLoading()
             viewModel.handle(OnboardingAction.PostRegisterAction(RegisterAction.SendAgainThreePid))

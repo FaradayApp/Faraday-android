@@ -1,17 +1,8 @@
 /*
- * Copyright 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 package im.vector.app.features.settings.crosssigning
 
@@ -26,7 +17,6 @@ import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.cleanup
 import im.vector.app.core.extensions.configureWith
 import im.vector.app.core.extensions.registerStartForActivityResult
@@ -34,6 +24,7 @@ import im.vector.app.core.extensions.setTextOrHide
 import im.vector.app.core.platform.VectorBaseFragment
 import im.vector.app.databinding.FragmentGenericRecyclerBinding
 import im.vector.app.features.auth.ReAuthActivity
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.auth.data.LoginFlowTypes
 import javax.inject.Inject
 
@@ -81,9 +72,9 @@ class CrossSigningSettingsFragment :
             when (event) {
                 is CrossSigningSettingsViewEvents.Failure -> {
                     MaterialAlertDialogBuilder(requireContext())
-                            .setTitle(R.string.dialog_title_error)
+                            .setTitle(CommonStrings.dialog_title_error)
                             .setMessage(errorFormatter.toHumanReadable(event.throwable))
-                            .setPositiveButton(R.string.ok, null)
+                            .setPositiveButton(CommonStrings.ok, null)
                             .show()
                     Unit
                 }
@@ -92,7 +83,7 @@ class CrossSigningSettingsFragment :
                             requireContext(),
                             event.registrationFlowResponse,
                             event.lastErrorCode,
-                            getString(R.string.initialize_cross_signing)
+                            getString(CommonStrings.initialize_cross_signing)
                     ).let { intent ->
                         reAuthActivityResultLauncher.launch(intent)
                     }
@@ -110,7 +101,7 @@ class CrossSigningSettingsFragment :
 
     override fun onResume() {
         super.onResume()
-        (activity as? AppCompatActivity)?.supportActionBar?.setTitle(R.string.encryption_information_cross_signing_state)
+        (activity as? AppCompatActivity)?.supportActionBar?.setTitle(CommonStrings.encryption_information_cross_signing_state)
     }
 
     override fun invalidate() = withState(viewModel) { state ->

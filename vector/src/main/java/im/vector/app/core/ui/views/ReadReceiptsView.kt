@@ -1,17 +1,8 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.core.ui.views
@@ -24,9 +15,11 @@ import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import im.vector.app.R
 import im.vector.app.databinding.ViewReadReceiptsBinding
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.home.room.detail.timeline.item.ReadReceiptData
 import im.vector.app.features.home.room.detail.timeline.item.toMatrixItem
+import im.vector.lib.strings.CommonPlurals
+import im.vector.lib.strings.CommonStrings
 
 private const val MAX_RECEIPT_DISPLAYED = 5
 
@@ -55,7 +48,7 @@ class ReadReceiptsView @JvmOverloads constructor(
 
     private fun setupView() {
         inflate(context, R.layout.view_read_receipts, this)
-        contentDescription = context.getString(R.string.a11y_view_read_receipts)
+        contentDescription = context.getString(CommonStrings.a11y_view_read_receipts)
     }
 
     fun render(readReceipts: List<ReadReceiptData>, avatarRenderer: AvatarRenderer) {
@@ -74,7 +67,7 @@ class ReadReceiptsView @JvmOverloads constructor(
         if (readReceipts.size > MAX_RECEIPT_DISPLAYED) {
             views.receiptMore.visibility = View.VISIBLE
             views.receiptMore.text = context.getString(
-                    R.string.x_plus, readReceipts.size - MAX_RECEIPT_DISPLAYED
+                    CommonStrings.x_plus, readReceipts.size - MAX_RECEIPT_DISPLAYED
             )
         } else {
             views.receiptMore.visibility = View.GONE
@@ -82,34 +75,34 @@ class ReadReceiptsView @JvmOverloads constructor(
         contentDescription = when (readReceipts.size) {
             1 ->
                 if (displayNames.size == 1) {
-                    context.getString(R.string.one_user_read, displayNames[0])
+                    context.getString(CommonStrings.one_user_read, displayNames[0])
                 } else {
-                    context.resources.getQuantityString(R.plurals.fallback_users_read, readReceipts.size)
+                    context.resources.getQuantityString(CommonPlurals.fallback_users_read, readReceipts.size)
                 }
             2 ->
                 if (displayNames.size == 2) {
-                    context.getString(R.string.two_users_read, displayNames[0], displayNames[1])
+                    context.getString(CommonStrings.two_users_read, displayNames[0], displayNames[1])
                 } else {
-                    context.resources.getQuantityString(R.plurals.fallback_users_read, readReceipts.size)
+                    context.resources.getQuantityString(CommonPlurals.fallback_users_read, readReceipts.size)
                 }
             3 ->
                 if (displayNames.size == 3) {
-                    context.getString(R.string.three_users_read, displayNames[0], displayNames[1], displayNames[2])
+                    context.getString(CommonStrings.three_users_read, displayNames[0], displayNames[1], displayNames[2])
                 } else {
-                    context.resources.getQuantityString(R.plurals.fallback_users_read, readReceipts.size)
+                    context.resources.getQuantityString(CommonPlurals.fallback_users_read, readReceipts.size)
                 }
             else ->
                 if (displayNames.size >= 2) {
                     val qty = readReceipts.size - 2
                     context.resources.getQuantityString(
-                            R.plurals.two_and_some_others_read,
+                            CommonPlurals.two_and_some_others_read,
                             qty,
                             displayNames[0],
                             displayNames[1],
                             qty
                     )
                 } else {
-                    context.resources.getQuantityString(R.plurals.fallback_users_read, readReceipts.size)
+                    context.resources.getQuantityString(CommonPlurals.fallback_users_read, readReceipts.size)
                 }
         }
     }

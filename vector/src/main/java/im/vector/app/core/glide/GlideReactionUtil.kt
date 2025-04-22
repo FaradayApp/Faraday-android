@@ -43,17 +43,13 @@ fun renderReactionImage(reactionUrl: String?,
                     .load(url)
                     .centerCrop()
                     .listener(object : RequestListener<Drawable> {
-                        override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
+                        override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>, isFirstResource: Boolean): Boolean {
                             Timber.w("Reaction image load failed for $effectiveReactionUrl: $e")
                             textView.isVisible = true
                             imageView.isVisible = false
                             return false
                         }
-                        override fun onResourceReady(resource: Drawable?,
-                                                     model: Any?,
-                                                     target: Target<Drawable>?,
-                                                     dataSource: DataSource?,
-                                                     isFirstResource: Boolean): Boolean {
+                        override fun onResourceReady(resource: Drawable, model: Any, target: Target<Drawable>?, dataSource: DataSource, isFirstResource: Boolean): Boolean {
                             return false
                         }
                     })

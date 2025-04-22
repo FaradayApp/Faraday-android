@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings.devices.v2.details
@@ -27,13 +18,13 @@ import com.airbnb.mvrx.Success
 import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.cleanup
 import im.vector.app.core.extensions.configureWith
 import im.vector.app.core.platform.VectorBaseFragment
 import im.vector.app.core.platform.showOptimizedSnackbar
 import im.vector.app.databinding.FragmentSessionDetailsBinding
 import im.vector.app.features.settings.devices.v2.DeviceFullInfo
+import im.vector.lib.strings.CommonStrings
 import javax.inject.Inject
 
 /**
@@ -61,7 +52,7 @@ class SessionDetailsFragment :
     private fun initToolbar() {
         (activity as? AppCompatActivity)
                 ?.supportActionBar
-                ?.setTitle(R.string.device_manager_session_details_title)
+                ?.setTitle(CommonStrings.device_manager_session_details_title)
     }
 
     private fun initSessionDetails() {
@@ -76,7 +67,7 @@ class SessionDetailsFragment :
     private fun observeViewEvents() {
         viewModel.observeViewEvents { viewEvent ->
             when (viewEvent) {
-                SessionDetailsViewEvent.ContentCopiedToClipboard -> view?.showOptimizedSnackbar(getString(R.string.copied_to_clipboard))
+                SessionDetailsViewEvent.ContentCopiedToClipboard -> view?.showOptimizedSnackbar(getString(CommonStrings.copied_to_clipboard))
             }
         }
     }

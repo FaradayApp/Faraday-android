@@ -1,17 +1,8 @@
 /*
- * Copyright 2020 New Vector Ltd
+ * Copyright 2020-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.qrcode
@@ -23,10 +14,10 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import com.airbnb.mvrx.viewModel
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.replaceFragment
 import im.vector.app.core.platform.VectorBaseActivity
 import im.vector.app.databinding.ActivitySimpleBinding
+import im.vector.lib.strings.CommonStrings
 
 @AndroidEntryPoint
 class QrCodeScannerActivity : VectorBaseActivity<ActivitySimpleBinding>() {
@@ -46,7 +37,7 @@ class QrCodeScannerActivity : VectorBaseActivity<ActivitySimpleBinding>() {
                     setResultAndFinish(it.result, it.isQrCode)
                 }
                 is QrCodeScannerEvents.ParseFailed -> {
-                    Toast.makeText(this, R.string.qr_code_not_scanned, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, CommonStrings.qr_code_not_scanned, Toast.LENGTH_SHORT).show()
                     finish()
                 }
                 else -> Unit
@@ -54,7 +45,7 @@ class QrCodeScannerActivity : VectorBaseActivity<ActivitySimpleBinding>() {
         }
 
         if (isFirstCreation()) {
-            val args = QrScannerArgs(showExtraButtons = false, R.string.verification_scan_their_code)
+            val args = QrScannerArgs(showExtraButtons = false, CommonStrings.verification_scan_their_code)
             replaceFragment(views.simpleFragmentContainer, QrCodeScannerFragment::class.java, args)
         }
     }

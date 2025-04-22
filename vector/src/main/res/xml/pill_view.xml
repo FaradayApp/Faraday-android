@@ -3,4 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     style="@style/Widget.MaterialComponents.Chip.Entry"
     android:checkable="false"
+    app:chipStartPadding="0dp"
+    app:chipEndPadding="4dp"
+    app:iconStartPadding="@dimen/pill_avatar_padding"
     app:closeIcon="@null" />

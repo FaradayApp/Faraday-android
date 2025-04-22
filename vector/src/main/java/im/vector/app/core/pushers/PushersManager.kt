@@ -1,27 +1,19 @@
 /*
- * Copyright 2019 New Vector Ltd
+ * Copyright 2019-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.core.pushers
 
-import im.vector.app.R
 import im.vector.app.core.device.GetDeviceInfoUseCase
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.resources.AppNameProvider
 import im.vector.app.core.resources.LocaleProvider
 import im.vector.app.core.resources.StringProvider
+import im.vector.app.features.mdm.MdmData
+import im.vector.app.features.mdm.MdmService
 import org.matrix.android.sdk.api.session.pushers.HttpPusher
 import org.matrix.android.sdk.api.session.pushers.Pusher
 import java.util.UUID
@@ -37,23 +29,27 @@ class PushersManager @Inject constructor(
         private val stringProvider: StringProvider,
         private val appNameProvider: AppNameProvider,
         private val getDeviceInfoUseCase: GetDeviceInfoUseCase,
+        private val mdmService: MdmService,
 ) {
     suspend fun testPush() {
         val currentSession = activeSessionHolder.getActiveSession()
 
         currentSession.pushersService().testPush(
                 unifiedPushHelper.getPushGateway() ?: return,
-                stringProvider.getString(R.string.pusher_app_id),
+                stringProvider.getString(im.vector.app.config.R.string.pusher_app_id),
                 unifiedPushHelper.getEndpointOrToken().orEmpty(),
                 TEST_EVENT_ID
         )
     }
 
-    fun enqueueRegisterPusherWithFcmKey(pushKey: String): UUID {
-        return enqueueRegisterPusher(pushKey, stringProvider.getString(R.string.pusher_http_url))
+    suspend fun enqueueRegisterPusherWithFcmKey(pushKey: String): UUID {
+        return enqueueRegisterPusher(
+                pushKey = pushKey,
+                gateway = mdmService.getData(MdmData.DefaultPushGatewayUrl, stringProvider.getString(im.vector.app.config.R.string.pusher_http_url))
+        )
     }
 
-    fun enqueueRegisterPusher(
+    suspend fun enqueueRegisterPusher(
             pushKey: String,
             gateway: String
     ): UUID {
@@ -62,19 +58,19 @@ class PushersManager @Inject constructor(
         return currentSession.pushersService().enqueueAddHttpPusher(pusher)
     }
 
-    private fun createHttpPusher(
+    private suspend fun createHttpPusher(
             pushKey: String,
             gateway: String
     ) = HttpPusher(
             pushkey = pushKey,
-            appId = stringProvider.getString(R.string.pusher_app_id),
+            appId = stringProvider.getString(im.vector.app.config.R.string.pusher_app_id),
             profileTag = DEFAULT_PUSHER_FILE_TAG + "_" + abs(activeSessionHolder.getActiveSession().myUserId.hashCode()),
             lang = localeProvider.current().language,
             appDisplayName = appNameProvider.getAppName(),
             deviceDisplayName = getDeviceInfoUseCase.execute().displayName().orEmpty(),
             url = gateway,
             enabled = true,
-            deviceId = activeSessionHolder.getActiveSession().sessionParams.deviceId ?: "MOBILE",
+            deviceId = activeSessionHolder.getActiveSession().sessionParams.deviceId,
             append = false,
             withEventIdOnly = true,
     )
@@ -87,7 +83,7 @@ class PushersManager @Inject constructor(
                 lang = localeProvider.current().language,
                 emailBranding = appName,
                 appDisplayName = appName,
-                deviceDisplayName = currentSession.sessionParams.deviceId ?: "MOBILE"
+                deviceDisplayName = currentSession.sessionParams.deviceId
         )
     }
 
@@ -104,7 +100,7 @@ class PushersManager @Inject constructor(
 
     suspend fun unregisterPusher(pushKey: String) {
         val currentSession = activeSessionHolder.getSafeActiveSession() ?: return
-        currentSession.pushersService().removeHttpPusher(pushKey, stringProvider.getString(R.string.pusher_app_id))
+        currentSession.pushersService().removeHttpPusher(pushKey, stringProvider.getString(im.vector.app.config.R.string.pusher_app_id))
     }
 
     companion object {

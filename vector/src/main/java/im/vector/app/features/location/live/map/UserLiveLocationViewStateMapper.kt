@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.location.live.map
@@ -20,10 +11,13 @@ import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.features.home.room.detail.timeline.helper.LocationPinProvider
 import im.vector.app.features.location.toLocationData
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.matrix.android.sdk.api.session.getRoom
 import org.matrix.android.sdk.api.session.getUserOrDefault
 import org.matrix.android.sdk.api.session.room.model.livelocation.LiveLocationShareAggregatedSummary
+import org.matrix.android.sdk.api.util.MatrixItem
 import org.matrix.android.sdk.api.util.toMatrixItem
 import javax.inject.Inject
+import kotlin.coroutines.resume
 
 class UserLiveLocationViewStateMapper @Inject constructor(
         private val locationPinProvider: LocationPinProvider,
@@ -39,24 +33,30 @@ class UserLiveLocationViewStateMapper @Inject constructor(
                         .toLocationData()
 
                 when {
-                    userId.isNullOrEmpty() || locationData == null -> continuation.resume(null) {
-                        // do nothing on cancellation
-                    }
+                    userId.isNullOrEmpty() || locationData == null -> continuation.resume(null)
                     else -> {
-                        locationPinProvider.create(userId) { pinDrawable ->
-                            val session = activeSessionHolder.getActiveSession()
+                        val session = activeSessionHolder.getActiveSession()
+                        val roomId = liveLocationShareAggregatedSummary.roomId
+                        val matrixItem = if (roomId != null) {
+                            session.getRoom(roomId)
+                                    ?.membershipService()
+                                    ?.getRoomMember(userId)
+                                    ?.toMatrixItem()
+                                    ?: MatrixItem.UserItem(userId)
+                        } else {
+                            session.getUserOrDefault(userId).toMatrixItem()
+                        }
+                        locationPinProvider.create(matrixItem) { pinDrawable ->
                             val locationTimestampMillis = liveLocationShareAggregatedSummary.lastLocationDataContent?.getBestTimestampMillis()
                             val viewState = UserLiveLocationViewState(
-                                    matrixItem = session.getUserOrDefault(userId).toMatrixItem(),
+                                    matrixItem = matrixItem,
                                     pinDrawable = pinDrawable,
                                     locationData = locationData,
                                     endOfLiveTimestampMillis = liveLocationShareAggregatedSummary.endOfLiveTimestampMillis,
                                     locationTimestampMillis = locationTimestampMillis,
                                     showStopSharingButton = userId == session.myUserId
                             )
-                            continuation.resume(viewState) {
-                                // do nothing on cancellation
-                            }
+                            continuation.resume(viewState)
                         }
                     }
                 }

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings.devices.v2.filter
@@ -28,6 +19,7 @@ import im.vector.app.core.platform.VectorBaseBottomSheetDialogFragment
 import im.vector.app.core.platform.VectorBaseBottomSheetDialogFragment.ResultListener.Companion.RESULT_OK
 import im.vector.app.databinding.BottomSheetDeviceManagerFilterBinding
 import im.vector.app.features.settings.devices.v2.list.SESSION_IS_MARKED_AS_INACTIVE_AFTER_DAYS
+import im.vector.lib.strings.CommonPlurals
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -51,7 +43,7 @@ class DeviceManagerFilterBottomSheet : VectorBaseBottomSheetDialogFragment<Botto
 
     private fun initFilterRadioGroup() {
         views.filterOptionInactiveTextView.text = resources.getQuantityString(
-                R.plurals.device_manager_filter_option_inactive_description,
+                CommonPlurals.device_manager_filter_option_inactive_description,
                 SESSION_IS_MARKED_AS_INACTIVE_AFTER_DAYS,
                 SESSION_IS_MARKED_AS_INACTIVE_AFTER_DAYS
         )

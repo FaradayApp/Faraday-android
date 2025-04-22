@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.pin.lockscreen.ui.fallbackprompt
@@ -71,7 +62,7 @@ class FallbackBiometricDialogFragment : DialogFragment(R.layout.fragment_biometr
             parsedArgs.description?.let { fingerprintDescription.text = it }
         }
 
-        requireDialog().setTitle(parsedArgs.title ?: getString(R.string.lockscreen_sign_in))
+        requireDialog().setTitle(parsedArgs.title ?: getString(im.vector.lib.ui.styles.R.string.lockscreen_sign_in))
     }
 
     override fun onResume() {
@@ -95,8 +86,8 @@ class FallbackBiometricDialogFragment : DialogFragment(R.layout.fragment_biometr
         val contentBinding = binding ?: return
         contentBinding.fingerprintIcon.setImageResource(R.drawable.ic_fingerprint_success_lockscreen)
         contentBinding.fingerprintStatus.apply {
-            setTextColor(ResourcesCompat.getColor(resources, R.color.lockscreen_success_color, null))
-            setText(R.string.lockscreen_fingerprint_success)
+            setTextColor(ResourcesCompat.getColor(resources, im.vector.lib.ui.styles.R.color.lockscreen_success_color, null))
+            setText(im.vector.lib.ui.styles.R.string.lockscreen_fingerprint_success)
         }
         viewLifecycleOwner.lifecycleScope.launch {
             delay(200L)
@@ -108,8 +99,8 @@ class FallbackBiometricDialogFragment : DialogFragment(R.layout.fragment_biometr
         val contentBinding = binding ?: return
         contentBinding.fingerprintIcon.setImageResource(R.drawable.ic_fingerprint_error_lockscreen)
         contentBinding.fingerprintStatus.apply {
-            setTextColor(ResourcesCompat.getColor(resources, R.color.lockscreen_warning_color, null))
-            setText(R.string.lockscreen_fingerprint_not_recognized)
+            setTextColor(ResourcesCompat.getColor(resources, im.vector.lib.ui.styles.R.color.lockscreen_warning_color, null))
+            setText(im.vector.lib.ui.styles.R.string.lockscreen_fingerprint_not_recognized)
         }
         viewLifecycleOwner.lifecycleScope.launch {
             delay(1500L)
@@ -121,8 +112,8 @@ class FallbackBiometricDialogFragment : DialogFragment(R.layout.fragment_biometr
         val contentBinding = binding ?: return
         contentBinding.fingerprintIcon.setImageResource(R.drawable.lockscreen_fingerprint_40)
         contentBinding.fingerprintStatus.apply {
-            setTextColor(ResourcesCompat.getColor(resources, R.color.lockscreen_hint_color, null))
-            setText(R.string.lockscreen_fingerprint_hint)
+            setTextColor(ResourcesCompat.getColor(resources, im.vector.lib.ui.styles.R.color.lockscreen_hint_color, null))
+            setText(im.vector.lib.ui.styles.R.string.lockscreen_fingerprint_hint)
         }
     }
 

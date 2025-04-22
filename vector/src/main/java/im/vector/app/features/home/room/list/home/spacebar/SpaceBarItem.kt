@@ -30,9 +30,10 @@ import im.vector.app.core.epoxy.VectorEpoxyModel
 import im.vector.app.core.epoxy.onClick
 import im.vector.app.core.platform.CheckableConstraintLayout
 import im.vector.app.features.displayname.getBestName
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.home.room.list.UnreadCounterBadgeView
 import im.vector.app.features.themes.ThemeUtils
+import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.util.MatrixItem
 
 @EpoxyModelClass
@@ -64,8 +65,8 @@ abstract class SpaceBarItem : VectorEpoxyModel<SpaceBarItem.Holder>(R.layout.spa
         matrixItem.let {
             if (it == null) {
                 holder.avatarImageView.setImageResource(R.drawable.ic_space_home)
-                holder.avatarImageView.imageTintList = ColorStateList.valueOf(ThemeUtils.getColor(holder.avatarImageView.context, R.attr.vctr_content_primary))
-                holder.avatarImageView.contentDescription = holder.rootView.context.getString(R.string.group_details_home)
+                holder.avatarImageView.imageTintList = ColorStateList.valueOf(ThemeUtils.getColor(holder.avatarImageView.context, im.vector.lib.ui.styles.R.attr.vctr_content_primary))
+                holder.avatarImageView.contentDescription = holder.rootView.context.getString(CommonStrings.group_details_home)
             } else {
                 holder.avatarImageView.imageTintList = null
                 avatarRenderer.render(it, holder.avatarImageView)

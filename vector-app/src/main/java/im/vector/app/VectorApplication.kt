@@ -27,7 +27,9 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.StrictMode
+import android.util.Log
 import android.view.Gravity
+import androidx.core.content.ContextCompat
 import androidx.core.provider.FontRequest
 import androidx.core.provider.FontsContractCompat
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -56,10 +58,11 @@ import im.vector.app.core.pushers.FcmHelper
 import im.vector.app.core.resources.BuildMeta
 import im.vector.app.core.settings.connectionmethods.onion.TorService
 import im.vector.app.core.settings.connectionmethods.onion.TorSetup
+import im.vector.app.features.analytics.DecryptionFailureTracker
 import im.vector.app.features.analytics.VectorAnalytics
+import im.vector.app.features.analytics.plan.SuperProperties
 import im.vector.app.features.call.webrtc.WebRtcCallManager
 import im.vector.app.features.configuration.VectorConfiguration
-import im.vector.app.features.disclaimer.DisclaimerDialog
 import im.vector.app.features.invite.InvitesAcceptor
 import im.vector.app.features.lifecycle.VectorActivityLifecycleCallbacks
 import im.vector.app.features.notifications.NotificationDrawerManager
@@ -76,7 +79,6 @@ import im.vector.application.R
 import org.jitsi.meet.sdk.log.JitsiMeetDefaultLogHandler
 import org.matrix.android.sdk.api.Matrix
 import org.matrix.android.sdk.api.auth.AuthenticationService
-import org.matrix.android.sdk.api.legacy.LegacySessionImporter
 import org.matrix.android.sdk.api.settings.LightweightSettingsStorage
 import org.matrix.android.sdk.api.util.ConnectionType
 import timber.log.Timber
@@ -93,7 +95,6 @@ class VectorApplication :
         WorkConfiguration.Provider {
 
     lateinit var appContext: Context
-    @Inject lateinit var legacySessionImporter: LegacySessionImporter
     @Inject lateinit var authenticationService: AuthenticationService
     @Inject lateinit var vectorConfiguration: VectorConfiguration
     @Inject lateinit var emojiCompatFontProvider: EmojiCompatFontProvider
@@ -110,6 +111,7 @@ class VectorApplication :
     @Inject lateinit var callManager: WebRtcCallManager
     @Inject lateinit var invitesAcceptor: InvitesAcceptor
     @Inject lateinit var autoRageShaker: AutoRageShaker
+    @Inject lateinit var decryptionFailureTracker: DecryptionFailureTracker
     @Inject lateinit var vectorFileLogger: VectorFileLogger
     @Inject lateinit var vectorAnalytics: VectorAnalytics
     @Inject lateinit var flipperProxy: FlipperProxy
@@ -120,8 +122,8 @@ class VectorApplication :
     @Inject lateinit var torService: TorService
     @Inject lateinit var leakDetector: LeakDetector
     @Inject lateinit var vectorLocale: VectorLocale
-    @Inject lateinit var disclaimerDialog: DisclaimerDialog
     @Inject lateinit var lightweightSettingsStorage: LightweightSettingsStorage
+    @Inject lateinit var webRtcCallManager: WebRtcCallManager
 
     // font thread handler
     private var fontThreadHandler: Handler? = null
@@ -142,8 +144,16 @@ class VectorApplication :
         appContext = this
         flipperProxy.init(matrix)
         vectorAnalytics.init()
+        vectorAnalytics.updateSuperProperties(
+                SuperProperties(
+                        appPlatform = SuperProperties.AppPlatform.EA,
+                        cryptoSDK = SuperProperties.CryptoSDK.Rust,
+                        cryptoSDKVersion = Matrix.getCryptoVersion(longFormat = false)
+                )
+        )
         invitesAcceptor.initialize()
         autoRageShaker.initialize()
+        decryptionFailureTracker.start()
         vectorUncaughtExceptionHandler.activate()
 
         // SC SDK helper initialization
@@ -183,26 +193,41 @@ class VectorApplication :
 
         emojiCompatWrapper.init(fontRequest)
 
-        // It can takes time, but do we care?
-        val sessionImported = legacySessionImporter.process()
-        if (!sessionImported) {
-            // Do not display the name change popup
-            disclaimerDialog.doNotShowDisclaimerDialog()
-        }
+        notificationUtils.createNotificationChannels()
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
+            private var stopBackgroundSync = false
+
             override fun onResume(owner: LifecycleOwner) {
                 Timber.i("App entered foreground ${lightweightSettingsStorage.getConnectionType()} ${torService.isProxyRunning}")
                 if (lightweightSettingsStorage.getConnectionType() == ConnectionType.ONION && !torService.isProxyRunning) return
                 fcmHelper.onEnterForeground(activeSessionHolder)
-                activeSessionHolder.getSafeActiveSession()?.also {
-                    it.syncService().stopAnyBackgroundSync()
+                if (webRtcCallManager.currentCall.get() == null) {
+                    Timber.i("App entered foreground and no active call: stop any background sync")
+                    activeSessionHolder.getSafeActiveSessionAsync {
+                        it?.syncService()?.stopAnyBackgroundSync()
+                    }
+                } else {
+                    Timber.i("App entered foreground: there is an active call, set stopBackgroundSync to true")
+                    stopBackgroundSync = true
                 }
             }
 
             override fun onPause(owner: LifecycleOwner) {
                 Timber.i("App entered background")
                 fcmHelper.onEnterBackground(activeSessionHolder)
+
+                if (stopBackgroundSync) {
+                    if (webRtcCallManager.currentCall.get() == null) {
+                        Timber.i("App entered background: stop any background sync")
+                        activeSessionHolder.getSafeActiveSessionAsync {
+                            it?.syncService()?.stopAnyBackgroundSync()
+                        }
+                        stopBackgroundSync = false
+                    } else {
+                        Timber.i("App entered background: there is an active call do not stop background sync")
+                    }
+                }
             }
         })
         ProcessLifecycleOwner.get().lifecycle.addObserver(spaceStateHandler)
@@ -210,13 +235,16 @@ class VectorApplication :
         ProcessLifecycleOwner.get().lifecycle.addObserver(callManager)
         // This should be done as early as possible
         // initKnownEmojiHashSet(appContext)
-
-        applicationContext.registerReceiver(powerKeyReceiver, IntentFilter().apply {
-            // Looks like i cannot receive OFF, if i don't have both ON and OFF
-            addAction(Intent.ACTION_SCREEN_OFF)
-            addAction(Intent.ACTION_SCREEN_ON)
-        })
-
+        ContextCompat.registerReceiver(
+                applicationContext,
+                powerKeyReceiver,
+                IntentFilter().apply {
+                    // Looks like i cannot receive OFF, if i don't have both ON and OFF
+                    addAction(Intent.ACTION_SCREEN_OFF)
+                    addAction(Intent.ACTION_SCREEN_ON)
+                },
+                ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
         EmojiManager.install(GoogleEmojiProvider())
 
         // Initialize Mapbox before inflating mapViews
@@ -234,11 +262,6 @@ class VectorApplication :
                 Timber.w(e)
             }
         }
-
-
-        Timber.i("Creating notification channels")
-        notificationUtils.createNotificationChannels()
-        Timber.i("Notification channels created")
     }
 
     private fun configureEpoxy() {
@@ -265,6 +288,7 @@ class VectorApplication :
     override fun getWorkManagerConfiguration(): WorkConfiguration {
         return WorkConfiguration.Builder()
                 .setWorkerFactory(matrix.getWorkerFactory())
+                .setMinimumLoggingLevel(Log.DEBUG)
                 .setExecutor(Executors.newCachedThreadPool())
                 .build()
     }

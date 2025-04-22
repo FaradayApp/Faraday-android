@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-from collections import OrderedDict
-
-import requests
 import json
-import re
 import os
+import re
+import requests
 from bs4 import BeautifulSoup
+from collections import OrderedDict
 
 # A list of words to not capitalize in emoji-names
 capitalization_exclude = {'with', 'a', 'at', 'of', 'for', 'and', 'over', 'the', 'off', 'on', 'out', 'in', 'but', 'or'}
@@ -25,6 +24,13 @@ emoji_picker_datasource_emojis = emoji_picker_datasource["emojis"]
 print("Fetching emoji list from Unicode.org...")
 req = requests.get("https://unicode.org/emoji/charts/emoji-list.html")
 soup = BeautifulSoup(req.content, 'html.parser')
+
+variation_sequence_data = requests.get("https://www.unicode.org/Public/15.0.0/ucd/emoji/emoji-variation-sequences.txt").text
+variation_sequence_overrides = {}
+for line in variation_sequence_data.split("\n"):
+    if "emoji style" in line:
+        emoji_hex = line.split(" ", 1)[0]
+        variation_sequence_overrides[emoji_hex] = emoji_hex + "-FE0F"
 
 # Navigate to table
 table = soup.body.table
@@ -121,6 +127,8 @@ for emoji in emoji_picker_datasource_emojis:
             new_keywords.pop(keyword)
     # Write new keywords back
     emoji_picker_datasource_emojis[emoji]["j"] = list(new_keywords.keys())
+    if emoji_code in variation_sequence_overrides:
+        emoji_picker_datasource_emojis[emoji]["b"] = variation_sequence_overrides[emoji_code]
 
 # Filter out components from unicode 13.1 (as they are not suitable for single-emoji reactions)
 emoji_picker_datasource['categories'] = [x for x in emoji_picker_datasource['categories'] if x['id'] != 'component']

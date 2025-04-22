@@ -9,6 +9,22 @@
     android:padding="8dp"
     tools:viewBindingIgnore="true">
 
+    <!-- this one is only for AutocompleteEmojiHeaderItem...
+    see also https://github.com/SchildiChat/SchildiChat-android-rageshakes/issues/1040
+    (ClassCastException when having different holder types in autocompletions) -->
+    <TextView
+        android:id="@+id/headerItemAutocompleteTitle"
+        style="@style/Widget.Vector.TextView.Subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:maxLines="1"
+        android:textColor="?vctr_content_secondary"
+        android:textSize="@dimen/text_size_body"
+        android:ellipsize="end"
+        android:visibility="gone"
+        tools:text="@string/custom_emotes_this_room" />
+
     <TextView
         android:id="@+id/itemAutocompleteEmoji"
         style="@style/Widget.Vector.TextView.Title"

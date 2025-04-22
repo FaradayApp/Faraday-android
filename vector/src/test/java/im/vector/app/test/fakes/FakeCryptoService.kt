@@ -1,27 +1,17 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.test.fakes
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import im.vector.app.test.fixtures.CryptoDeviceInfoFixture.aCryptoDeviceInfo
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
-import io.mockk.slot
-import org.matrix.android.sdk.api.MatrixCallback
 import org.matrix.android.sdk.api.auth.UserInteractiveAuthInterceptor
 import org.matrix.android.sdk.api.session.crypto.CryptoService
 import org.matrix.android.sdk.api.session.crypto.model.CryptoDeviceInfo
@@ -47,48 +37,43 @@ class FakeCryptoService(
 
     override fun getLiveCryptoDeviceInfo() = MutableLiveData(cryptoDeviceInfos.values.toList())
 
-    override fun getLiveCryptoDeviceInfo(userId: String) = getLiveCryptoDeviceInfo(listOf(userId))
-
-    override fun getLiveCryptoDeviceInfo(userIds: List<String>) = MutableLiveData(
-            cryptoDeviceInfos.filterKeys { userIds.contains(it) }.values.toList()
-    )
+    override fun getLiveCryptoDeviceInfo(userId: String): LiveData<List<CryptoDeviceInfo>> {
+        return MutableLiveData(
+                cryptoDeviceInfos.filterKeys { it == userId }.values.toList()
+        )
+    }
 
     override fun getLiveCryptoDeviceInfoWithId(deviceId: String) = cryptoDeviceInfoWithIdLiveData
 
     override fun getMyDevicesInfoLive(deviceId: String) = myDevicesInfoWithIdLiveData
 
     fun givenSetDeviceNameSucceeds() {
-        val matrixCallback = slot<MatrixCallback<Unit>>()
-        every { setDeviceName(any(), any(), capture(matrixCallback)) } answers {
-            thirdArg<MatrixCallback<Unit>>().onSuccess(Unit)
+        coEvery { setDeviceName(any(), any()) } answers {
+            Unit
         }
     }
 
     fun givenSetDeviceNameFailsWithError(error: Exception) {
-        val matrixCallback = slot<MatrixCallback<Unit>>()
-        every { setDeviceName(any(), any(), capture(matrixCallback)) } answers {
-            thirdArg<MatrixCallback<Unit>>().onFailure(error)
+        coEvery { setDeviceName(any(), any()) } answers {
+            throw error
         }
     }
 
     fun givenDeleteDevicesSucceeds(deviceIds: List<String>) {
-        every { deleteDevices(deviceIds, any(), any()) } answers {
-            thirdArg<MatrixCallback<Unit>>().onSuccess(Unit)
-        }
+        coEvery { deleteDevices(deviceIds, any()) } returns Unit
     }
 
     fun givenDeleteDevicesNeedsUIAuth(deviceIds: List<String>) {
-        every { deleteDevices(deviceIds, any(), any()) } answers {
+        coEvery { deleteDevices(deviceIds, any()) } answers {
             secondArg<UserInteractiveAuthInterceptor>().performStage(mockk(), "", mockk())
-            thirdArg<MatrixCallback<Unit>>().onSuccess(Unit)
         }
     }
 
     fun givenDeleteDevicesFailsWithError(deviceIds: List<String>, error: Exception) {
-        every { deleteDevices(deviceIds, any(), any()) } answers {
-            thirdArg<MatrixCallback<Unit>>().onFailure(error)
+        coEvery { deleteDevices(deviceIds, any()) } answers {
+            throw error
         }
     }
 
-    override fun getMyDevice() = cryptoDeviceInfo
+    override suspend fun getMyCryptoDevice() = cryptoDeviceInfo
 }

@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.poll.create
@@ -26,12 +17,13 @@ import com.airbnb.mvrx.activityViewModel
 import com.airbnb.mvrx.args
 import com.airbnb.mvrx.withState
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.extensions.configureWith
 import im.vector.app.core.platform.VectorBaseFragment
 import im.vector.app.databinding.FragmentCreatePollBinding
 import im.vector.app.features.poll.PollMode
 import im.vector.app.features.poll.create.CreatePollViewModel.Companion.MAX_OPTIONS_COUNT
+import im.vector.lib.strings.CommonPlurals
+import im.vector.lib.strings.CommonStrings
 import kotlinx.parcelize.Parcelize
 import org.matrix.android.sdk.api.session.room.model.message.PollType
 import javax.inject.Inject
@@ -65,17 +57,17 @@ class CreatePollFragment :
 
         when (args.mode) {
             PollMode.CREATE -> {
-                views.createPollToolbar.title = getString(R.string.create_poll_title)
-                views.createPollButton.text = getString(R.string.create_poll_title)
+                views.createPollToolbar.title = getString(CommonStrings.create_poll_title)
+                views.createPollButton.text = getString(CommonStrings.create_poll_title)
             }
             PollMode.EDIT -> {
-                views.createPollToolbar.title = getString(R.string.edit_poll_title)
-                views.createPollButton.text = getString(R.string.edit_poll_title)
+                views.createPollToolbar.title = getString(CommonStrings.edit_poll_title)
+                views.createPollButton.text = getString(CommonStrings.edit_poll_title)
             }
         }
 
         views.createPollRecyclerView.configureWith(controller, disableItemAnimation = true)
-        // workaround for https://github.com/vector-im/element-android/issues/4735
+        // workaround for https://github.com/element-hq/element-android/issues/4735
         views.createPollRecyclerView.setItemViewCacheSize(MAX_OPTIONS_COUNT + 6)
         controller.callback = this
 
@@ -131,13 +123,13 @@ class CreatePollFragment :
     }
 
     private fun handleEmptyQuestionError() {
-        renderToast(getString(R.string.create_poll_empty_question_error))
+        renderToast(getString(CommonStrings.create_poll_empty_question_error))
     }
 
     private fun handleNotEnoughOptionsError(requiredOptionsCount: Int) {
         renderToast(
                 resources.getQuantityString(
-                        R.plurals.create_poll_not_enough_options_error,
+                        CommonPlurals.create_poll_not_enough_options_error,
                         requiredOptionsCount,
                         requiredOptionsCount
                 )

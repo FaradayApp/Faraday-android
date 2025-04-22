@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2022 New Vector Ltd
+ * Copyright 2022-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.settings.devices.v2.othersessions
@@ -32,6 +23,7 @@ import im.vector.app.test.fakes.FakeVerificationService
 import im.vector.app.test.fixtures.aDeviceFullInfo
 import im.vector.app.test.test
 import im.vector.app.test.testDispatcher
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
@@ -45,6 +37,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.matrix.android.sdk.api.session.homeserver.HomeServerCapabilities
 import org.matrix.android.sdk.api.session.uia.DefaultBaseAuth
 
 private const val A_DEVICE_ID_1 = "device-id-1"
@@ -86,19 +79,18 @@ class OtherSessionsViewModelTest {
         // Needed for internal usage of Flow<T>.throttleFirst() inside the ViewModel
         mockkStatic(SystemClock::class)
         every { SystemClock.elapsedRealtime() } returns 1234
-
-        givenVerificationService()
+        fakeActiveSessionHolder.fakeSession.fakeHomeServerCapabilitiesService.givenCapabilities(
+                HomeServerCapabilities()
+        )
+        givenVerificationService().givenEventFlow()
         fakeVectorPreferences.givenSessionManagerShowIpAddress(false)
     }
 
     private fun givenVerificationService(): FakeVerificationService {
-        val fakeVerificationService = fakeActiveSessionHolder
+        return fakeActiveSessionHolder
                 .fakeSession
                 .fakeCryptoService
                 .fakeVerificationService
-        fakeVerificationService.givenAddListenerSucceeds()
-        fakeVerificationService.givenRemoveListenerSucceeds()
-        return fakeVerificationService
     }
 
     @After
@@ -110,32 +102,16 @@ class OtherSessionsViewModelTest {
     fun `given the viewModel when initializing it then verification listener is added`() {
         // Given
         val fakeVerificationService = givenVerificationService()
+                .also { it.givenEventFlow() }
         val devices = mockk<List<DeviceFullInfo>>()
         givenGetDeviceFullInfoListReturns(filterType = defaultArgs.defaultFilter, devices)
 
         // When
-        val viewModel = createViewModel()
+        createViewModel()
 
         // Then
         verify {
-            fakeVerificationService.addListener(viewModel)
-        }
-    }
-
-    @Test
-    fun `given the viewModel when clearing it then verification listener is removed`() {
-        // Given
-        val fakeVerificationService = givenVerificationService()
-        val devices = mockk<List<DeviceFullInfo>>()
-        givenGetDeviceFullInfoListReturns(filterType = defaultArgs.defaultFilter, devices)
-
-        // When
-        val viewModel = createViewModel()
-        viewModel.onCleared()
-
-        // Then
-        verify {
-            fakeVerificationService.removeListener(viewModel)
+            fakeVerificationService.requestEventFlow()
         }
     }
 
@@ -345,7 +321,7 @@ class OtherSessionsViewModelTest {
                 )
                 .assertEvent { it is OtherSessionsViewEvents.SignoutSuccess }
                 .finish()
-        verify {
+        coVerify {
             fakeRefreshDevicesUseCase.execute()
         }
     }
@@ -381,7 +357,7 @@ class OtherSessionsViewModelTest {
                 )
                 .assertEvent { it is OtherSessionsViewEvents.SignoutSuccess }
                 .finish()
-        verify {
+        coVerify {
             fakeRefreshDevicesUseCase.execute()
         }
     }

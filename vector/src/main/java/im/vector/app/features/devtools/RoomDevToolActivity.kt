@@ -1,21 +1,13 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.devtools
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Parcelable
@@ -38,6 +30,7 @@ import im.vector.app.core.platform.SimpleFragmentActivity
 import im.vector.app.core.platform.VectorMenuProvider
 import im.vector.app.core.resources.ColorProvider
 import im.vector.app.core.utils.createJSonViewerStyleProvider
+import im.vector.lib.strings.CommonStrings
 import kotlinx.parcelize.Parcelize
 import org.billcarsonfr.jsonviewer.JSonViewerFragment
 import javax.inject.Inject
@@ -53,7 +46,7 @@ class RoomDevToolActivity :
     //    private lateinit var viewModel: RoomDevToolViewModel
     private val viewModel: RoomDevToolViewModel by viewModel()
 
-    override fun getTitleRes() = R.string.dev_tools_menu_name
+    override fun getTitleRes() = CommonStrings.dev_tools_menu_name
 
     override fun getMenuRes() = R.menu.menu_devtools
 
@@ -76,7 +69,7 @@ class RoomDevToolActivity :
                 is DevToolsViewEvents.ShowAlertMessage -> {
                     MaterialAlertDialogBuilder(this)
                             .setMessage(it.message)
-                            .setPositiveButton(R.string.ok, null)
+                            .setPositiveButton(CommonStrings.ok, null)
                             .show()
                     Unit
                 }
@@ -150,6 +143,8 @@ class RoomDevToolActivity :
         }
     }
 
+    @SuppressLint("MissingSuperCall")
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun onBackPressed() {
         viewModel.handle(RoomDevToolAction.OnBackPressed)
     }
@@ -206,21 +201,21 @@ class RoomDevToolActivity :
                 getString(getTitleRes())
             }
             RoomDevToolViewState.Mode.StateEventList -> {
-                getString(R.string.dev_tools_state_event)
+                getString(CommonStrings.dev_tools_state_event)
             }
             RoomDevToolViewState.Mode.StateEventDetail -> {
                 state.selectedEvent?.type
             }
             RoomDevToolViewState.Mode.EditEventContent -> {
-                getString(R.string.dev_tools_edit_content)
+                getString(CommonStrings.dev_tools_edit_content)
             }
             RoomDevToolViewState.Mode.StateEventListByType -> {
                 state.currentStateType ?: ""
             }
             is RoomDevToolViewState.Mode.SendEventForm -> {
                 getString(
-                        if (state.displayMode.isState) R.string.dev_tools_send_custom_state_event
-                        else R.string.dev_tools_send_custom_event
+                        if (state.displayMode.isState) CommonStrings.dev_tools_send_custom_state_event
+                        else CommonStrings.dev_tools_send_custom_event
                 )
             }
         }

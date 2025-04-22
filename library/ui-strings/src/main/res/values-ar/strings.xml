@@ -189,7 +189,7 @@
     <string name="action_delete">احذف</string>
     <string name="action_rename">غيّر الاسم</string>
     <string name="report_content">أبلِغ عن المحتوى</string>
-    <string name="action_sign_out">اخرج</string>
+    <string name="action_sign_out">تسجيل الخروج</string>
     <string name="action_voice_call">مكالمة صوتية</string>
     <string name="action_video_call">مكالمة صورية</string>
     <string name="action_mark_all_as_read">علّمها كلّها كمقروءة</string>
@@ -215,7 +215,7 @@
     <string name="send_bug_report_sent">أُرسل بلاغ العلة بنجاح</string>
     <string name="send_bug_report_failed">فشل إرسال بلاغ العلة (%s)</string>
     <string name="username">اسم المستخدم</string>
-    <string name="logout">اخرج</string>
+    <string name="logout">خروج</string>
     <string name="start_voice_call">ابدأ مكالمة صوتية</string>
     <string name="start_video_call">ابدأ مكالمة صورية</string>
     <string name="option_send_files">أرسِل ملفات</string>
@@ -251,7 +251,7 @@
     <string name="room_participants_action_unignore">اعرض كل رسائل هذا المستخدم</string>
     <string name="room_one_user_is_typing">‏⁨%1$s⁩ يكتب…</string>
     <string name="room_do_not_have_permission_to_post">لا أذن لديك للنشر في هذه الغرفة.</string>
-    <string name="ssl_logout_account">اخرج</string>
+    <string name="ssl_logout_account">خروج</string>
     <string name="ssl_fingerprint_hash">البصمة (⁨%s⁩):</string>
     <string name="ssl_could_not_verify">تعذّر التحقق من معرّف الخادوم البعيد.</string>
     <string name="search_no_results">لا نتائج</string>
@@ -269,8 +269,8 @@
     <string name="settings_background_sync">المزامنة الخلفية</string>
     <string name="settings_copyright">حقوق النسخ</string>
     <string name="settings_privacy_policy">سياسة الخصوصية</string>
-    <string name="settings_clear_cache">امسح الخبيئة</string>
-    <string name="settings_clear_media_cache">امسح خبيئة الوسائط</string>
+    <string name="settings_clear_cache">مسح ذاكرة التخزين المؤقت</string>
+    <string name="settings_clear_media_cache">مسح ذاكرة التخزين المؤقت للوسائط</string>
     <string name="settings_user_settings">إعدادات المستخدم</string>
     <string name="settings_notifications">الإخطارات</string>
     <string name="settings_advanced">متقدم</string>
@@ -482,7 +482,7 @@
     <string name="room_settings_add_homescreen_shortcut">أضِف اختصارا إلى الشاشة الرئيسية</string>
     <string name="settings_app_info_link_summary">أظهر معلومات التطبيق في إعدادات النظام.</string>
     <string name="settings_call_invitations">دعوات المكالمات</string>
-    <string name="settings_start_on_boot">ابدأ عن الإقلاع</string>
+    <string name="settings_start_on_boot">البدء عند الإقلاع</string>
     <string name="encryption_export_e2e_room_keys">صدّر مفاتيح تعمية الطرفين لغرفة</string>
     <string name="encryption_export_export">صدّر</string>
     <string name="encryption_import_import">استورد</string>
@@ -776,7 +776,7 @@
     <string name="send_bug_report_include_key_share_history">أرسل سجل طلبات مشاركة المفاتيح</string>
     <string name="audio_meeting">ابدأ مقابلة صوتية</string>
     <string name="video_meeting">ابدأ مقابلة فيديو</string>
-    <string name="notice_end_to_end_unknown_algorithm">%1$s فعّل تشفير طرف لطرف (لم يُتعرف على خوارزمية %2$s).</string>
+    <string name="notice_end_to_end_unknown_algorithm">%1$s فعّل تعمية طرف لطرف (لم يُتعرف على خوارزمية %2$s).</string>
     <string name="notice_end_to_end_ok_by_you">عطلتّ تشفير طرف لطرف.</string>
     <string name="notice_end_to_end_ok">%1$s فعّل تشفير طرف لطرف.</string>
     <string name="room_permissions_change_topic">غيّر الموضوع</string>
@@ -884,7 +884,7 @@
         <item quantity="other">%d ثانية</item>
     </plurals>
     <string name="login_server_url_form_other_hint">العنوان</string>
-    <string name="login_clear_homeserver_history">امسح التاريخ</string>
+    <string name="login_clear_homeserver_history">مسح التاريخ</string>
     <string name="login_signin">لِج</string>
     <string name="login_signup">سجّل</string>
     <string name="login_signin_to">لج عبر %1$s</string>
@@ -1162,12 +1162,12 @@
     <string name="login_reset_password_password_hint">كلمة السر الجديدة</string>
     <string name="login_reset_password_submit">التالي</string>
     <plurals name="x_selected">
-        <item quantity="zero">صفر</item>
-        <item quantity="one">واحد</item>
-        <item quantity="two">اثنان</item>
-        <item quantity="few">قليلة</item>
-        <item quantity="many">كثيرة</item>
-        <item quantity="other">اخرى</item>
+        <item quantity="zero">لم تحدد</item>
+        <item quantity="one">واحد محدد</item>
+        <item quantity="two">اثنان محددان</item>
+        <item quantity="few">%1$d محددة</item>
+        <item quantity="many">%1$d محددة</item>
+        <item quantity="other">%1$d محددة</item>
     </plurals>
     <plurals name="notice_room_canonical_alias_alternative_removed">
         <item quantity="zero">صفر</item>
@@ -1195,4 +1195,59 @@
         <item quantity="many">العديد</item>
         <item quantity="other">أخرى</item>
     </plurals>
+    <string name="labs_enable_new_app_layout_title">فعّل التخطيط الجديد</string>
+    <string name="home_layout_preferences_sort_name">A - Z</string>
+    <string name="home_layout_preferences_sort_activity">النشاط</string>
+    <string name="home_layout_preferences_sort_by">رتب حسب</string>
+    <string name="home_layout_preferences_recents">أظهر الأخيرة</string>
+    <string name="home_layout_preferences_filters">أظهر المرشحات</string>
+    <string name="action_stop">نعم توقف</string>
+    <string name="action_deselect_all">ألغ تحديد الكل</string>
+    <string name="action_select_all">حدد الكل</string>
+    <string name="action_got_it">فهمتُ</string>
+    <string name="action_next">التالي</string>
+    <string name="time_unit_second_short">ثا</string>
+    <string name="time_unit_minute_short">د</string>
+    <string name="time_unit_hour_short">سا</string>
+    <string name="notice_voice_broadcast_ended">أنهى %1$s البث الصوتي.</string>
+    <string name="settings_room_directory_show_all_rooms_summary">أظهر كل الغرف في دليل الغرف. حتى الغرف ذات المحتوى الحساس.</string>
+    <string name="invites_empty_message">هنا ستجد الطلبات والدعوات.</string>
+    <string name="invites_empty_title">لا جديد.</string>
+    <string name="invites_title">الدعوات</string>
+    <string name="space_list_empty_message">الفضاءات هي طريقة جديدة لتنظيم الغرف والأفراد.أنشئ فضاءً للبدأ.</string>
+    <string name="space_list_empty_title">بدون فضاءات.</string>
+    <string name="home_layout_preferences">تفضيلات التخطيط</string>
+    <string name="notice_display_name_changed_to">غير %1$s اسمه العلني إلى %2$s</string>
+    <string name="a11y_collapse_space_children">إغلاق %s العناصر الفرعية</string>
+    <string name="a11y_expand_space_children">توسيع %s العناصر الفرعية</string>
+    <string name="add_by_qr_code">مسح رمز الاستجابة السريعة</string>
+    <string name="invite_friends_text">مرحبا، دردش معي على ${app_name}: %s</string>
+    <string name="settings_integrations_summary">استخدم مدير الدمج لإدارة الروبوتات والجسور والودجات وحزم الملصقات.
+\nيستلم مديرو الدمج بيانات التكوين ويمكنهم تعديل الأدوات وإرسال دعوات للغرف وتعيين مستويات الصلاحيات نيابة عنك.</string>
+    <string name="settings_discovery_category">استكشاف</string>
+    <string name="preference_root_legals">قانوني</string>
+    <string name="send_suggestion">تقديم إقتراح</string>
+    <string name="settings_advanced_settings">إعدادات متقدمة</string>
+    <string name="sign_out_failed_dialog_message">لا يمكن الوصول إلى خادم المنزل. إذا قمت بتسجيل الخروج على أي حال، فلن يتم مسح هذا الجهاز من قائمة أجهزتك، قد ترغب في إزالته باستخدام عميل آخر.</string>
+    <string name="sign_out_anyway">تسجيل الخروج على أي حال</string>
+    <string name="change_password_summary">قم بتعيين كلمة مرور جديدة للحساب…</string>
+    <string name="invite_friends_rich_title">🔐️ انضم إلي في ${app_name}</string>
+    <string name="preference_root_help_about">المساعدة &amp; حول</string>
+    <string name="invite_friends">دعوة الأصدقاء</string>
+    <string name="settings_discovery_manage">إدارة إعدادات الاستكشاف.</string>
+    <string name="labs_enable_new_app_layout_summary">SchildiChat مبسط مع نوافذ تبويب اختيارية</string>
+    <string name="call_format_turn_hd_off">الغاء تشغيل HD</string>
+    <plurals name="notice_room_canonical_alias_alternative_removed_by_you">
+        <item quantity="zero">قد حذفت العنوان الثنائي %1$s لهذه الغرفة.</item>
+        <item quantity="one">قد حذفت العنوان الثنائي %1$s لهذه الغرفة.</item>
+        <item quantity="two">قد حذفت العنوان الثنائي %1$s لهذه الغرفة.</item>
+        <item quantity="few">قد حذفت العنوان الثنائي %1$s لهذه الغرفة.</item>
+        <item quantity="many">قد حذفت العنوان الثنائي %1$s لهذه الغرفة.</item>
+        <item quantity="other">قد حذفت العنوان الثنائي %1$s لهذه الغرفة.</item>
+    </plurals>
+    <string name="audio_video_meeting_description">الأجتماعات تستخدم امن Jitsi و سياسات السماح، جميع الأشخاص في الغرفة سيرون دعوة دخول في منتصف اجتماعك.</string>
+    <string name="sound_device_wireless_headset">سماعة لاسلكية</string>
+    <string name="call_format_turn_hd_on">تشغيل HD</string>
+    <string name="login_error_ssl_peer_unverified">خطأ SSL: لم يتم تأكيد هوية الجهه الأخرى.</string>
+    <string name="labs_enable_rich_text_editor_title">تشغيل محرر النصوص</string>
 </resources>

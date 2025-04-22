@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.features.spaces.invite
@@ -31,14 +22,14 @@ import com.airbnb.mvrx.args
 import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
 import dagger.hilt.android.AndroidEntryPoint
-import im.vector.app.R
 import im.vector.app.core.platform.ButtonStateView
 import im.vector.app.core.platform.VectorBaseBottomSheetDialogFragment
 import im.vector.app.core.utils.toast
 import im.vector.app.databinding.BottomSheetInvitedToSpaceBinding
 import im.vector.app.features.displayname.getBestName
-import im.vector.app.features.home.AvatarRenderer
+import im.vector.app.features.home.avatar.AvatarRenderer
 import im.vector.app.features.matrixto.SpaceCardRenderer
+import im.vector.lib.strings.CommonStrings
 import kotlinx.parcelize.Parcelize
 import org.matrix.android.sdk.api.util.toMatrixItem
 import javax.inject.Inject
@@ -110,7 +101,7 @@ class SpaceInviteBottomSheet : VectorBaseBottomSheetDialogFragment<BottomSheetIn
             views.inviterText.isVisible = true
             views.inviterMxid.isVisible = true
             avatarRenderer.render(inviter, views.inviterAvatarImage)
-            views.inviterText.text = getString(R.string.user_invites_you, inviter.getBestName())
+            views.inviterText.text = getString(CommonStrings.user_invites_you, inviter.getBestName())
             views.inviterMxid.text = inviter.id
         } else {
             views.inviterAvatarImage.isVisible = false
@@ -120,8 +111,8 @@ class SpaceInviteBottomSheet : VectorBaseBottomSheetDialogFragment<BottomSheetIn
 
         spaceCardRenderer.render(summary, state.peopleYouKnow.invoke().orEmpty(), null, views.spaceCard, showDescription = true)
 
-        views.spaceCard.matrixToCardMainButton.button.text = getString(R.string.action_accept)
-        views.spaceCard.matrixToCardSecondaryButton.button.text = getString(R.string.action_decline)
+        views.spaceCard.matrixToCardMainButton.button.text = getString(CommonStrings.action_accept)
+        views.spaceCard.matrixToCardSecondaryButton.button.text = getString(CommonStrings.action_decline)
 
         when (state.joinActionState) {
             Uninitialized -> {

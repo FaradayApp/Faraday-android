@@ -1,17 +1,8 @@
 /*
- * Copyright (c) 2021 New Vector Ltd
+ * Copyright 2021-2024 New Vector Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+ * Please see LICENSE files in the repository root for full details.
  */
 
 package im.vector.app.ui.robot
@@ -29,6 +20,7 @@ import im.vector.app.espresso.tools.waitUntilActivityVisible
 import im.vector.app.espresso.tools.waitUntilDialogVisible
 import im.vector.app.espresso.tools.waitUntilViewVisible
 import im.vector.app.features.roommemberprofile.RoomMemberProfileActivity
+import im.vector.lib.strings.CommonStrings
 
 class RoomSettingsRobot {
 
@@ -58,8 +50,8 @@ class RoomSettingsRobot {
         // Uploads
         clickListItem(R.id.matrixProfileRecyclerView, 10)
         // File tab
-        clickOn(R.string.uploads_files_title)
-        waitUntilViewVisible(withText(R.string.uploads_media_title))
+        clickOn(CommonStrings.uploads_files_title)
+        waitUntilViewVisible(withText(CommonStrings.uploads_media_title))
         pressBack()
         waitUntilViewVisible(withId(R.id.matrixProfileRecyclerView))
 
@@ -74,19 +66,19 @@ class RoomSettingsRobot {
         // Room addresses
 
         clickListItem(R.id.matrixProfileRecyclerView, 16)
-        waitUntilViewVisible(withText(R.string.room_alias_published_alias_title))
+        waitUntilViewVisible(withText(CommonStrings.room_alias_published_alias_title))
         pressBack()
 
         // Room permissions
         clickListItem(R.id.matrixProfileRecyclerView, 18)
-        waitUntilViewVisible(withText(R.string.room_permissions_change_room_avatar))
-        clickOn(R.string.room_permissions_change_room_avatar)
+        waitUntilViewVisible(withText(CommonStrings.room_permissions_change_room_avatar))
+        clickOn(CommonStrings.room_permissions_change_room_avatar)
         waitUntilDialogVisible(withId(android.R.id.button2))
         clickDialogNegativeButton()
-        waitUntilViewVisible(withText(R.string.room_permissions_title))
+        waitUntilViewVisible(withText(CommonStrings.room_permissions_title))
         // Toggle
-        clickOn(R.string.show_advanced)
-        clickOn(R.string.hide_advanced)
+        clickOn(CommonStrings.show_advanced)
+        clickOn(CommonStrings.hide_advanced)
         pressBack()
 
         // Menu share
