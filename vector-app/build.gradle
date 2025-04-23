@@ -197,7 +197,7 @@ android {
             // assign different version code for each output
             // SC: Compared do upstream, we do not multiply by ten,
             // compare https://gitlab.com/fdroid/fdroiddata/-/commit/3a615a9b85960cf2a165e78436870290a8f3d9e5#note_1502091143
-            def baseVariantVersion = variant.versionCode
+            def baseVariantVersion = variant.versionCode * 10
             variant.outputs.each { output ->
                 def baseAbiVersionCode = project.ext.abiVersionCodes.get(output.getFilter(OutputFile.ABI))
                 // Known limitation: it does not modify the value in the BuildConfig.java generated file
