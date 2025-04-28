@@ -456,7 +456,7 @@ dependencies {
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
 
     implementation 'io.matthewnelson.topl-android:tor-binary:0.4.6.5'
-    implementation 'io.matthewnelson.topl-android:topl-service:2.1.2'
+    implementation project(":library:external:topl-service")
     implementation 'info.guardianproject:jtorctl:0.4.5.7'
     implementation 'com.squareup:seismic:1.0.3'
 

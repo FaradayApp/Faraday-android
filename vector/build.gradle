@@ -365,7 +365,7 @@ dependencies {
 
     // Onion Setup
     implementation 'io.matthewnelson.topl-android:tor-binary:0.4.6.5'
-    implementation 'io.matthewnelson.topl-android:topl-service:2.1.2'
+    implementation project(":library:external:topl-service")
     implementation 'info.guardianproject:jtorctl:0.4.5.7'
 
     implementation 'net.i2p:i2p:2.2.1'
