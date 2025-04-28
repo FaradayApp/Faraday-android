@@ -111,7 +111,7 @@ open class LoginActivity : VectorBaseActivity<ActivityLoginBinding>(), UnlockedA
 
         lifecycleScope.launch {
             if(loginViewModel.awaitState().skipConnectionSettings) {
-                Timber.d("needed skip action")
+                Timber.i("Need to skip connection settings")
             }
         }
     }

@@ -23,7 +23,7 @@ import androidx.annotation.NonNull;
 /**
  * Entry point for adding Autocomplete behavior to a {@link EditText}.
  *
- * You can construct a {@code Autocomplete} using the builder provided by {@link Autocomplete#on(EditText)}.
+ * You can construct a {@code Autocomplete} using the builder provided by {@link JAutocomplete#on(EditText)}.
  * Building is enough, but you can hold a reference to this class to call its public methods.
  *
  * Requires:
@@ -33,9 +33,9 @@ import androidx.annotation.NonNull;
  * - {@link AutocompletePolicy}: if specified, this controls how and when to show the popup based on text events
  *   If not, this defaults to {@link SimplePolicy}: shows the popup when text.length() bigger than 0.
  */
-public final class Autocomplete<T> implements TextWatcher, SpanWatcher {
+public final class JAutocomplete<T> implements TextWatcher, SpanWatcher {
 
-    private final static String TAG = Autocomplete.class.getSimpleName();
+    private final static String TAG = JAutocomplete.class.getSimpleName();
     private final static boolean DEBUG = false;
 
     private static void log(String log) {
@@ -43,7 +43,7 @@ public final class Autocomplete<T> implements TextWatcher, SpanWatcher {
     }
 
     /**
-     * Builder for building {@link Autocomplete}.
+     * Builder for building {@link JAutocomplete}.
      * The only mandatory item is a presenter, {@link #with(AutocompletePresenter)}.
      *
      * @param <T> the data model
@@ -126,11 +126,11 @@ public final class Autocomplete<T> implements TextWatcher, SpanWatcher {
          *
          * @throws RuntimeException if either EditText or the presenter are null
          */
-        public Autocomplete<T> build() {
+        public JAutocomplete<T> build() {
             if (source == null) throw new RuntimeException("Autocomplete needs a source!");
             if (presenter == null) throw new RuntimeException("Autocomplete needs a presenter!");
             if (policy == null) policy = new SimplePolicy();
-            return new Autocomplete<T>(this);
+            return new JAutocomplete<T>(this);
         }
 
         private void clear() {
@@ -164,7 +164,7 @@ public final class Autocomplete<T> implements TextWatcher, SpanWatcher {
     private boolean openBefore;
     private String lastQuery = "null";
 
-    private Autocomplete(Builder<T> builder) {
+    private JAutocomplete(Builder<T> builder) {
         policy = builder.policy;
         presenter = builder.presenter;
         callback = builder.callback;
@@ -208,8 +208,8 @@ public final class Autocomplete<T> implements TextWatcher, SpanWatcher {
         presenter.registerClickProvider(new AutocompletePresenter.ClickProvider<T>() {
             @Override
             public void click(@NonNull T item) {
-                AutocompleteCallback<T> callback = Autocomplete.this.callback;
-                EditText edit = Autocomplete.this.source;
+                AutocompleteCallback<T> callback = JAutocomplete.this.callback;
+                EditText edit = JAutocomplete.this.source;
                 if (callback == null) return;
                 boolean saved = block;
                 block = true;

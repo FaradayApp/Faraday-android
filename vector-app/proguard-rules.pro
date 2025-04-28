@@ -94,3 +94,6 @@
 -dontwarn org.mozilla.javascript.**
 -dontwarn org.slf4j.**
 -dontwarn org.jspecify.annotations.NullMarked
+-dontwarn com.squareup.javapoet.AnnotationSpec$Builder
+-dontwarn com.squareup.javapoet.AnnotationSpec
+-dontwarn com.squareup.javapoet.ClassName

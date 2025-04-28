@@ -658,12 +658,13 @@ class HomeActivity :
         if (vectorUncaughtExceptionHandler.didAppCrash()) {
             vectorUncaughtExceptionHandler.clearAppCrashStatus()
 
-            MaterialAlertDialogBuilder(this)
-                    .setMessage(CommonStrings.send_bug_report_app_crashed)
-                    .setCancelable(false)
-                    .setPositiveButton(CommonStrings.yes) { _, _ -> bugReporter.openBugReportScreen(this) }
-                    .setNegativeButton(CommonStrings.no) { _, _ -> bugReporter.deleteCrashFile() }
-                    .show()
+            // TODO: use rageshake on faraday
+//            MaterialAlertDialogBuilder(this)
+//                    .setMessage(CommonStrings.send_bug_report_app_crashed)
+//                    .setCancelable(false)
+//                    .setPositiveButton(CommonStrings.yes) { _, _ -> bugReporter.openBugReportScreen(this) }
+//                    .setNegativeButton(CommonStrings.no) { _, _ -> bugReporter.deleteCrashFile() }
+//                    .show()
         }
 
         // Force remote backup state update to update the banner if needed

@@ -65,7 +65,6 @@ import im.vector.app.features.call.webrtc.WebRtcCallManager
 import im.vector.app.features.configuration.VectorConfiguration
 import im.vector.app.features.invite.InvitesAcceptor
 import im.vector.app.features.lifecycle.VectorActivityLifecycleCallbacks
-import im.vector.app.features.notifications.NotificationDrawerManager
 import im.vector.app.features.notifications.NotificationUtils
 import im.vector.app.features.pin.PinLocker
 import im.vector.app.features.popup.PopupAlertManager
@@ -76,6 +75,12 @@ import im.vector.app.features.settings.VectorPreferences
 import im.vector.app.features.themes.ThemeUtils
 import im.vector.app.features.version.VersionProvider
 import im.vector.application.R
+import im.vector.lib.strings.CommonStrings
+import org.acra.config.httpSender
+import org.acra.config.toast
+import org.acra.data.StringFormat
+import org.acra.ktx.initAcra
+import org.acra.sender.HttpSender
 import org.jitsi.meet.sdk.log.JitsiMeetDefaultLogHandler
 import org.matrix.android.sdk.api.Matrix
 import org.matrix.android.sdk.api.auth.AuthenticationService
@@ -101,7 +106,6 @@ class VectorApplication :
     @Inject lateinit var emojiCompatWrapper: EmojiCompatWrapper
     @Inject lateinit var vectorUncaughtExceptionHandler: VectorUncaughtExceptionHandler
     @Inject lateinit var activeSessionHolder: ActiveSessionHolder
-    @Inject lateinit var notificationDrawerManager: NotificationDrawerManager
     @Inject lateinit var vectorPreferences: VectorPreferences
     @Inject lateinit var versionProvider: VersionProvider
     @Inject lateinit var notificationUtils: NotificationUtils
@@ -309,6 +313,22 @@ class VectorApplication :
 
     override fun attachBaseContext(base: Context) {
         super.attachBaseContext(base)
+
+        initAcra {
+            reportFormat = StringFormat.JSON
+            buildConfigClass = BuildConfig::class.java
+
+            httpSender {
+                uri = "https://acra.j2k.fun/report"
+                basicAuthLogin = "ay3e4YeJ8sfE8fF5"
+                basicAuthPassword = "8gPBWcQmBNx3DdA2"
+                httpMethod = HttpSender.Method.POST
+            }
+            toast {
+                text = getString(CommonStrings.report_message)
+            }
+        }
+
         MultiDex.install(this)
     }
 

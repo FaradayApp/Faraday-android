@@ -3713,4 +3713,5 @@
     <string name="view_download_replacement_app_subtitle">Faster, more secure, and packed with powerful collaboration tools.</string>
 
     <string name="failed_accounts_loading">Failed accounts loading</string>
+    <string name="report_message">An error message has been sent to the developer</string>
 </resources>

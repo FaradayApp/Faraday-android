@@ -3126,4 +3126,5 @@
     <string name="application_password_no_symbol">Пароль должен содержать хотя бы один символ из списка: !, @, #, $, %, ^, &amp;, *, (, )</string>
     <string name="action_hide">скрыть</string>
     <string name="failed_accounts_loading">Загрузка мультиаккаунта не удалась</string>
+    <string name="report_message">"Cообщение об ошибке отправлено разработчику "</string>
 </resources>
