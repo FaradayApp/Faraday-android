@@ -157,7 +157,7 @@ dependencies {
 
     implementation libs.squareup.moshi
     implementation libs.squareup.moshiKt
-    kapt libs.squareup.moshiKotlin
+    ksp libs.squareup.moshiKotlin
 
     // Compose
     implementation platform(libs.compose.composeBom)

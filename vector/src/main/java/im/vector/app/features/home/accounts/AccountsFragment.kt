@@ -20,11 +20,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -46,6 +46,7 @@ import im.vector.app.features.home.room.detail.timeline.helper.LocalMatrixItemCo
 import im.vector.app.features.home.room.detail.timeline.helper.MatrixItemColorProvider
 import im.vector.app.features.login.ReAuthHelper
 import im.vector.app.features.onboarding.AuthenticationDescription
+import im.vector.app.features.themes.compose.FaradayTheme
 import im.vector.app.features.workers.changeaccount.ChangeAccountErrorUiWorker
 import im.vector.app.features.workers.changeaccount.ChangeAccountUiWorker
 import im.vector.lib.strings.CommonStrings
@@ -75,42 +76,45 @@ class AccountsFragment :
                     ViewCompositionStrategy.DisposeOnLifecycleDestroyed(lifecycle)
             )
             groupListView.setContent {
-                CompositionLocalProvider(
-                        LocalStringProvider provides stringProvider,
-                        LocalContentUrlResolver provides activeSessionHolder.getSafeActiveSession()?.contentUrlResolver(),
-                        LocalMatrixItemColorProvider provides matrixItemColorProvider,
-                        LocalDimensionConverter provides dimensionConverter,
-                ) {
-                    val uiState by viewModel.uiState.collectAsState()
+                FaradayTheme {
+                    CompositionLocalProvider(
+                            LocalStringProvider provides stringProvider,
+                            LocalContentUrlResolver provides activeSessionHolder.getSafeActiveSession()?.contentUrlResolver(),
+                            LocalMatrixItemColorProvider provides matrixItemColorProvider,
+                            LocalDimensionConverter provides dimensionConverter,
+                    ) {
+                        val uiState by viewModel.uiState.collectAsState()
+                        val uiEvents = remember { viewModel.uiEvents }
 
-                    LaunchedEffect(uiState) {
-                        if (uiState is AccountsUiState.Content) {
-                            val isEmpty = (uiState as AccountsUiState.Content).accounts.isEmpty()
-                            showAccounts(!isEmpty)
-                        }
-                    }
-
-                    LaunchedEffect(true) {
-                        viewModel.uiEvents.collect { event ->
-                            when (event) {
-                                AccountsUiEvent.RestartApp -> restartApp()
-                                is AccountsUiEvent.Error.ErrorMessage -> onErrorMessage(event.text)
-                                is AccountsUiEvent.Error.FailedChangingAccount -> askToDeleteAccount(
-                                        event.account, viewModel::onDeleteAccount
-                                )
-
-                                AccountsUiEvent.Error.FailedAccountsLoading ->
-                                    onErrorMessage(getString(CommonStrings.failed_accounts_loading))
+                        LaunchedEffect(uiState) {
+                            if (uiState is AccountsUiState.Content) {
+                                val isEmpty = (uiState as AccountsUiState.Content).accounts.isEmpty()
+                                showAccounts(!isEmpty)
                             }
                         }
-                    }
 
-                    AccountsScreen(
-                            uiState = uiState,
-                            onAccountSelected = { account ->
-                                askToChangeAccount(account, viewModel::onChangeAccount)
-                            },
-                    )
+                        LaunchedEffect(uiEvents) {
+                            viewModel.uiEvents.collect { event ->
+                                when (event) {
+                                    AccountsUiEvent.RestartApp -> restartApp()
+                                    is AccountsUiEvent.Error.ErrorMessage -> onErrorMessage(event.text)
+                                    is AccountsUiEvent.Error.FailedChangingAccount -> askToDeleteAccount(
+                                            event.account, viewModel::onDeleteAccount
+                                    )
+
+                                    AccountsUiEvent.Error.FailedAccountsLoading ->
+                                        onErrorMessage(getString(CommonStrings.failed_accounts_loading))
+                                }
+                            }
+                        }
+
+                        AccountsScreen(
+                                uiState = uiState,
+                                onAccountSelected = { account ->
+                                    askToChangeAccount(account, viewModel::onChangeAccount)
+                                },
+                        )
+                    }
                 }
             }
         }
