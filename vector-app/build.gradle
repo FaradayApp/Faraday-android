@@ -397,6 +397,9 @@ dependencies {
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation "androidx.sharetarget:sharetarget:1.2.0"
 
+    implementation libs.acra.sender
+    implementation libs.acra.interaction
+
     // Flipper, debug builds only
     debugImplementation(libs.flipper.flipper) {
         exclude group: 'com.facebook.fbjni', module: 'fbjni'

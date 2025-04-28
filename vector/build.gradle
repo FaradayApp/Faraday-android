@@ -162,10 +162,12 @@ dependencies {
     // Compose
     implementation platform(libs.compose.composeBom)
     implementation libs.compose.material3
-    implementation libs.compose.preview
     implementation libs.compose.glide
     implementation libs.compose.mavericks
     implementation libs.compose.hilt
+
+    implementation libs.acra.sender
+    implementation libs.acra.interaction
 
     // Lifecycle
     implementation libs.androidx.lifecycleLivedata
