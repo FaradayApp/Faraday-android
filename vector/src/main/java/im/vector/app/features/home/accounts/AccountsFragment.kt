@@ -28,6 +28,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.core.dependencies.LocalContentUrlResolver
 import im.vector.app.core.di.ActiveSessionHolder
@@ -93,17 +96,20 @@ class AccountsFragment :
                             }
                         }
 
+                        val lifecycleOwner = LocalLifecycleOwner.current
                         LaunchedEffect(uiEvents) {
-                            viewModel.uiEvents.collect { event ->
-                                when (event) {
-                                    AccountsUiEvent.RestartApp -> restartApp()
-                                    is AccountsUiEvent.Error.ErrorMessage -> onErrorMessage(event.text)
-                                    is AccountsUiEvent.Error.FailedChangingAccount -> askToDeleteAccount(
-                                            event.account, viewModel::onDeleteAccount
-                                    )
+                            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                                viewModel.uiEvents.collect { event ->
+                                    when (event) {
+                                        AccountsUiEvent.RestartApp -> restartApp()
+                                        is AccountsUiEvent.Error.ErrorMessage -> onErrorMessage(event.text)
+                                        is AccountsUiEvent.Error.FailedChangingAccount -> askToDeleteAccount(
+                                                event.account, viewModel::onDeleteAccount
+                                        )
 
-                                    AccountsUiEvent.Error.FailedAccountsLoading ->
-                                        onErrorMessage(getString(CommonStrings.failed_accounts_loading))
+                                        AccountsUiEvent.Error.FailedAccountsLoading ->
+                                            onErrorMessage(getString(CommonStrings.failed_accounts_loading))
+                                    }
                                 }
                             }
                         }

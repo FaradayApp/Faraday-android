@@ -165,6 +165,7 @@ dependencies {
     implementation libs.compose.glide
     implementation libs.compose.mavericks
     implementation libs.compose.hilt
+    implementation 'androidx.compose.ui:ui-tooling'
 
     implementation libs.acra.sender
     implementation libs.acra.interaction

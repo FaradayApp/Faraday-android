@@ -48,9 +48,10 @@ import im.vector.app.features.login.terms.LoginTermsFragment
 import im.vector.app.features.login.terms.LoginTermsFragmentArgument
 import im.vector.app.features.onboarding.AuthenticationDescription
 import im.vector.app.features.pin.UnlockedActivity
+import im.vector.app.features.settings.connectionmethod.compose.ConnectionSettingsFragment
 import im.vector.lib.core.utils.compat.getParcelableExtraCompat
-import kotlinx.coroutines.launch
 import im.vector.lib.strings.CommonStrings
+import kotlinx.coroutines.launch
 import org.matrix.android.sdk.api.auth.SSOAction
 import org.matrix.android.sdk.api.auth.registration.FlowResult
 import org.matrix.android.sdk.api.auth.registration.Stage
@@ -164,7 +165,9 @@ open class LoginActivity : VectorBaseActivity<ActivityLoginBinding>(), UnlockedA
                             // TODO Disabled because it provokes a flickering
                             // ft.setCustomAnimations(enterAnim, exitAnim, popEnterAnim, popExitAnim)
                         })
-            is LoginViewEvents.OpenConnectionSettings -> addFragmentToBackstack(views.loginFragmentContainer, LoginConnectionSettingsFragment::class.java)
+            is LoginViewEvents.OpenConnectionSettings -> {
+                addFragmentToBackstack(views.loginFragmentContainer, ConnectionSettingsFragment::class.java)
+            }
             is LoginViewEvents.OnServerSelectionDone -> onServerSelectionDone(loginViewEvents)
             is LoginViewEvents.OnSignModeSelected -> onSignModeSelected(loginViewEvents)
             is LoginViewEvents.OnLoginFlowRetrieved ->
@@ -422,6 +425,11 @@ open class LoginActivity : VectorBaseActivity<ActivityLoginBinding>(), UnlockedA
             )
             else -> Unit // Should not happen
         }
+    }
+
+    fun onGetStarted(neededRestart: Boolean = false) {
+        Timber.d("get Started with new connection")
+        loginViewModel.handle(LoginAction.OnGetStarted(resetLoginConfig = false, neededRestartBeforeContinue = neededRestart))
     }
 
     companion object {

@@ -4,19 +4,4 @@
         <attr name="text" format="string" />
         <attr name="hint" format="string" />
     </declare-styleable>
-    <declare-styleable name="SpinnerPreference">
-        <attr name="spinnerValues" format="reference" />
-        <attr name="preferenceLayoutColor" format="color" />
-        <attr name="preferenceTextColor" format="color" />
-        <attr name="spinnerMode">
-            <enum name="dropdown" value="1" />
-            <enum name="dialog" value="0" />
-        </attr>
-        <attr name="preferenceAllCaps" format="boolean" />
-        <attr name="preferenceVisibility" format="enum">
-            <enum name="visible" value="0" />
-            <enum name="invisible" value="1" />
-            <enum name="gone" value="2" />
-        </attr>
-    </declare-styleable>
 </resources>

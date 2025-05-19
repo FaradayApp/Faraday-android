@@ -7,8 +7,7 @@
 
 package im.vector.app.features.login
 
-import android.content.Context
-import android.net.Uri
+import androidx.core.net.toUri
 import com.airbnb.mvrx.Fail
 import com.airbnb.mvrx.Loading
 import com.airbnb.mvrx.MavericksViewModelFactory
@@ -52,7 +51,6 @@ import java.util.concurrent.CancellationException
  */
 class LoginViewModel @AssistedInject constructor(
         @Assisted initialState: LoginViewState,
-        private val applicationContext: Context,
         private val lightweightSettingsStorage: LightweightSettingsStorage,
         private val authenticationService: AuthenticationService,
         private val activeSessionHolder: ActiveSessionHolder,
@@ -87,16 +85,16 @@ class LoginViewModel @AssistedInject constructor(
     private val matrixOrgUrl = stringProvider.getString(im.vector.app.config.R.string.matrix_org_server_url).ensureTrailingSlash()
 
     val currentThreePid: String?
-        get() = registrationWizard?.getCurrentThreePid()
+        get() = registrationWizard.getCurrentThreePid()
 
     // True when login and password has been sent with success to the homeserver
     val isRegistrationStarted: Boolean
         get() = authenticationService.isRegistrationStarted()
 
-    private val registrationWizard: RegistrationWizard?
+    private val registrationWizard: RegistrationWizard
         get() = authenticationService.getRegistrationWizard()
 
-    private val loginWizard: LoginWizard?
+    private val loginWizard: LoginWizard
         get() = authenticationService.getLoginWizard()
 
     private var loginConfig: LoginConfig? = null
@@ -193,33 +191,25 @@ class LoginViewModel @AssistedInject constructor(
     private fun handleLoginWithToken(action: LoginAction.LoginWithToken) {
         val safeLoginWizard = loginWizard
 
-        if (safeLoginWizard == null) {
-            setState {
-                copy(
-                        asyncLoginAction = Fail(Throwable("Bad configuration"))
-                )
-            }
-        } else {
-            setState {
-                copy(
-                        asyncLoginAction = Loading()
-                )
-            }
+        setState {
+            copy(
+                    asyncLoginAction = Loading()
+            )
+        }
 
-            currentJob = viewModelScope.launch {
-                try {
-                    safeLoginWizard.loginWithToken(action.loginToken)
-                } catch (failure: Throwable) {
-                    _viewEvents.post(LoginViewEvents.Failure(failure))
-                    setState {
-                        copy(
-                                asyncLoginAction = Fail(failure)
-                        )
-                    }
-                    null
+        currentJob = viewModelScope.launch {
+            try {
+                safeLoginWizard.loginWithToken(action.loginToken)
+            } catch (failure: Throwable) {
+                _viewEvents.post(LoginViewEvents.Failure(failure))
+                setState {
+                    copy(
+                            asyncLoginAction = Fail(failure)
+                    )
                 }
-                        ?.let { onSessionCreated(it) }
+                null
             }
+                    ?.let { onSessionCreated(it) }
         }
     }
 
@@ -274,7 +264,7 @@ class LoginViewModel @AssistedInject constructor(
         }
         return viewModelScope.launch {
             try {
-                registrationWizard?.let { block(it) }
+                block(registrationWizard)
                 /*
                    // Simulate registration disabled
                    throw Failure.ServerError(MatrixError(
@@ -307,7 +297,7 @@ class LoginViewModel @AssistedInject constructor(
         setState { copy(asyncRegistration = Loading()) }
         currentJob = viewModelScope.launch {
             try {
-                registrationWizard?.addThreePid(action.threePid)
+                registrationWizard.addThreePid(action.threePid)
             } catch (failure: Throwable) {
                 _viewEvents.post(LoginViewEvents.Failure(failure))
             }
@@ -323,7 +313,7 @@ class LoginViewModel @AssistedInject constructor(
         setState { copy(asyncRegistration = Loading()) }
         currentJob = viewModelScope.launch {
             try {
-                registrationWizard?.sendAgainThreePid()
+                registrationWizard.sendAgainThreePid()
             } catch (failure: Throwable) {
                 _viewEvents.post(LoginViewEvents.Failure(failure))
             }
@@ -468,7 +458,7 @@ class LoginViewModel @AssistedInject constructor(
 
         // If there is a pending email validation continue on this step
         try {
-            if (registrationWizard?.isRegistrationStarted() == true) {
+            if (registrationWizard.isRegistrationStarted()) {
                 currentThreePid?.let {
                     handle(LoginAction.PostViewEvent(LoginViewEvents.OnSendEmailSuccess(it)))
                 }
@@ -482,94 +472,76 @@ class LoginViewModel @AssistedInject constructor(
     private fun handleResetPassword(action: LoginAction.ResetPassword) {
         val safeLoginWizard = loginWizard
 
-        if (safeLoginWizard == null) {
-            setState {
-                copy(
-                        asyncResetPassword = Fail(Throwable("Bad configuration")),
-                        asyncResetMailConfirmed = Uninitialized
-                )
-            }
-        } else {
-            setState {
-                copy(
-                        asyncResetPassword = Loading(),
-                        asyncResetMailConfirmed = Uninitialized
-                )
-            }
+        setState {
+            copy(
+                    asyncResetPassword = Loading(),
+                    asyncResetMailConfirmed = Uninitialized
+            )
+        }
 
-            currentJob = viewModelScope.launch {
-                try {
-                    safeLoginWizard.resetPassword(action.email)
-                } catch (failure: Throwable) {
-                    setState {
-                        copy(
-                                asyncResetPassword = Fail(failure)
-                        )
-                    }
-                    return@launch
-                }
-
+        currentJob = viewModelScope.launch {
+            try {
+                safeLoginWizard.resetPassword(action.email)
+            } catch (failure: Throwable) {
                 setState {
                     copy(
-                            asyncResetPassword = Success(Unit),
-                            resetPasswordEmail = action.email,
-                            resetPasswordNewPassword = action.newPassword
+                            asyncResetPassword = Fail(failure)
                     )
                 }
-
-                _viewEvents.post(LoginViewEvents.OnResetPasswordSendThreePidDone)
+                return@launch
             }
+
+            setState {
+                copy(
+                        asyncResetPassword = Success(Unit),
+                        resetPasswordEmail = action.email,
+                        resetPasswordNewPassword = action.newPassword
+                )
+            }
+
+            _viewEvents.post(LoginViewEvents.OnResetPasswordSendThreePidDone)
         }
     }
 
     private fun handleResetPasswordMailConfirmed() {
         val safeLoginWizard = loginWizard
 
-        if (safeLoginWizard == null) {
-            setState {
-                copy(
-                        asyncResetPassword = Uninitialized,
-                        asyncResetMailConfirmed = Fail(Throwable("Bad configuration"))
-                )
-            }
-        } else {
-            setState {
-                copy(
-                        asyncResetPassword = Uninitialized,
-                        asyncResetMailConfirmed = Loading()
-                )
-            }
+        setState {
+            copy(
+                    asyncResetPassword = Uninitialized,
+                    asyncResetMailConfirmed = Loading()
+            )
+        }
 
-            currentJob = viewModelScope.launch {
-                val state = awaitState()
+        currentJob = viewModelScope.launch {
+            val state = awaitState()
 
-                if (state.resetPasswordNewPassword == null) {
-                    setState {
-                        copy(
-                                asyncResetPassword = Uninitialized,
-                                asyncResetMailConfirmed = Fail(Throwable("Developer error - New password not set"))
-                        )
-                    }
-                } else {
-                    try {
-                        safeLoginWizard.resetPasswordMailConfirmed(state.resetPasswordNewPassword)
-                    } catch (failure: Throwable) {
-                        setState {
-                            copy(
-                                    asyncResetMailConfirmed = Fail(failure)
-                            )
-                        }
-                        return@launch
-                    }
-                    setState {
-                        copy(
-                                asyncResetMailConfirmed = Success(Unit),
-                                resetPasswordEmail = null,
-                                resetPasswordNewPassword = null
-                        )
-                    }
-                    _viewEvents.post(LoginViewEvents.OnResetPasswordMailConfirmationSuccess)
+            if (state.resetPasswordNewPassword == null) {
+                setState {
+                    copy(
+                            asyncResetPassword = Uninitialized,
+                            asyncResetMailConfirmed = Fail(Throwable("Developer error - New password not set"))
+                    )
                 }
+            } else {
+                try {
+                    safeLoginWizard.resetPasswordMailConfirmed(state.resetPasswordNewPassword)
+                } catch (failure: Throwable) {
+                    setState {
+                        copy(
+                                asyncResetMailConfirmed = Fail(failure)
+                        )
+                    }
+                    return@launch
+                }
+                setState {
+                    copy(
+                            asyncResetMailConfirmed = Success(Unit),
+                            resetPasswordEmail = null,
+                            resetPasswordNewPassword = null
+                    )
+                }
+                _viewEvents.post(LoginViewEvents.OnResetPasswordMailConfirmationSuccess)
             }
         }
     }
@@ -632,13 +604,13 @@ class LoginViewModel @AssistedInject constructor(
     ) {
         val alteredHomeServerConnectionConfig = homeServerConnectionConfig
                 ?.copy(
-                        homeServerUriBase = Uri.parse(wellKnownPrompt.homeServerUrl),
-                        identityServerUri = wellKnownPrompt.identityServerUrl?.let { Uri.parse(it) }
+                        homeServerUriBase = wellKnownPrompt.homeServerUrl.toUri(),
+                        identityServerUri = wellKnownPrompt.identityServerUrl?.toUri()
                 )
                 ?: HomeServerConnectionConfig(
-                        homeServerUri = Uri.parse("https://${action.username.getServerName()}"),
-                        homeServerUriBase = Uri.parse(wellKnownPrompt.homeServerUrl),
-                        identityServerUri = wellKnownPrompt.identityServerUrl?.let { Uri.parse(it) }
+                        homeServerUri = "https://${action.username.getServerName()}".toUri(),
+                        homeServerUriBase = wellKnownPrompt.homeServerUrl.toUri(),
+                        identityServerUri = wellKnownPrompt.identityServerUrl?.toUri()
                 )
 
         val data = try {
@@ -681,40 +653,32 @@ class LoginViewModel @AssistedInject constructor(
     private fun handleLogin(action: LoginAction.LoginOrRegister) {
         val safeLoginWizard = loginWizard
 
-        if (safeLoginWizard == null) {
-            setState {
-                copy(
-                        asyncLoginAction = Fail(Throwable("Bad configuration"))
-                )
-            }
-        } else {
-            setState {
-                copy(
-                        asyncLoginAction = Loading()
-                )
-            }
+        setState {
+            copy(
+                    asyncLoginAction = Loading()
+            )
+        }
 
-            currentJob = viewModelScope.launch {
-                try {
-                    safeLoginWizard.login(
-                            action.username.trim(),
-                            action.password,
-                            action.initialDeviceName,
-                            deviceId = authenticationService.generateDeviceId(action.username, emptyList())
+        currentJob = viewModelScope.launch {
+            try {
+                safeLoginWizard.login(
+                        action.username.trim(),
+                        action.password,
+                        action.initialDeviceName,
+                        deviceId = authenticationService.generateDeviceId(action.username, emptyList())
+                )
+            } catch (failure: Throwable) {
+                setState {
+                    copy(
+                            asyncLoginAction = Fail(failure)
                     )
-                } catch (failure: Throwable) {
-                    setState {
-                        copy(
-                                asyncLoginAction = Fail(failure)
-                        )
-                    }
-                    null
                 }
-                        ?.let {
-                            reAuthHelper.data = action.password
-                            onSessionCreated(it)
-                        }
+                null
             }
+                    ?.let {
+                        reAuthHelper.data = action.password
+                        onSessionCreated(it)
+                    }
         }
     }
 

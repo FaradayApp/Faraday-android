@@ -9,10 +9,11 @@
         app:isPreferenceVisible="@bool/settings_root_general_visible" />
 
     <im.vector.app.core.preference.VectorPreference
+        android:key="connection_method"
         android:icon="@drawable/ic_settings_connection_method"
         android:title="@string/settings_connection_method"
-        app:fragment="im.vector.app.features.settings.connectionmethod.VectorSettingsConnectionMethodFragment"
-        app:isPreferenceVisible="@bool/settings_root_connection_method_visible" />
+        app:isPreferenceVisible="@bool/settings_root_connection_method_visible"
+        app:fragment="im.vector.app.features.settings.connectionmethod.compose.ConnectionSettingsFragment"/>
 
     <im.vector.app.core.preference.VectorPreference
         android:icon="@drawable/ic_settings_root_notification"

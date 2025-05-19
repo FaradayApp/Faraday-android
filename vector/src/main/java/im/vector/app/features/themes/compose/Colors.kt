@@ -9,7 +9,7 @@ package im.vector.app.features.themes.compose
 
 import androidx.compose.ui.graphics.Color
 
-val primaryLight = Color(0xFF80D5D0)
+val primaryLight = Color(0xFF0ABAB5)
 val onPrimaryLight = Color(0xFFFFFFFF)
 val primaryContainerLight = Color(0xFF9CF1ED)
 val onPrimaryContainerLight = Color(0xFF00504D)
@@ -117,7 +117,7 @@ val surfaceContainerLightHighContrast = Color(0xFFDDE4E2)
 val surfaceContainerHighLightHighContrast = Color(0xFFCFD6D4)
 val surfaceContainerHighestLightHighContrast = Color(0xFFC1C8C7)
 
-val primaryDark = Color(0xFF80D5D0)
+val primaryDark = Color(0xFF0ABAB5)
 val onPrimaryDark = Color(0xFF003735)
 val primaryContainerDark = Color(0xFF00504D)
 val onPrimaryContainerDark = Color(0xFF9CF1ED)

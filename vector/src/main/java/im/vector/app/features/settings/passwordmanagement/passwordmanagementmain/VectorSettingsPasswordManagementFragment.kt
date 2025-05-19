@@ -29,6 +29,9 @@ import im.vector.app.core.dialogs.NukePasswordDialog
 import im.vector.app.core.platform.OnBackPressed
 import im.vector.app.core.preference.VectorPreference
 import im.vector.app.core.preference.VectorSwitchPreference
+import im.vector.app.features.settings.VectorPreferences.Companion.SETTINGS_NUKE_PASSWORD_PREFERENCE_KEY
+import im.vector.app.features.settings.VectorPreferences.Companion.SETTINGS_PASSWORD_CHANGE_PREFERENCE_KEY
+import im.vector.app.features.settings.VectorPreferences.Companion.SETTINGS_PASSWORD_PREFERENCE_KEY
 import im.vector.app.features.settings.VectorSettingsActivity
 import im.vector.app.features.settings.VectorSettingsBaseFragment
 import im.vector.app.features.settings.passwordmanagement.changepassword.VectorSettingsChangePasswordFragment
@@ -36,7 +39,6 @@ import im.vector.app.features.settings.passwordmanagement.enterpassword.EnterPas
 import im.vector.app.features.settings.passwordmanagement.setpassword.VectorSettingsSetPasswordFragment
 import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.settings.LightweightSettingsStorage
-import java.lang.Exception
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -52,15 +54,15 @@ class VectorSettingsPasswordManagementFragment :
     override val preferenceXmlRes = R.xml.vector_password_management
 
     private val passwordPreference by lazy {
-        findPreference<VectorSwitchPreference>("SETTINGS_PASSWORD_PREFERENCE_KEY")
+        findPreference<VectorSwitchPreference>(SETTINGS_PASSWORD_PREFERENCE_KEY)
     }
 
     private val changePasswordPreference by lazy {
-        findPreference<VectorPreference>("SETTINGS_PASSWORD_CHANGE_PREFERENCE_KEY")
+        findPreference<VectorPreference>(SETTINGS_PASSWORD_CHANGE_PREFERENCE_KEY)
     }
 
     private val nukePasswordPreference by lazy {
-        findPreference<VectorPreference>("SETTINGS_NUKE_PASSWORD_PREFERENCE_KEY")
+        findPreference<VectorPreference>(SETTINGS_NUKE_PASSWORD_PREFERENCE_KEY)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

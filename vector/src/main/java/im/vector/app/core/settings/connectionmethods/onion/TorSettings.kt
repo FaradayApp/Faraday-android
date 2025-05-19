@@ -30,7 +30,7 @@ class TorSettings(
 ) : ApplicationDefaultTorSettings() {
     override val connectionPadding = ConnectionPadding.OFF
 
-    override val customTorrc: String = (bridge?.let { if(it.endsWith("\n")) it else it + "\n" } ?: DEFAULT_BRIDGE) +
+    override val customTorrc: String = (bridge?.let { if (it.endsWith("\n")) it else it + "\n" } ?: DEFAULT_BRIDGE) +
             "UseBridges 1\n" +
             "ClientTransportPlugin obfs4 exec ${context.applicationInfo.nativeLibraryDir}/libobfs4proxy.so"
 
@@ -87,7 +87,8 @@ class TorSettings(
     override val virtualAddressNetwork: String = "10.192.0.2/10"
 
     companion object {
-        const val DEFAULT_BRIDGE = "Bridge obfs4 91.99.78.16:7237 4222D2CFB5010ECB9F7C9B98E3CBEAF42D2948CC cert=mMbciV8y5ibS5za7KETROHnrS6tzvJvh3J2U03gYv/659PVTrjFhTHXmYsUq5fcZZ5BoHQ iat-mode=0\n" +
-                "Bridge obfs4 138.199.220.200:4525 8EDD1172AE98FD8F158D27938A2BC763A1953130 cert=0OyWP7zW3u7gk2TzXXiIuYzjwitUXRqKoeKA9kioLH+flq83Rv0y06kHMUizY7pEozroeg iat-mode=0\n"
+        const val DEFAULT_BRIDGE =
+                "Bridge obfs4 91.99.54.153:32286 9824B0998959A8F397BEEF10247E2EB4712CF88C cert=gpDhLlt15aorqVCrVVpPVcXGCOsfumw0QXE9H4nKxT+8yKpP2y6CvU0bTvhi/w9U4R1kdw iat-mode=0\n" +
+                        "Bridge obfs4 51.89.230.58:31205 BF58F4E5CDB2F2F43A61D82C8CB3288DABF92549 cert=X1CKPqQodiGYduaUTBcdG86en9bCrRpGNDUr3LOgH+XAAZ+01/4oN1rzaLlAZaQLzvQlGQ iat-mode=0\n"
     }
 }

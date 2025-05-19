@@ -38,7 +38,7 @@ class AccountsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<AccountsUiState>(AccountsUiState.Loading)
     val uiState: StateFlow<AccountsUiState> = _uiState.asStateFlow()
 
-    private val _uiEvents = MutableSharedFlow<AccountsUiEvent>(replay = 2)
+    private val _uiEvents = MutableSharedFlow<AccountsUiEvent>(replay = 0)
     val uiEvents = _uiEvents.asSharedFlow()
 
     init {

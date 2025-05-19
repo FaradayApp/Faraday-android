@@ -24,6 +24,7 @@ import android.provider.MediaStore
 import android.widget.Toast
 import androidx.annotation.BoolRes
 import androidx.core.content.edit
+import androidx.core.net.toUri
 import com.squareup.seismic.ShakeDetector
 import de.spiritcroc.matrixsdk.StaticScSdkHelper
 import im.vector.app.core.di.DefaultPreferences
@@ -35,7 +36,6 @@ import im.vector.app.features.home.room.detail.timeline.helper.MatrixItemColorPr
 import im.vector.app.features.homeserver.ServerUrlsRepository
 import im.vector.app.features.themes.BubbleThemeUtils
 import im.vector.app.features.themes.ThemeUtils
-import im.vector.lib.core.utils.timer.Clock
 import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.extensions.tryOrNull
 import org.matrix.android.sdk.api.session.room.model.RoomSummary
@@ -45,7 +45,6 @@ import javax.inject.Inject
 
 class VectorPreferences @Inject constructor(
         private val context: Context,
-        private val clock: Clock,
         private val buildMeta: BuildMeta,
         private val vectorFeatures: VectorFeatures,
         @DefaultPreferences
@@ -73,12 +72,8 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_CLEAR_MEDIA_CACHE_PREFERENCE_KEY = "SETTINGS_CLEAR_MEDIA_CACHE_PREFERENCE_KEY"
         const val SETTINGS_USER_SETTINGS_PREFERENCE_KEY = "SETTINGS_USER_SETTINGS_PREFERENCE_KEY"
         const val SETTINGS_CONTACT_PREFERENCE_KEYS = "SETTINGS_CONTACT_PREFERENCE_KEYS"
-        const val SETTINGS_NOTIFICATIONS_TARGETS_PREFERENCE_KEY = "SETTINGS_NOTIFICATIONS_TARGETS_PREFERENCE_KEY"
-        const val SETTINGS_NOTIFICATIONS_TARGET_DIVIDER_PREFERENCE_KEY = "SETTINGS_NOTIFICATIONS_TARGET_DIVIDER_PREFERENCE_KEY"
         const val SETTINGS_FDROID_BACKGROUND_SYNC_MODE = "SETTINGS_FDROID_BACKGROUND_SYNC_MODE"
         const val SETTINGS_BACKGROUND_SYNC_PREFERENCE_KEY = "SETTINGS_BACKGROUND_SYNC_PREFERENCE_KEY"
-        const val SETTINGS_BACKGROUND_SYNC_DIVIDER_PREFERENCE_KEY = "SETTINGS_BACKGROUND_SYNC_DIVIDER_PREFERENCE_KEY"
-        const val SETTINGS_LABS_PREFERENCE_KEY = "SETTINGS_LABS_PREFERENCE_KEY"
         const val SETTINGS_LABS_NEW_APP_LAYOUT_KEY = "SETTINGS_LABS_NEW_APP_LAYOUT_KEY"
         const val SETTINGS_LABS_DEFERRED_DM_KEY = "SETTINGS_LABS_DEFERRED_DM_KEY"
         const val SETTINGS_LABS_RICH_TEXT_EDITOR_KEY = "SETTINGS_LABS_RICH_TEXT_EDITOR_KEY"
@@ -92,11 +87,7 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_CURRENT_PASSWORD_PREFERENCE_KEY = "SETTINGS_CURRENT_PASSWORD_PREFERENCE_KEY"
         const val SETTINGS_NEW_PASSWORD_PREFERENCE_KEY = "SETTINGS_NEW_PASSWORD_PREFERENCE_KEY"
         const val SETTINGS_REPEAT_PASSWORD_PREFERENCE_KEY = "SETTINGS_REPEAT_PASSWORD_PREFERENCE_KEY"
-        const val SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY"
-        const val SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY"
-        const val SETTINGS_CRYPTOGRAPHY_MANAGE_DIVIDER_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_MANAGE_DIVIDER_PREFERENCE_KEY"
-        const val SETTINGS_ROOM_SETTINGS_LABS_END_TO_END_PREFERENCE_KEY = "SETTINGS_ROOM_SETTINGS_LABS_END_TO_END_PREFERENCE_KEY"
-        const val SETTINGS_ROOM_SETTINGS_LABS_END_TO_END_IS_ACTIVE_PREFERENCE_KEY = "SETTINGS_ROOM_SETTINGS_LABS_END_TO_END_IS_ACTIVE_PREFERENCE_KEY"
+        private const val SETTINGS_ROOM_SETTINGS_LABS_END_TO_END_PREFERENCE_KEY = "SETTINGS_ROOM_SETTINGS_LABS_END_TO_END_PREFERENCE_KEY"
         const val SETTINGS_ENCRYPTION_CROSS_SIGNING_PREFERENCE_KEY = "SETTINGS_ENCRYPTION_CROSS_SIGNING_PREFERENCE_KEY"
         const val SETTINGS_ENCRYPTION_EXPORT_E2E_ROOM_KEYS_PREFERENCE_KEY = "SETTINGS_ENCRYPTION_EXPORT_E2E_ROOM_KEYS_PREFERENCE_KEY"
         const val SETTINGS_ENCRYPTION_IMPORT_E2E_ROOM_KEYS_PREFERENCE_KEY = "SETTINGS_ENCRYPTION_IMPORT_E2E_ROOM_KEYS_PREFERENCE_KEY"
@@ -121,7 +112,6 @@ class VectorPreferences @Inject constructor(
         // interface
         const val SETTINGS_INTERFACE_LANGUAGE_PREFERENCE_KEY = "SETTINGS_INTERFACE_LANGUAGE_PREFERENCE_KEY"
         const val SETTINGS_INTERFACE_TEXT_SIZE_KEY = "SETTINGS_INTERFACE_TEXT_SIZE_KEY"
-        const val SETTINGS_INTERFACE_BUBBLE_KEY = "SETTINGS_INTERFACE_BUBBLE_KEY"
         const val SETTINGS_SHOW_URL_PREVIEW_KEY = "SETTINGS_SHOW_URL_PREVIEW_KEY"
         private const val SETTINGS_SEND_TYPING_NOTIF_KEY = "SETTINGS_SEND_TYPING_NOTIF_KEY"
         private const val SETTINGS_ENABLE_MARKDOWN_KEY = "SETTINGS_ENABLE_MARKDOWN_KEY"
@@ -133,7 +123,6 @@ class VectorPreferences @Inject constructor(
         private const val SETTINGS_SHOW_ROOM_MEMBER_STATE_EVENTS_KEY = "SETTINGS_SHOW_ROOM_MEMBER_STATE_EVENTS_KEY"
         private const val SETTINGS_SHOW_JOIN_LEAVE_MESSAGES_KEY = "SETTINGS_SHOW_JOIN_LEAVE_MESSAGES_KEY"
         private const val SETTINGS_SHOW_AVATAR_DISPLAY_NAME_CHANGES_MESSAGES_KEY = "SETTINGS_SHOW_AVATAR_DISPLAY_NAME_CHANGES_MESSAGES_KEY"
-        private const val SETTINGS_VIBRATE_ON_MENTION_KEY = "SETTINGS_VIBRATE_ON_MENTION_KEY"
         private const val SETTINGS_SEND_MESSAGE_WITH_ENTER = "SETTINGS_SEND_MESSAGE_WITH_ENTER"
         private const val SETTINGS_ENABLE_CHAT_EFFECTS = "SETTINGS_ENABLE_CHAT_EFFECTS"
         private const val SETTINGS_SHOW_EMOJI_KEYBOARD = "SETTINGS_SHOW_EMOJI_KEYBOARD"
@@ -173,24 +162,12 @@ class VectorPreferences @Inject constructor(
 
         // background sync
         const val SETTINGS_START_ON_BOOT_PREFERENCE_KEY = "SETTINGS_START_ON_BOOT_PREFERENCE_KEY"
-        const val SETTINGS_ENABLE_BACKGROUND_SYNC_PREFERENCE_KEY = "SETTINGS_ENABLE_BACKGROUND_SYNC_PREFERENCE_KEY"
+        private const val SETTINGS_ENABLE_BACKGROUND_SYNC_PREFERENCE_KEY = "SETTINGS_ENABLE_BACKGROUND_SYNC_PREFERENCE_KEY"
         const val SETTINGS_SET_SYNC_TIMEOUT_PREFERENCE_KEY = "SETTINGS_SET_SYNC_TIMEOUT_PREFERENCE_KEY"
         const val SETTINGS_SET_SYNC_DELAY_PREFERENCE_KEY = "SETTINGS_SET_SYNC_DELAY_PREFERENCE_KEY"
 
         // notification method
         const val SETTINGS_NOTIFICATION_METHOD_KEY = "SETTINGS_NOTIFICATION_METHOD_KEY"
-
-        // Connection method
-        const val SETTINGS_CONNECTION_TYPE_KEY = "SETTINGS_CONNECTION_TYPE_KEY"
-        const val SETTINGS_USE_PROXY_SERVER_KEY = "SETTINGS_USE_PROXY_SERVER_KEY"
-        const val SETTINGS_PROXY_TYPE_KEY = "SETTINGS_PROXY_TYPE_KEY"
-        const val SETTINGS_PROXY_PORT_KEY = "SETTINGS_PROXY_PORT_KEY"
-        const val SETTINGS_PROXY_HOST_KEY = "SETTINGS_PROXY_HOST_KEY"
-        const val SETTINGS_PROXY_AUTH_REQUIRED_KEY = "SETTINGS_PROXY_AUTH_REQUIRED_KEY"
-        const val SETTINGS_PROXY_USERNAME_KEY = "SETTINGS_PROXY_USERNAME_KEY"
-        const val SETTINGS_PROXY_PASSWORD_KEY = "SETTINGS_PROXY_PASSWORD_KEY"
-        const val SETTINGS_CONNECTION_SAVE_KEY = "SETTINGS_CONNECTION_SAVE_KEY"
-        const val SETTINGS_TOR_BRIDGE_KEY = "SETTINGS_TOR_BRIDGE_KEY"
 
         // Calls
         const val SETTINGS_CALL_PREVENT_ACCIDENTAL_CALL_KEY = "SETTINGS_CALL_PREVENT_ACCIDENTAL_CALL_KEY"
@@ -198,22 +175,12 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_CALL_RINGTONE_USE_RIOT_PREFERENCE_KEY = "SETTINGS_CALL_RINGTONE_USE_RIOT_PREFERENCE_KEY"
         const val SETTINGS_CALL_RINGTONE_URI_PREFERENCE_KEY = "SETTINGS_CALL_RINGTONE_URI_PREFERENCE_KEY"
 
-        // labs
-        const val SETTINGS_LAZY_LOADING_PREFERENCE_KEY = "SETTINGS_LAZY_LOADING_PREFERENCE_KEY"
-        const val SETTINGS_USER_REFUSED_LAZY_LOADING_PREFERENCE_KEY = "SETTINGS_USER_REFUSED_LAZY_LOADING_PREFERENCE_KEY"
-        const val SETTINGS_DATA_SAVE_MODE_PREFERENCE_KEY = "SETTINGS_DATA_SAVE_MODE_PREFERENCE_KEY"
+        private const val SETTINGS_DATA_SAVE_MODE_PREFERENCE_KEY = "SETTINGS_DATA_SAVE_MODE_PREFERENCE_KEY"
         private const val SETTINGS_USE_JITSI_CONF_PREFERENCE_KEY = "SETTINGS_USE_JITSI_CONF_PREFERENCE_KEY"
-        private const val SETTINGS_USE_NATIVE_CAMERA_PREFERENCE_KEY = "SETTINGS_USE_NATIVE_CAMERA_PREFERENCE_KEY"
-        private const val SETTINGS_ENABLE_SEND_VOICE_FEATURE_PREFERENCE_KEY = "SETTINGS_ENABLE_SEND_VOICE_FEATURE_PREFERENCE_KEY"
 
         const val SETTINGS_LABS_ALLOW_EXTENDED_LOGS = "SETTINGS_LABS_ALLOW_EXTENDED_LOGS"
         const val SETTINGS_LABS_AUTO_REPORT_UISI = "SETTINGS_LABS_AUTO_REPORT_UISI"
         const val SETTINGS_PREF_SPACE_SHOW_ALL_ROOM_IN_HOME = "SETTINGS_PREF_SPACE_SHOW_ALL_ROOM_IN_HOME"
-
-        /**
-         * This is not preference, but category on preferences screen which contains [SETTINGS_PREF_SPACE_SHOW_ALL_ROOM_IN_HOME].
-         * Needed to show/hide this category, depending on visibility of [SETTINGS_PREF_SPACE_SHOW_ALL_ROOM_IN_HOME]. */
-        const val SETTINGS_PREF_SPACE_CATEGORY = "SETTINGS_PREF_SPACE_CATEGORY"
 
         private const val SETTINGS_DEVELOPER_MODE_PREFERENCE_KEY = "SETTINGS_DEVELOPER_MODE_PREFERENCE_KEY"
         const val SETTINGS_DEVELOPER_MODE_KEY_REQUEST_AUDIT_KEY = "SETTINGS_DEVELOPER_MODE_KEY_REQUEST_AUDIT_KEY"
@@ -248,13 +215,10 @@ class VectorPreferences @Inject constructor(
         // other
         const val SETTINGS_MEDIA_SAVING_PERIOD_KEY = "SETTINGS_MEDIA_SAVING_PERIOD_KEY"
         private const val SETTINGS_MEDIA_SAVING_PERIOD_SELECTED_KEY = "SETTINGS_MEDIA_SAVING_PERIOD_SELECTED_KEY"
-        private const val DID_ASK_TO_IGNORE_BATTERY_OPTIMIZATIONS_KEY = "DID_ASK_TO_IGNORE_BATTERY_OPTIMIZATIONS_KEY"
-        private const val DID_MIGRATE_TO_NOTIFICATION_REWORK = "DID_MIGRATE_TO_NOTIFICATION_REWORK"
-        private const val DID_ASK_TO_USE_ANALYTICS_TRACKING_KEY = "DID_ASK_TO_USE_ANALYTICS_TRACKING_KEY"
-        private const val SETTINGS_DISPLAY_ALL_EVENTS_KEY = "SETTINGS_DISPLAY_ALL_EVENTS_KEY"
 
         // SC additions
         private const val SETTINGS_SINGLE_OVERVIEW = "SETTINGS_SINGLE_OVERVIEW"
+
         @Deprecated("Please append _DM or _GROUP")
         private const val SETTINGS_ROOM_UNREAD_KIND = "SETTINGS_ROOM_UNREAD_KIND"
         private const val SETTINGS_ROOM_UNREAD_KIND_DM = "SETTINGS_ROOM_UNREAD_KIND_DM"
@@ -388,6 +352,7 @@ class VectorPreferences @Inject constructor(
                 SETTINGS_LABS_NEW_SESSION_MANAGER_KEY,
                 SETTINGS_LABS_DEFERRED_DM_KEY,
         )
+
         // Pref keys to include in rageshake if disabled
         val EXPERIMENTAL_PREF_IF_FALSE = arrayOf(
                 SETTINGS_LABS_ENABLE_THREAD_MESSAGES,
@@ -401,6 +366,7 @@ class VectorPreferences @Inject constructor(
             defaultPrefs.getBoolean(it, false)
         }
     }
+
     fun getDisabledExperimentalSettings(): List<String> {
         return EXPERIMENTAL_PREF_IF_FALSE.filterNot {
             defaultPrefs.getBoolean(it, true)
@@ -519,43 +485,6 @@ class VectorPreferences @Inject constructor(
     }
 
     /**
-     * Tells if we have already asked the user to disable battery optimisations on android >= M devices.
-     *
-     * @return true if it was already requested
-     */
-    fun didAskUserToIgnoreBatteryOptimizations(): Boolean {
-        return defaultPrefs.getBoolean(DID_ASK_TO_IGNORE_BATTERY_OPTIMIZATIONS_KEY, false)
-    }
-
-    /**
-     * Mark as requested the question to disable battery optimisations.
-     */
-    fun setDidAskUserToIgnoreBatteryOptimizations() {
-        defaultPrefs.edit {
-            putBoolean(DID_ASK_TO_IGNORE_BATTERY_OPTIMIZATIONS_KEY, true)
-        }
-    }
-
-    fun didMigrateToNotificationRework(): Boolean {
-        return defaultPrefs.getBoolean(DID_MIGRATE_TO_NOTIFICATION_REWORK, false)
-    }
-
-    fun setDidMigrateToNotificationRework() {
-        defaultPrefs.edit {
-            putBoolean(DID_MIGRATE_TO_NOTIFICATION_REWORK, true)
-        }
-    }
-
-    /**
-     * Tells if the timestamp must be displayed in 12h format.
-     *
-     * @return true if the time must be displayed in 12h format
-     */
-    fun displayTimeIn12hFormat(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_12_24_TIMESTAMPS_KEY, false)
-    }
-
-    /**
      * Tells if the join and leave membership events should be shown in the messages list.
      *
      * @return true if the join and leave membership events should be shown in the messages list
@@ -582,55 +511,10 @@ class VectorPreferences @Inject constructor(
     }
 
     /**
-     * Tells the native camera to take a photo or record a video.
-     *
-     * @return true to use the native camera app to record video or take photo.
-     */
-    fun useNativeCamera(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_USE_NATIVE_CAMERA_PREFERENCE_KEY, false)
-    }
-
-    /**
-     * Tells if the send voice feature is enabled.
-     *
-     * @return true if the send voice feature is enabled.
-     */
-    fun isSendVoiceFeatureEnabled(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_ENABLE_SEND_VOICE_FEATURE_PREFERENCE_KEY, false)
-    }
-
-    /**
      * Show all rooms in room directory.
      */
     fun showAllPublicRooms(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_ROOM_DIRECTORY_SHOW_ALL_PUBLIC_ROOMS, false)
-    }
-
-    /**
-     * Tells which compression level to use by default.
-     *
-     * @return the selected compression level
-     */
-    fun getSelectedDefaultMediaCompressionLevel(): Int {
-        return Integer.parseInt(defaultPrefs.getString(SETTINGS_DEFAULT_MEDIA_COMPRESSION_KEY, "0")!!)
-    }
-
-    /**
-     * Tells which media source to use by default.
-     *
-     * @return the selected media source
-     */
-    fun getSelectedDefaultMediaSource(): Int {
-        return Integer.parseInt(defaultPrefs.getString(SETTINGS_DEFAULT_MEDIA_SOURCE_KEY, "0")!!)
-    }
-
-    /**
-     * Tells whether to use shutter sound.
-     *
-     * @return true if shutter sound should play
-     */
-    fun useShutterSound(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_PLAY_SHUTTER_SOUND_KEY, true)
     }
 
     /**
@@ -675,7 +559,7 @@ class VectorPreferences @Inject constructor(
         // https://github.com/element-hq/riot-android/issues/1725
         if (null != url && !url.startsWith("file://")) {
             try {
-                uri = Uri.parse(url)
+                uri = url.toUri()
             } catch (e: Exception) {
                 Timber.e(e, "## getNotificationRingTone() : Uri.parse failed")
             }
@@ -709,62 +593,6 @@ class VectorPreferences @Inject constructor(
         }
 
         return null
-    }
-
-    /**
-     * Enable or disable the lazy loading.
-     *
-     * @param newValue true to enable lazy loading, false to disable it
-     */
-    fun setUseLazyLoading(newValue: Boolean) {
-        defaultPrefs.edit {
-            putBoolean(SETTINGS_LAZY_LOADING_PREFERENCE_KEY, newValue)
-        }
-    }
-
-    /**
-     * Tells if the lazy loading is enabled.
-     *
-     * @return true if the lazy loading of room members is enabled
-     */
-    fun useLazyLoading(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_LAZY_LOADING_PREFERENCE_KEY, false)
-    }
-
-    /**
-     * User explicitly refuses the lazy loading.
-     */
-    fun setUserRefuseLazyLoading() {
-        defaultPrefs.edit {
-            putBoolean(SETTINGS_USER_REFUSED_LAZY_LOADING_PREFERENCE_KEY, true)
-        }
-    }
-
-    /**
-     * Tells if the user has explicitly refused the lazy loading.
-     *
-     * @return true if the user has explicitly refuse the lazy loading of room members
-     */
-    fun hasUserRefusedLazyLoading(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_USER_REFUSED_LAZY_LOADING_PREFERENCE_KEY, false)
-    }
-
-    /**
-     * Tells if the data save mode is enabled.
-     *
-     * @return true if the data save mode is enabled
-     */
-    fun useDataSaveMode(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_DATA_SAVE_MODE_PREFERENCE_KEY, false)
-    }
-
-    /**
-     * Tells if the conf calls must be done with Jitsi.
-     *
-     * @return true if the conference call must be done with jitsi.
-     */
-    fun useJitsiConfCall(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_USE_JITSI_CONF_PREFERENCE_KEY, true)
     }
 
     /**
@@ -808,21 +636,6 @@ class VectorPreferences @Inject constructor(
     }
 
     /**
-     * Provides the minimum last access time to keep a media file.
-     *
-     * @return the min last access time (in seconds)
-     */
-    fun getMinMediasLastAccessTime(): Long {
-        return when (getSelectedMediasSavingPeriod()) {
-            MEDIA_SAVING_3_DAYS -> clock.epochMillis() / 1000 - 3 * 24 * 60 * 60
-            MEDIA_SAVING_1_WEEK -> clock.epochMillis() / 1000 - 7 * 24 * 60 * 60
-            MEDIA_SAVING_1_MONTH -> clock.epochMillis() / 1000 - 30 * 24 * 60 * 60
-            MEDIA_SAVING_FOREVER -> 0
-            else -> 0
-        }
-    }
-
-    /**
      * Provides the selected saving period.
      *
      * @return the selected period
@@ -835,13 +648,6 @@ class VectorPreferences @Inject constructor(
             MEDIA_SAVING_FOREVER -> stringProvider.getString(CommonStrings.media_saving_period_forever)
             else -> "?"
         }
-    }
-
-    /**
-     * Fix some migration issues.
-     */
-    fun fixMigrationIssues() {
-        // Nothing to do for the moment
     }
 
     /**
@@ -964,52 +770,6 @@ class VectorPreferences @Inject constructor(
     }
 
     /**
-     * Tells of the missing notifications rooms must be displayed at left (home screen).
-     *
-     * @return true to move the missed notifications to the left side
-     */
-    fun pinMissedNotifications(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_PIN_MISSED_NOTIFICATIONS_PREFERENCE_KEY, true)
-    }
-
-    /**
-     * Tells of the unread rooms must be displayed at left (home screen).
-     *
-     * @return true to move the unread room to the left side
-     */
-    fun pinUnreadMessages(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_PIN_UNREAD_MESSAGES_PREFERENCE_KEY, true)
-    }
-
-    /**
-     * Tells if the phone must vibrate when mentioning.
-     *
-     * @return true
-     */
-    fun vibrateWhenMentioning(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_VIBRATE_ON_MENTION_KEY, false)
-    }
-
-    /**
-     * Tells if a dialog has been displayed to ask to use the analytics tracking (piwik, matomo, etc.).
-     *
-     * @return true if a dialog has been displayed to ask to use the analytics tracking
-     */
-    fun didAskToUseAnalytics(): Boolean {
-        return defaultPrefs.getBoolean(DID_ASK_TO_USE_ANALYTICS_TRACKING_KEY, false)
-    }
-
-    /**
-     * To call if the user has been asked for analytics tracking.
-     *
-     */
-    fun setDidAskToUseAnalytics() {
-        defaultPrefs.edit {
-            putBoolean(DID_ASK_TO_USE_ANALYTICS_TRACKING_KEY, true)
-        }
-    }
-
-    /**
      * Tells if the user wants to see URL previews in the timeline.
      *
      * @return true if the user wants to see URL previews in the timeline
@@ -1025,15 +785,6 @@ class VectorPreferences @Inject constructor(
      */
     fun allowUrlPreviewsInEncryptedRooms(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_ALLOW_URL_PREVIEW_IN_ENCRYPTED_ROOM_KEY, false)
-    }
-
-    /**
-     * Tells if media should be previewed before sending.
-     *
-     * @return true to preview media
-     */
-    fun previewMediaWhenSending(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_PREVIEW_MEDIA_BEFORE_SENDING_KEY, false)
     }
 
     /**
@@ -1108,15 +859,6 @@ class VectorPreferences @Inject constructor(
     }
 
     /**
-     * Tells if all the events must be displayed ie even the redacted events.
-     *
-     * @return true to display all the events even the redacted ones.
-     */
-    fun displayAllEvents(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_DISPLAY_ALL_EVENTS_KEY, false)
-    }
-
-    /**
      * The user does not allow screenshots of the application.
      */
     fun useFlagSecure(): Boolean {
@@ -1127,6 +869,7 @@ class VectorPreferences @Inject constructor(
     fun combinedOverview(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_SINGLE_OVERVIEW, true)
     }
+
     fun enableOverviewTabs(): Boolean {
         return labAddNotificationTab() || !combinedOverview()
     }
@@ -1141,6 +884,7 @@ class VectorPreferences @Inject constructor(
             default
         }
     }
+
     override fun roomUnreadKind(isDirect: Boolean): Int {
         return if (isDirect) {
             roomUnreadKindDm()
@@ -1148,10 +892,12 @@ class VectorPreferences @Inject constructor(
             roomUnreadKindGroup()
         }
     }
-    fun roomUnreadKindDm(): Int {
+
+    private fun roomUnreadKindDm(): Int {
         return roomUnreadKind(SETTINGS_ROOM_UNREAD_KIND_DM)
     }
-    fun roomUnreadKindGroup(): Int {
+
+    private fun roomUnreadKindGroup(): Int {
         return roomUnreadKind(SETTINGS_ROOM_UNREAD_KIND_GROUP)
     }
 
@@ -1169,7 +915,7 @@ class VectorPreferences @Inject constructor(
         return defaultPrefs.getBoolean(SETTINGS_SPACE_MEMBERS_IN_SPACE_ROOMS, false)
     }
 
-    var prevToast: Toast? = null
+    private var prevToast: Toast? = null
     override fun annoyDevelopersWithToast(text: String) {
         if (developerShowDebugInfo()) {
             prevToast?.cancel()
@@ -1183,9 +929,11 @@ class VectorPreferences @Inject constructor(
     fun simplifiedMode(): Boolean {
         return false
     }
+
     fun needsSimplifiedModePrompt(): Boolean {
         return false
     }
+
     //TODO: remove this
     @Suppress("UNUSED_PARAMETER")
     fun setSimplifiedMode(simplified: Boolean) {
@@ -1204,21 +952,23 @@ class VectorPreferences @Inject constructor(
             // Migrate to split setting for DMs and groups
             val unreadKindSetting = roomUnreadKind(SETTINGS_ROOM_UNREAD_KIND).toString()
             defaultPrefs
-                    .edit()
-                    .putString(SETTINGS_ROOM_UNREAD_KIND_DM, unreadKindSetting)
-                    .putString(SETTINGS_ROOM_UNREAD_KIND_GROUP, unreadKindSetting)
-                    .remove(SETTINGS_ROOM_UNREAD_KIND)
-                    .apply()
+                    .edit {
+                        putString(SETTINGS_ROOM_UNREAD_KIND_DM, unreadKindSetting)
+                        putString(SETTINGS_ROOM_UNREAD_KIND_GROUP, unreadKindSetting)
+                        remove(SETTINGS_ROOM_UNREAD_KIND)
+                    }
         }
     }
 
     // SC addition
     fun userColorMode(isDirect: Boolean, isPublic: Boolean): String {
-        return defaultPrefs.getString(when {
-            isPublic -> SETTINGS_USER_COLOR_MODE_PUBLIC_ROOM
-            isDirect -> SETTINGS_USER_COLOR_MODE_DM
-            else -> SETTINGS_USER_COLOR_MODE_DEFAULT
-        }, MatrixItemColorProvider.USER_COLORING_DEFAULT) ?: MatrixItemColorProvider.USER_COLORING_DEFAULT
+        return defaultPrefs.getString(
+                when {
+                    isPublic -> SETTINGS_USER_COLOR_MODE_PUBLIC_ROOM
+                    isDirect -> SETTINGS_USER_COLOR_MODE_DM
+                    else -> SETTINGS_USER_COLOR_MODE_DEFAULT
+                }, MatrixItemColorProvider.USER_COLORING_DEFAULT
+        ) ?: MatrixItemColorProvider.USER_COLORING_DEFAULT
     }
 
     fun canOverrideUserColors(): Boolean {
@@ -1296,37 +1046,36 @@ class VectorPreferences @Inject constructor(
         return defaultPrefs.getBoolean(SETTINGS_CLEAR_HIGHLIGHT_ON_SCROLL, false)
     }
 
-
     /**
      * I likely do more fresh installs of the app than anyone else, so a shortcut to change some of the default settings to
      * my preferred values can safe me some time
      */
     fun applyScDefaultValues() {
-        defaultPrefs.edit()
-                .putBoolean(SETTINGS_SIMPLIFIED_MODE, false)
-                .putString(SETTINGS_USER_COLOR_MODE_PUBLIC_ROOM, MatrixItemColorProvider.USER_COLORING_FROM_PL)
-                .putString(SETTINGS_USER_COLOR_MODE_DEFAULT, MatrixItemColorProvider.USER_COLORING_FROM_PL)
-                .putString(SETTINGS_USER_COLOR_MODE_DM, MatrixItemColorProvider.USER_COLORING_UNIFORM)
-                .putString(SETTINGS_ROOM_UNREAD_KIND_DM, RoomSummary.UNREAD_KIND_ORIGINAL_CONTENT.toString())
-                .putString(SETTINGS_ROOM_UNREAD_KIND_GROUP, RoomSummary.UNREAD_KIND_ORIGINAL_CONTENT.toString())
-                .putBoolean(SETTINGS_UNIMPORTANT_COUNTER_BADGE, true)
-                .putBoolean(SETTINGS_PREF_SPACE_SHOW_ALL_ROOM_IN_HOME, true)
-                .putBoolean(SETTINGS_OPEN_CHATS_AT_FIRST_UNREAD, true)
-                .putBoolean(SETTINGS_ALLOW_URL_PREVIEW_IN_ENCRYPTED_ROOM_KEY, true)
-                .putBoolean(SETTINGS_LABS_ALLOW_MARK_UNREAD, true)
-                //.putBoolean(SETTINGS_LABS_ENABLE_SWIPE_TO_REPLY, false)
-                .putBoolean(SETTINGS_VOICE_MESSAGE, false)
-                .putBoolean(SETTINGS_USE_RAGE_SHAKE_KEY, true)
-                .putBoolean(SETTINGS_AGGREGATE_UNREAD_COUNTS, false)
-                .putBoolean(SETTINGS_ENABLE_SPACE_PAGER, true)
-                .putBoolean(SETTINGS_READ_RECEIPT_FOLLOWS_READ_MARKER, true)
-                .putBoolean(SETTINGS_SHOW_OPEN_ANONYMOUS, true)
-                .putBoolean(SETTINGS_FLOATING_DATE, true)
-                .putBoolean(SETTINGS_FOLLOW_SYSTEM_LOCALE, true)
-                .putBoolean(SETTINGS_ENABLE_MEMBER_NAME_CLICK, false)
-                .putBoolean(SETTINGS_CLEAR_HIGHLIGHT_ON_SCROLL, true)
-                .putBoolean(SETTINGS_SPACE_PAGER_BAR_PREFER_SPACE, true)
-                .apply()
+        defaultPrefs.edit {
+            putBoolean(SETTINGS_SIMPLIFIED_MODE, false)
+            putString(SETTINGS_USER_COLOR_MODE_PUBLIC_ROOM, MatrixItemColorProvider.USER_COLORING_FROM_PL)
+            putString(SETTINGS_USER_COLOR_MODE_DEFAULT, MatrixItemColorProvider.USER_COLORING_FROM_PL)
+            putString(SETTINGS_USER_COLOR_MODE_DM, MatrixItemColorProvider.USER_COLORING_UNIFORM)
+            putString(SETTINGS_ROOM_UNREAD_KIND_DM, RoomSummary.UNREAD_KIND_ORIGINAL_CONTENT.toString())
+            putString(SETTINGS_ROOM_UNREAD_KIND_GROUP, RoomSummary.UNREAD_KIND_ORIGINAL_CONTENT.toString())
+            putBoolean(SETTINGS_UNIMPORTANT_COUNTER_BADGE, true)
+            putBoolean(SETTINGS_PREF_SPACE_SHOW_ALL_ROOM_IN_HOME, true)
+            putBoolean(SETTINGS_OPEN_CHATS_AT_FIRST_UNREAD, true)
+            putBoolean(SETTINGS_ALLOW_URL_PREVIEW_IN_ENCRYPTED_ROOM_KEY, true)
+            putBoolean(SETTINGS_LABS_ALLOW_MARK_UNREAD, true)
+            //.putBoolean(SETTINGS_LABS_ENABLE_SWIPE_TO_REPLY, false)
+            putBoolean(SETTINGS_VOICE_MESSAGE, false)
+            putBoolean(SETTINGS_USE_RAGE_SHAKE_KEY, true)
+            putBoolean(SETTINGS_AGGREGATE_UNREAD_COUNTS, false)
+            putBoolean(SETTINGS_ENABLE_SPACE_PAGER, true)
+            putBoolean(SETTINGS_READ_RECEIPT_FOLLOWS_READ_MARKER, true)
+            putBoolean(SETTINGS_SHOW_OPEN_ANONYMOUS, true)
+            putBoolean(SETTINGS_FLOATING_DATE, true)
+            putBoolean(SETTINGS_FOLLOW_SYSTEM_LOCALE, true)
+            putBoolean(SETTINGS_ENABLE_MEMBER_NAME_CLICK, false)
+            putBoolean(SETTINGS_CLEAR_HIGHLIGHT_ON_SCROLL, true)
+            putBoolean(SETTINGS_SPACE_PAGER_BAR_PREFER_SPACE, true)
+        }
     }
 
     // Some more quick settings
@@ -1384,9 +1133,9 @@ class VectorPreferences @Inject constructor(
 
     fun setBackgroundSyncTimeout(timeInSecond: Int) {
         defaultPrefs
-                .edit()
-                .putString(SETTINGS_SET_SYNC_TIMEOUT_PREFERENCE_KEY, timeInSecond.toString())
-                .apply()
+                .edit {
+                    putString(SETTINGS_SET_SYNC_TIMEOUT_PREFERENCE_KEY, timeInSecond.toString())
+                }
     }
 
     fun backgroundSyncDelay(): Int {
@@ -1398,9 +1147,9 @@ class VectorPreferences @Inject constructor(
 
     fun setBackgroundSyncDelay(timeInSecond: Int) {
         defaultPrefs
-                .edit()
-                .putString(SETTINGS_SET_SYNC_DELAY_PREFERENCE_KEY, timeInSecond.toString())
-                .apply()
+                .edit {
+                    putString(SETTINGS_SET_SYNC_DELAY_PREFERENCE_KEY, timeInSecond.toString())
+                }
     }
 
     fun isBackgroundSyncEnabled(): Boolean {
@@ -1414,16 +1163,16 @@ class VectorPreferences @Inject constructor(
 
     fun setFdroidSyncBackgroundMode(mode: BackgroundSyncMode) {
         defaultPrefs
-                .edit()
-                .putString(SETTINGS_FDROID_BACKGROUND_SYNC_MODE, mode.name)
-                .apply()
+                .edit {
+                    putString(SETTINGS_FDROID_BACKGROUND_SYNC_MODE, mode.name)
+                }
     }
 
     fun getFdroidSyncBackgroundMode(): BackgroundSyncMode {
         return try {
             val strPref = defaultPrefs
                     .getString(SETTINGS_FDROID_BACKGROUND_SYNC_MODE, BackgroundSyncMode.FDROID_BACKGROUND_SYNC_MODE_FOR_BATTERY.name)
-            BackgroundSyncMode.values().firstOrNull { it.name == strPref } ?: BackgroundSyncMode.FDROID_BACKGROUND_SYNC_MODE_FOR_BATTERY
+            BackgroundSyncMode.entries.firstOrNull { it.name == strPref } ?: BackgroundSyncMode.FDROID_BACKGROUND_SYNC_MODE_FOR_BATTERY
         } catch (e: Throwable) {
             BackgroundSyncMode.FDROID_BACKGROUND_SYNC_MODE_FOR_BATTERY
         }
@@ -1431,12 +1180,6 @@ class VectorPreferences @Inject constructor(
 
     fun labsAutoReportUISI(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_LABS_AUTO_REPORT_UISI, false)
-    }
-
-    fun setLabsAutoReportUISI(enabled: Boolean) {
-        return defaultPrefs.edit {
-            putBoolean(SETTINGS_LABS_AUTO_REPORT_UISI, enabled)
-        }
     }
 
     fun prefSpacesShowAllRoomInHome(): Boolean {
@@ -1482,9 +1225,9 @@ class VectorPreferences @Inject constructor(
      */
     fun setThreadMessagesEnabled() {
         defaultPrefs
-                .edit()
-                .putBoolean(SETTINGS_LABS_ENABLE_THREAD_MESSAGES, true)
-                .apply()
+                .edit {
+                    putBoolean(SETTINGS_LABS_ENABLE_THREAD_MESSAGES, true)
+                }
     }
 
     /**
@@ -1500,9 +1243,9 @@ class VectorPreferences @Inject constructor(
      */
     fun setThreadFlagChangedManually() {
         defaultPrefs
-                .edit()
-                .putBoolean(SETTINGS_LABS_THREAD_MESSAGES_CHANGED_BY_USER, true)
-                .apply()
+                .edit {
+                    putBoolean(SETTINGS_LABS_THREAD_MESSAGES_CHANGED_BY_USER, true)
+                }
     }
 
     /**
@@ -1518,9 +1261,9 @@ class VectorPreferences @Inject constructor(
      */
     fun userNotifiedAboutThreads() {
         defaultPrefs
-                .edit()
-                .putBoolean(SETTINGS_LABS_ENABLE_THREAD_MESSAGES_OLD_CLIENTS, false)
-                .apply()
+                .edit {
+                    putBoolean(SETTINGS_LABS_ENABLE_THREAD_MESSAGES_OLD_CLIENTS, false)
+                }
     }
 
     /**
@@ -1536,9 +1279,9 @@ class VectorPreferences @Inject constructor(
      */
     fun setShouldMigrateThreads(shouldMigrate: Boolean) {
         defaultPrefs
-                .edit()
-                .putBoolean(SETTINGS_THREAD_MESSAGES_SYNCED, shouldMigrate)
-                .apply()
+                .edit {
+                    putBoolean(SETTINGS_THREAD_MESSAGES_SYNCED, shouldMigrate)
+                }
     }
 
     /**
@@ -1553,7 +1296,7 @@ class VectorPreferences @Inject constructor(
             return
         }
         val spaceIdsJoined = spaceBackstack.takeIf { it.isNotEmpty() }?.joinToString(",")
-        defaultPrefs.edit().putString(SETTINGS_PERSISTED_SPACE_BACKSTACK, spaceIdsJoined).apply()
+        defaultPrefs.edit { putString(SETTINGS_PERSISTED_SPACE_BACKSTACK, spaceIdsJoined) }
     }
 
     /**
@@ -1573,7 +1316,7 @@ class VectorPreferences @Inject constructor(
     }
 
     fun setNewAppLayoutEnabled(enabled: Boolean) {
-        defaultPrefs.edit().putBoolean(SETTINGS_LABS_NEW_APP_LAYOUT_KEY, enabled).apply()
+        defaultPrefs.edit { putBoolean(SETTINGS_LABS_NEW_APP_LAYOUT_KEY, enabled) }
     }
 
     /**
