@@ -718,7 +718,7 @@ class LoginViewModel @AssistedInject constructor(
                 homeServerUrl = session.sessionParams.homeServerUrl,
                 token = session.sessionParams.credentials.accessToken,
                 username = session.myUserId,
-                password = reAuthHelper.data!!,
+                password = reAuthHelper.data,
                 deviceId = session.sessionParams.deviceId,
                 refreshToken = session.sessionParams.credentials.refreshToken,
             )
